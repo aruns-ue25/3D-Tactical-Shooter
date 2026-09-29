@@ -1,0 +1,61 @@
+# ==============================
+# Unity Generated Folders
+# ==============================
+
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+MemoryCaptures/
+Recordings/
+
+# ==============================
+# Unity Generated Files
+# ==============================
+
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.tmp
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+
+# ==============================
+# IDE / Editor
+# ==============================
+
+.vs/
+.idea/
+.vscode/
+
+# ==============================
+# OS Generated Files
+# ==============================
+
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ==============================
+# Crash Reports
+# ==============================
+
+sysinfo.txt
+
+# ==============================
+# Build Output
+# ==============================
+
+/Build/
+[Oo]utput/
