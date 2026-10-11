@@ -12,6 +12,7 @@ namespace TacticalShooter.Systems.Combat
         public GameObject Instigator { get; }
         public Vector3 HitPoint { get; }
         public Vector3 HitDirection { get; }
+        public Vector3 Direction => HitDirection;
 
         public DamageInfo(float amount, GameObject instigator, Vector3 hitPoint, Vector3 hitDirection)
         {
