@@ -1,30 +1,31 @@
+using System;
 using UnityEngine;
-using TacticalShooter.Systems.Combat;
+using TacticalShooter.Systems.Mission;
 
 namespace TacticalShooter.Systems.Combat
 {
     /// <summary>
-    /// Tactical Radar Minimap & 3D Waypoint Tracker.
-    /// Shows:
-    /// 1. Top-left HUD Radar: player position, player direction, radar grid, and Target Dummy location.
-    /// 2. 3D In-World Navigation Waypoint: on-screen bracket pointing directly at the Target Dummy with distance in meters.
-    /// 3. Off-screen navigation pointers so the player never gets lost.
+    /// Tactical Combat Radar & Waypoint System:
+    /// 1. Top-Left Tactical Radar: Displays player coordinates, heading line, target blip, and mission objective blips.
+    /// 2. 3D In-World Navigation Waypoint: On-screen bracket pointing directly at the active stage objective:
+    ///    - Stage 1: Points to Laboratory Data Terminal [OBJ] (Amber)
+    ///    - Stage 2: Points to Extraction Pad [LZ] (Green)
+    ///    - Combat: Points to Target Dummy when alive (Red)
     /// </summary>
     public class TacticalMinimap : MonoBehaviour
     {
         [Header("Radar Settings")]
         [SerializeField] private bool showRadar = true;
+        [SerializeField] private float radarPixelSize = 170f;
         [SerializeField] private float radarRadiusMeters = 35f;
-        [SerializeField] private float radarPixelSize = 180f;
         [SerializeField] private Vector2 radarScreenOffset = new Vector2(20f, 20f);
-
-        [Header("3D Waypoint Settings")]
-        [SerializeField] private bool show3DWaypoint = true;
 
         private Transform playerTransform;
         private Transform dummyTransform;
         private TargetDummy targetDummy;
-        private Camera cachedCamera;
+        private Health dummyHealth;
+        private Transform goalTransform;
+        private Transform objectiveTransform;
         private Texture2D radarBgTex;
         private Texture2D dotTex;
 
@@ -45,12 +46,61 @@ namespace TacticalShooter.Systems.Combat
             if (dummyTransform == null)
             {
                 GameObject dummy = GameObject.Find("TargetDummy_CombatTest");
-                if (dummy != null)
+                if (dummy == null)
                 {
-                    dummyTransform = dummy.transform;
-                    targetDummy = dummy.GetComponent<TargetDummy>();
+                    dummy = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                    dummy.name = "TargetDummy_CombatTest";
+                    dummy.transform.position = new Vector3(30f, 1f, 7.5f);
+                    dummy.transform.localScale = new Vector3(0.85f, 1.0f, 0.85f);
+                    dummy.AddComponent<Health>();
+                    dummy.AddComponent<TargetDummy>();
+
+                    Renderer rend = dummy.GetComponent<Renderer>();
+                    if (rend != null)
+                    {
+                        Shader shader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard") ?? Shader.Find("Diffuse");
+                        Material mat = new Material(shader);
+                        mat.color = new Color(0.95f, 0.25f, 0.15f);
+                        rend.material = mat;
+                    }
+                }
+
+                dummyTransform = dummy.transform;
+                targetDummy = dummy.GetComponent<TargetDummy>();
+                dummyHealth = dummy.GetComponent<Health>();
+            }
+            else if (dummyHealth == null)
+            {
+                dummyHealth = dummyTransform.GetComponent<Health>();
+                if (dummyHealth == null && targetDummy != null)
+                {
+                    dummyHealth = targetDummy.HealthComponent;
                 }
             }
+
+            if (goalTransform == null)
+            {
+                GameObject goal = GameObject.Find("ExtractionZone") ?? GameObject.Find("ExtractionPoint");
+                if (goal != null) goalTransform = goal.transform;
+            }
+
+            if (objectiveTransform == null)
+            {
+                GameObject obj = GameObject.Find("ObjectiveTerminal") ?? GameObject.Find("Objective Point") ?? GameObject.Find("ObjectivePoint");
+                if (obj != null) objectiveTransform = obj.transform;
+            }
+        }
+
+        private bool IsTargetAlive()
+        {
+            if (dummyHealth != null) return dummyHealth.IsAlive;
+            if (targetDummy != null && targetDummy.HealthComponent != null) return targetDummy.HealthComponent.IsAlive;
+            if (dummyTransform != null)
+            {
+                dummyHealth = dummyTransform.GetComponent<Health>();
+                if (dummyHealth != null) return dummyHealth.IsAlive;
+            }
+            return false;
         }
 
         private void GenerateTextures()
@@ -70,13 +120,6 @@ namespace TacticalShooter.Systems.Combat
             }
         }
 
-        private Camera GetCamera()
-        {
-            if (cachedCamera != null && cachedCamera.isActiveAndEnabled) return cachedCamera;
-            cachedCamera = Camera.main;
-            if (cachedCamera == null) cachedCamera = FindFirstObjectByType<Camera>();
-            return cachedCamera;
-        }
 
         private void OnGUI()
         {
@@ -86,11 +129,6 @@ namespace TacticalShooter.Systems.Combat
             if (showRadar)
             {
                 DrawRadarMinimap();
-            }
-
-            if (show3DWaypoint && dummyTransform != null)
-            {
-                Draw3DWaypoint();
             }
         }
 
@@ -130,29 +168,24 @@ namespace TacticalShooter.Systems.Combat
             titleStyle.normal.textColor = new Color(0.4f, 0.9f, 1f);
             GUI.Label(new Rect(rx + 8, ry + 4, size, 16), "TACTICAL RADAR (35m)", titleStyle);
 
-            // 5. Target Dummy Marker on Radar
-            if (dummyTransform != null)
+            // 5. Target Dummy Marker on Radar (Only when alive)
+            if (dummyTransform != null && IsTargetAlive())
             {
                 Vector3 delta = dummyTransform.position - playerTransform.position;
                 float dist = delta.magnitude;
 
-                // Project delta onto radar (scale by radar radius)
                 float mapScale = (halfSize - 12f) / radarRadiusMeters;
                 float dx = delta.x * mapScale;
-                float dy = -delta.z * mapScale; // invert Z for screen Y
+                float dy = -delta.z * mapScale;
 
-                // Clamp within radar box
                 float clampedX = Mathf.Clamp(dx, -halfSize + 10f, halfSize - 10f);
                 float clampedY = Mathf.Clamp(dy, -halfSize + 22f, halfSize - 10f);
-
                 Vector2 dummyRadarPos = radarCenter + new Vector2(clampedX, clampedY);
 
-                // Blinking Red Dot
                 float blink = Mathf.PingPong(Time.time * 3f, 1f);
                 GUI.color = new Color(1f, 0.2f * blink, 0.2f * blink, 1f);
                 GUI.DrawTexture(new Rect(dummyRadarPos.x - 5, dummyRadarPos.y - 5, 10, 10), dotTex);
 
-                // Dummy Label
                 GUI.color = Color.white;
                 GUIStyle dummyLabelStyle = new GUIStyle(GUI.skin.label)
                 {
@@ -161,6 +194,57 @@ namespace TacticalShooter.Systems.Combat
                 };
                 dummyLabelStyle.normal.textColor = new Color(1f, 0.3f, 0.3f);
                 GUI.Label(new Rect(dummyRadarPos.x + 7, dummyRadarPos.y - 8, 80, 16), $"TARGET {dist:0.0}m", dummyLabelStyle);
+            }
+
+            // 5b. Stage Mission Objectives on Radar
+            bool isStage1 = MissionManager.Instance == null || MissionManager.Instance.CurrentState == MissionState.ObjectivePending;
+
+            if (isStage1 && objectiveTransform != null)
+            {
+                // Stage 1: Amber Dot for Laboratory Terminal
+                Vector3 delta = objectiveTransform.position - playerTransform.position;
+                float dist = delta.magnitude;
+                float mapScale = (halfSize - 12f) / radarRadiusMeters;
+                float dx = delta.x * mapScale;
+                float dy = -delta.z * mapScale;
+                float clampedX = Mathf.Clamp(dx, -halfSize + 10f, halfSize - 10f);
+                float clampedY = Mathf.Clamp(dy, -halfSize + 22f, halfSize - 10f);
+                Vector2 objRadarPos = radarCenter + new Vector2(clampedX, clampedY);
+
+                GUI.color = new Color(1.0f, 0.78f, 0.15f, 1f);
+                GUI.DrawTexture(new Rect(objRadarPos.x - 5, objRadarPos.y - 5, 10, 10), dotTex);
+
+                GUIStyle objStyle = new GUIStyle(GUI.skin.label)
+                {
+                    fontSize = 9,
+                    fontStyle = FontStyle.Bold
+                };
+                objStyle.normal.textColor = new Color(1.0f, 0.85f, 0.2f);
+                GUI.Label(new Rect(objRadarPos.x + 7, objRadarPos.y - 8, 85, 16), $"LAB {dist:0.0}m", objStyle);
+            }
+            else if (!isStage1 && goalTransform != null)
+            {
+                // Stage 2: Pulsing Emerald Green Dot for Extraction Zone
+                Vector3 delta = goalTransform.position - playerTransform.position;
+                float dist = delta.magnitude;
+                float mapScale = (halfSize - 12f) / radarRadiusMeters;
+                float dx = delta.x * mapScale;
+                float dy = -delta.z * mapScale;
+                float clampedX = Mathf.Clamp(dx, -halfSize + 10f, halfSize - 10f);
+                float clampedY = Mathf.Clamp(dy, -halfSize + 22f, halfSize - 10f);
+                Vector2 goalRadarPos = radarCenter + new Vector2(clampedX, clampedY);
+
+                float pulse = 0.85f + 0.15f * Mathf.Sin(Time.time * 4f);
+                GUI.color = new Color(0.2f * pulse, 1f * pulse, 0.45f * pulse, 1f);
+                GUI.DrawTexture(new Rect(goalRadarPos.x - 5, goalRadarPos.y - 5, 10, 10), dotTex);
+
+                GUIStyle goalStyle = new GUIStyle(GUI.skin.label)
+                {
+                    fontSize = 9,
+                    fontStyle = FontStyle.Bold
+                };
+                goalStyle.normal.textColor = new Color(0.3f, 1f, 0.5f);
+                GUI.Label(new Rect(goalRadarPos.x + 7, goalRadarPos.y - 8, 85, 16), $"EXTRACT {dist:0.0}m", goalStyle);
             }
 
             // 6. Player Marker (Center Green Arrow)
@@ -179,95 +263,27 @@ namespace TacticalShooter.Systems.Combat
             coordStyle.normal.textColor = new Color(0.7f, 0.8f, 0.9f);
             GUI.Label(new Rect(rx + 8, ry + size - 18, size - 16, 16), $"POS: ({playerTransform.position.x:0.0}, {playerTransform.position.z:0.0})", coordStyle);
 
-            GUI.color = prevColor;
-        }
-
-        private void Draw3DWaypoint()
-        {
-            Camera cam = GetCamera();
-            if (cam == null || dummyTransform == null) return;
-
-            Vector3 targetWorldPos = dummyTransform.position + Vector3.up * 1.4f;
-            Vector3 screenPos = cam.WorldToScreenPoint(targetWorldPos);
-            float distance = Vector3.Distance(playerTransform.position, dummyTransform.position);
-
-            Color prevColor = GUI.color;
-
-            // In front of camera
-            if (screenPos.z > 0f)
+            // Subtle Objective Label Under Radar
+            GUIStyle objBriefStyle = new GUIStyle(GUI.skin.label)
             {
-                float x = screenPos.x;
-                float y = Screen.height - screenPos.y;
-
-                // Chevron and distance box
-                float boxW = 160f;
-                float boxH = 34f;
-                float bx = x - boxW * 0.5f;
-                float by = y - boxH - 24f;
-
-                // Background tag
-                GUI.color = new Color(0.05f, 0.08f, 0.12f, 0.85f);
-                GUI.DrawTexture(new Rect(bx, by, boxW, boxH), dotTex);
-
-                // Red Accent Line
-                GUI.color = new Color(1f, 0.25f, 0.2f, 0.9f);
-                GUI.DrawTexture(new Rect(bx, by, boxW, 2), dotTex);
-
-                // Waypoint Text
-                GUIStyle wpStyle = new GUIStyle(GUI.skin.label)
-                {
-                    alignment = TextAnchor.MiddleCenter,
-                    fontSize = 11,
-                    fontStyle = FontStyle.Bold
-                };
-                wpStyle.normal.textColor = Color.white;
-                GUI.Label(new Rect(bx, by + 2, boxW, 16), "🎯 TARGET DUMMY", wpStyle);
-
-                GUIStyle distStyle = new GUIStyle(GUI.skin.label)
-                {
-                    alignment = TextAnchor.MiddleCenter,
-                    fontSize = 10
-                };
-                distStyle.normal.textColor = new Color(1f, 0.85f, 0.3f);
-                GUI.Label(new Rect(bx, by + 16, boxW, 16), $"[ DISTANCE: {distance:0.1}m ]", distStyle);
-
-                // Downward Pointer ▼
-                GUIStyle arrowStyle = new GUIStyle(GUI.skin.label)
-                {
-                    alignment = TextAnchor.MiddleCenter,
-                    fontSize = 14,
-                    fontStyle = FontStyle.Bold
-                };
-                arrowStyle.normal.textColor = new Color(1f, 0.3f, 0.2f);
-                GUI.Label(new Rect(x - 12, by + boxH - 2, 24, 20), "▼", arrowStyle);
+                fontSize = 9,
+                fontStyle = FontStyle.Bold
+            };
+            if (isStage1)
+            {
+                objBriefStyle.normal.textColor = new Color(1.0f, 0.82f, 0.2f);
+                GUI.Label(new Rect(rx, ry + size + 3, size + 20, 16), "▶ STAGE 1: LAB TERMINAL", objBriefStyle);
             }
             else
             {
-                // Target is BEHIND player: Show off-screen edge turn indicator
-                Vector3 toTarget = (dummyTransform.position - playerTransform.position).normalized;
-                float dotRight = Vector3.Dot(playerTransform.right, toTarget);
-
-                GUIStyle edgeStyle = new GUIStyle(GUI.skin.label)
-                {
-                    fontSize = 13,
-                    fontStyle = FontStyle.Bold
-                };
-                edgeStyle.normal.textColor = new Color(1f, 0.3f, 0.2f);
-
-                if (dotRight > 0)
-                {
-                    // Target is behind to the right
-                    GUI.Label(new Rect(Screen.width - 240, Screen.height * 0.5f - 20, 220, 30), $"TARGET BEHIND ({distance:0}m) ►►", edgeStyle);
-                }
-                else
-                {
-                    // Target is behind to the left
-                    GUI.Label(new Rect(30, Screen.height * 0.5f - 20, 220, 30), $"◄◄ TARGET BEHIND ({distance:0}m)", edgeStyle);
-                }
+                objBriefStyle.normal.textColor = new Color(0.25f, 1.0f, 0.45f);
+                GUI.Label(new Rect(rx, ry + size + 3, size + 20, 16), "▶ STAGE 2: EXTRACTION", objBriefStyle);
             }
 
             GUI.color = prevColor;
         }
+
+
 
         private void DrawCrosshairRings(Vector2 center, float radius)
         {
