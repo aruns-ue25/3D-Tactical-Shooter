@@ -15,6 +15,11 @@ namespace TacticalShooter.Systems.Combat
         private static AudioClip gunshotClip;
         private static AudioClip hitImpactClip;
         private static AudioClip defeatClip;
+        private static AudioClip footstepClip;
+        private static AudioClip victoryClip;
+        private static AudioClip doorBreakClip;
+        private static AudioClip objectiveSecuredClip;
+        private static AudioClip downloadTickClip;
         private static Material tracerMaterial;
 
         public static void InitializeAudio()
@@ -22,7 +27,20 @@ namespace TacticalShooter.Systems.Combat
             if (gunshotClip == null) gunshotClip = GenerateGunshotSound();
             if (hitImpactClip == null) hitImpactClip = GenerateHitImpactSound();
             if (defeatClip == null) defeatClip = GenerateDefeatSound();
+            if (footstepClip == null) footstepClip = GenerateFootstepSound();
+            if (victoryClip == null) victoryClip = GenerateVictorySound();
+            if (doorBreakClip == null) doorBreakClip = GenerateDoorBreakSound();
+            if (objectiveSecuredClip == null) objectiveSecuredClip = GenerateObjectiveSecuredSound();
+            if (downloadTickClip == null) downloadTickClip = GenerateDownloadTickSound();
             if (tracerMaterial == null) tracerMaterial = CreateTracerMaterial();
+        }
+
+        public static void PlayFootstep(Vector3 position, bool isSprinting)
+        {
+            InitializeAudio();
+            float pitch = isSprinting ? UnityEngine.Random.Range(1.05f, 1.2f) : UnityEngine.Random.Range(0.85f, 1.0f);
+            float volume = isSprinting ? 0.5f : 0.35f;
+            PlayClipAtPoint(footstepClip, position, volume, pitch);
         }
 
         public static void PlayGunshot(Vector3 position)
@@ -41,6 +59,31 @@ namespace TacticalShooter.Systems.Combat
         {
             InitializeAudio();
             PlayClipAtPoint(defeatClip, position, 1.0f, 0.8f);
+        }
+
+        public static void PlayVictorySound(Vector3 position)
+        {
+            InitializeAudio();
+            PlayClipAtPoint(victoryClip, position, 1.0f, 1.0f);
+        }
+
+        public static void PlayDoorBreakSound(Vector3 position)
+        {
+            InitializeAudio();
+            PlayClipAtPoint(doorBreakClip, position, 1.0f, 0.95f);
+        }
+
+        public static void PlayObjectiveSecuredSound(Vector3 position)
+        {
+            InitializeAudio();
+            PlayClipAtPoint(objectiveSecuredClip, position, 1.0f, 1.0f);
+        }
+
+        public static void PlayDownloadTick(Vector3 position, float progress)
+        {
+            InitializeAudio();
+            float pitch = Mathf.Lerp(0.85f, 1.55f, progress);
+            PlayClipAtPoint(downloadTickClip, position, 0.45f, pitch);
         }
 
         public static void SpawnTracer(Vector3 start, Vector3 end, MonoBehaviour runner)
@@ -201,6 +244,127 @@ namespace TacticalShooter.Systems.Combat
             }
 
             AudioClip clip = AudioClip.Create("SynthesizedDefeat", length, 1, sampleRate, false);
+            clip.SetData(data, 0);
+            return clip;
+        }
+
+        private static AudioClip GenerateFootstepSound()
+        {
+            int sampleRate = 44100;
+            int length = (int)(sampleRate * 0.075f);
+            float[] data = new float[length];
+            System.Random rand = new System.Random(1337);
+
+            for (int i = 0; i < length; i++)
+            {
+                float t = (float)i / length;
+                float decay = Mathf.Exp(-t * 36f);
+                float thud = Mathf.Sin(2f * Mathf.PI * (75f - t * 25f) * (float)i / sampleRate);
+                float scuff = (float)(rand.NextDouble() * 2.0 - 1.0) * 0.35f;
+                data[i] = (thud * 0.7f + scuff * 0.3f) * decay;
+            }
+
+            AudioClip clip = AudioClip.Create("SynthesizedFootstep", length, 1, sampleRate, false);
+            clip.SetData(data, 0);
+            return clip;
+        }
+
+        private static AudioClip GenerateVictorySound()
+        {
+            int sampleRate = 44100;
+            float duration = 1.0f;
+            int length = (int)(sampleRate * duration);
+            float[] data = new float[length];
+
+            // Triumphant arpeggio: C5 (523Hz), E5 (659Hz), G5 (784Hz), C6 (1046Hz)
+            float[] freqs = new float[] { 523.25f, 659.25f, 783.99f, 1046.50f };
+            float noteDur = 0.22f;
+
+            for (int i = 0; i < length; i++)
+            {
+                float t = (float)i / sampleRate;
+                int noteIndex = Mathf.Clamp((int)(t / noteDur), 0, freqs.Length - 1);
+                float freq = freqs[noteIndex];
+                float noteT = (t - noteIndex * noteDur);
+                float env = Mathf.Exp(-noteT * 4.5f);
+                if (noteIndex == freqs.Length - 1) env = Mathf.Exp(-noteT * 2.0f); // sustain final victory note
+                float sample = Mathf.Sin(2f * Mathf.PI * freq * t) * 0.5f +
+                               Mathf.Sin(4f * Mathf.PI * freq * t) * 0.2f;
+                data[i] = sample * env * 0.85f;
+            }
+
+            AudioClip clip = AudioClip.Create("SynthesizedVictory", length, 1, sampleRate, false);
+            clip.SetData(data, 0);
+            return clip;
+        }
+
+        private static AudioClip GenerateDoorBreakSound()
+        {
+            int sampleRate = 44100;
+            float duration = 0.5f;
+            int length = (int)(sampleRate * duration);
+            float[] data = new float[length];
+            System.Random rand = new System.Random(777);
+
+            for (int i = 0; i < length; i++)
+            {
+                float t = (float)i / length;
+                float decay = Mathf.Exp(-t * 9f);
+
+                // Heavy impact thud
+                float thud = Mathf.Sin(2f * Mathf.PI * (80f - t * 45f) * (float)i / sampleRate) * 0.65f;
+
+                // Splintering wood noise
+                float noise = (float)(rand.NextDouble() * 2.0 - 1.0) * 0.45f;
+                float crack = (float)(rand.NextDouble() > 0.88 ? (rand.NextDouble() * 2.0 - 1.0) * 1.4f : 0f);
+
+                data[i] = (thud + noise + crack) * decay * 0.95f;
+            }
+
+            AudioClip clip = AudioClip.Create("SynthesizedDoorBreak", length, 1, sampleRate, false);
+            clip.SetData(data, 0);
+            return clip;
+        }
+
+        private static AudioClip GenerateObjectiveSecuredSound()
+        {
+            int sampleRate = 44100;
+            float duration = 0.45f;
+            int length = (int)(sampleRate * duration);
+            float[] data = new float[length];
+
+            // Electronic double chime: Note 1 (880Hz, A5) -> Note 2 (1320Hz, E6)
+            for (int i = 0; i < length; i++)
+            {
+                float t = (float)i / sampleRate;
+                float freq = t < 0.18f ? 880f : 1320f;
+                float noteT = t < 0.18f ? t : (t - 0.18f);
+                float decay = Mathf.Exp(-noteT * 9f);
+                float tone = Mathf.Sin(2f * Mathf.PI * freq * t) * 0.7f +
+                             Mathf.Sin(4f * Mathf.PI * freq * t) * 0.2f;
+                data[i] = tone * decay * 0.85f;
+            }
+
+            AudioClip clip = AudioClip.Create("SynthesizedObjectiveSecured", length, 1, sampleRate, false);
+            clip.SetData(data, 0);
+            return clip;
+        }
+
+        private static AudioClip GenerateDownloadTickSound()
+        {
+            int sampleRate = 44100;
+            float duration = 0.05f;
+            int length = (int)(sampleRate * duration);
+            float[] data = new float[length];
+            for (int i = 0; i < length; i++)
+            {
+                float t = (float)i / sampleRate;
+                float decay = Mathf.Exp(-t * 60f);
+                float tone = Mathf.Sin(2f * Mathf.PI * 1050f * t) * 0.7f +
+                             Mathf.Sin(2f * Mathf.PI * 2100f * t) * 0.25f;
+                data[i] = tone * decay * 0.65f;
+            }
+            AudioClip clip = AudioClip.Create("SynthesizedDownloadTick", length, 1, sampleRate, false);
             clip.SetData(data, 0);
             return clip;
         }
