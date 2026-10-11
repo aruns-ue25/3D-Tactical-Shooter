@@ -77,9 +77,20 @@ namespace TacticalShooter.Systems.Interaction
         {
             if (playerCamera == null) return;
 
+            // Use RaycastAll with generous range so 3rd person camera ray passes cleanly through player model
             Ray ray = new Ray(playerCamera.position, playerCamera.forward);
-            if (Physics.Raycast(ray, out RaycastHit hit, interactionDistance, interactableLayer))
+            float maxRayDist = Mathf.Max(interactionDistance + 3.0f, 6.5f);
+            RaycastHit[] hits = Physics.RaycastAll(ray, maxRayDist, interactableLayer);
+            System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+
+            foreach (var hit in hits)
             {
+                // Ignore player's own colliders
+                if (hit.collider.transform.IsChildOf(transform) || hit.collider.gameObject == gameObject)
+                {
+                    continue;
+                }
+
                 // Searches hit object and parent hierarchy for IInteractable
                 IInteractable interactable = hit.collider.GetComponentInParent<IInteractable>();
                 if (interactable != null)
@@ -87,12 +98,18 @@ namespace TacticalShooter.Systems.Interaction
                     if (currentInteractable != interactable)
                     {
                         currentInteractable = interactable;
-                        if (interactionPrompt != null)
+                    }
+
+                    if (interactionPrompt != null)
+                    {
+                        string prompt = interactable.PromptText;
+                        if (!string.IsNullOrEmpty(prompt))
                         {
-                            string prompt = string.IsNullOrEmpty(interactable.PromptText)
-                                ? "Press E to interact"
-                                : interactable.PromptText;
                             interactionPrompt.Show(prompt);
+                        }
+                        else
+                        {
+                            interactionPrompt.Hide();
                         }
                     }
                     return;

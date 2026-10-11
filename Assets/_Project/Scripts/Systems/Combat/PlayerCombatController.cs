@@ -10,6 +10,7 @@ namespace TacticalShooter.Systems.Combat
     /// Supports:
     /// - Primary fire with recoil, hitmarkers, and live combat HUD
     /// - Perspective toggle (Press 'V' to toggle between First-Person and Third-Person over-the-shoulder view)
+    /// - Code-level procedural generation of 1st-person 3D tactical carbine if missing
     /// - ObjectCarrier coordination (holding/throwing objects takes priority over weapon fire)
     /// </summary>
     public class PlayerCombatController : MonoBehaviour
@@ -21,15 +22,17 @@ namespace TacticalShooter.Systems.Combat
 
         [Header("Perspective Toggle (V Key)")]
         [SerializeField] private bool allowPerspectiveToggle = true;
+        [SerializeField] private bool startInThirdPerson = true;
         [SerializeField] private Vector3 firstPersonCamPos = new Vector3(0f, 1.6f, 0f);
-        [SerializeField] private Vector3 thirdPersonCamPos = new Vector3(0.55f, 1.75f, -2.2f);
+        [SerializeField] private Vector3 thirdPersonCamPos = new Vector3(0.45f, 1.7f, -2.5f);
         [SerializeField] private float viewSwitchSpeed = 10f;
-        private bool isThirdPerson = false;
+        private bool isThirdPerson = true;
         private Vector3 targetCamLocalPos;
 
         [Header("Visual Feedback")]
         [SerializeField] private bool showCrosshair = true;
 
+        private PlayerController playerController;
         private ObjectCarrier objectCarrier;
         private float lastFireFeedbackTime = -1f;
         private bool lastShotHitTarget = false;
@@ -40,11 +43,13 @@ namespace TacticalShooter.Systems.Combat
 
         private void Awake()
         {
+            playerController = GetComponent<PlayerController>();
             // Auto-locate weapon
             if (weapon == null)
             {
                 weapon = GetComponent<HitscanWeapon>();
                 if (weapon == null) weapon = GetComponentInChildren<HitscanWeapon>();
+                if (weapon == null) weapon = gameObject.AddComponent<HitscanWeapon>();
             }
 
             // Auto-locate camera
@@ -55,10 +60,40 @@ namespace TacticalShooter.Systems.Combat
                 else if (Camera.main != null) playerCamera = Camera.main.transform;
             }
 
-            // Auto-locate viewmodel
+            if (playerCamera != null)
+            {
+                if (playerCamera.gameObject.tag != "MainCamera")
+                {
+                    playerCamera.gameObject.tag = "MainCamera";
+                }
+
+                Camera actualCam = playerCamera.GetComponent<Camera>();
+                if (actualCam != null)
+                {
+                    actualCam.nearClipPlane = 0.08f;
+                }
+            }
+
+            // Ensure PlayerCharacterVisuals (the 3D person holding the gun) is attached
+            if (GetComponent<PlayerCharacterVisuals>() == null)
+            {
+                gameObject.AddComponent<PlayerCharacterVisuals>();
+            }
+
+            // Ensure TacticalMinimap (radar and target tracker) is attached
+            if (GetComponent<TacticalMinimap>() == null)
+            {
+                gameObject.AddComponent<TacticalMinimap>();
+            }
+
+            // Auto-locate or procedurally build the 3D Weapon in code
             if (weaponViewModel == null && playerCamera != null)
             {
                 weaponViewModel = playerCamera.GetComponentInChildren<WeaponViewModel>();
+                if (weaponViewModel == null)
+                {
+                    weaponViewModel = BuildTacticalWeaponViewModel(playerCamera);
+                }
             }
 
             // Link muzzle point if assigned
@@ -71,11 +106,74 @@ namespace TacticalShooter.Systems.Combat
             objectCarrier = GetComponent<ObjectCarrier>();
             if (objectCarrier == null) objectCarrier = GetComponentInParent<ObjectCarrier>();
 
-            targetCamLocalPos = firstPersonCamPos;
+            if (startInThirdPerson)
+            {
+                isThirdPerson = true;
+            }
+
+            targetCamLocalPos = isThirdPerson ? thirdPersonCamPos : firstPersonCamPos;
             if (playerCamera != null)
             {
-                playerCamera.localPosition = firstPersonCamPos;
+                playerCamera.localPosition = targetCamLocalPos;
             }
+
+            if (weaponViewModel != null)
+            {
+                weaponViewModel.gameObject.SetActive(!isThirdPerson);
+            }
+        }
+
+        private WeaponViewModel BuildTacticalWeaponViewModel(Transform parentCam)
+        {
+            GameObject vmRoot = new GameObject("WeaponViewModel");
+            vmRoot.transform.SetParent(parentCam, false);
+            vmRoot.transform.localPosition = new Vector3(0.24f, -0.22f, 0.45f);
+            vmRoot.transform.localRotation = Quaternion.identity;
+
+            WeaponViewModel vm = vmRoot.AddComponent<WeaponViewModel>();
+
+            Color darkMetal = new Color(0.18f, 0.2f, 0.22f);
+            Color darkAccents = new Color(0.1f, 0.1f, 0.1f);
+
+            CreateGunPart(PrimitiveType.Cube, "Receiver", vmRoot.transform, Vector3.zero, new Vector3(0.06f, 0.08f, 0.28f), darkMetal);
+            CreateGunPart(PrimitiveType.Cylinder, "Barrel", vmRoot.transform, new Vector3(0f, 0.015f, 0.22f), new Vector3(0.025f, 0.09f, 0.025f), darkAccents, Quaternion.Euler(90f, 0f, 0f));
+            CreateGunPart(PrimitiveType.Cube, "Magazine", vmRoot.transform, new Vector3(0f, -0.07f, 0.03f), new Vector3(0.04f, 0.1f, 0.06f), darkAccents, Quaternion.Euler(15f, 0f, 0f));
+            CreateGunPart(PrimitiveType.Cube, "Sight", vmRoot.transform, new Vector3(0f, 0.055f, 0.12f), new Vector3(0.02f, 0.03f, 0.03f), darkAccents);
+
+            GameObject muzzle = new GameObject("MuzzlePoint");
+            muzzle.transform.SetParent(vmRoot.transform, false);
+            muzzle.transform.localPosition = new Vector3(0f, 0.015f, 0.32f);
+
+            if (weapon != null)
+            {
+                weapon.MuzzlePoint = muzzle.transform;
+            }
+
+            return vm;
+        }
+
+        private GameObject CreateGunPart(PrimitiveType type, string name, Transform parent, Vector3 pos, Vector3 scale, Color color, Quaternion? rot = null)
+        {
+            GameObject part = GameObject.CreatePrimitive(type);
+            part.name = name;
+            part.transform.SetParent(parent, false);
+            part.transform.localPosition = pos;
+            part.transform.localScale = scale;
+            if (rot.HasValue) part.transform.localRotation = rot.Value;
+
+            Collider col = part.GetComponent<Collider>();
+            if (col != null) Destroy(col);
+
+            Renderer rend = part.GetComponent<Renderer>();
+            if (rend != null)
+            {
+                Shader shader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard") ?? Shader.Find("Diffuse");
+                Material mat = new Material(shader);
+                mat.color = color;
+                rend.material = mat;
+            }
+
+            return part;
         }
 
         private void OnEnable()
@@ -143,18 +241,69 @@ namespace TacticalShooter.Systems.Combat
 
                 if (weaponViewModel != null)
                 {
-                    // Hide first-person gun model in third-person view
                     weaponViewModel.gameObject.SetActive(!isThirdPerson);
                 }
             }
 
-            // Smooth camera transition
-            playerCamera.localPosition = Vector3.Lerp(playerCamera.localPosition, targetCamLocalPos, Time.deltaTime * viewSwitchSpeed);
+            Vector3 desiredLocalPos = targetCamLocalPos;
+
+            if (isThirdPerson)
+            {
+                // Smart Spring-Arm: Prevent camera from penetrating or seeing through walls
+                Vector3 pivotWorld = transform.position + new Vector3(0f, 1.6f, 0f);
+                Vector3 targetWorld = transform.TransformPoint(thirdPersonCamPos);
+                Vector3 dir = targetWorld - pivotWorld;
+                float targetDist = dir.magnitude;
+
+                if (targetDist > 0.05f)
+                {
+                    dir /= targetDist;
+                    float sphereRadius = 0.22f;
+
+                    // SphereCast from player eye level towards camera position
+                    if (Physics.SphereCast(pivotWorld, sphereRadius, dir, out RaycastHit hit, targetDist, ~0, QueryTriggerInteraction.Ignore))
+                    {
+                        if (hit.collider != null && !hit.collider.transform.IsChildOf(transform) && hit.collider.gameObject != gameObject)
+                        {
+                            float safeDist = Mathf.Max(0.25f, hit.distance - 0.12f);
+                            targetWorld = pivotWorld + dir * safeDist;
+                        }
+                    }
+                }
+
+                desiredLocalPos = transform.InverseTransformPoint(targetWorld);
+            }
+            else
+            {
+                if (playerController != null)
+                {
+                    desiredLocalPos += playerController.HeadBobOffset;
+                }
+            }
+
+            playerCamera.localPosition = Vector3.Lerp(playerCamera.localPosition, desiredLocalPos, Time.deltaTime * (isThirdPerson ? viewSwitchSpeed * 1.8f : viewSwitchSpeed));
         }
 
         private void FirePrimary()
         {
             if (weapon == null || playerCamera == null) return;
+
+            // Route weapon muzzle point to the actual 3D rifle barrel in 3rd person!
+            if (isThirdPerson)
+            {
+                var visuals = GetComponent<PlayerCharacterVisuals>();
+                if (visuals != null && visuals.ThirdPersonMuzzlePoint != null)
+                {
+                    weapon.MuzzlePoint = visuals.ThirdPersonMuzzlePoint;
+                }
+            }
+            else
+            {
+                if (weaponViewModel != null && weaponViewModel.MuzzlePoint != null)
+                {
+                    weapon.MuzzlePoint = weaponViewModel.MuzzlePoint;
+                }
+            }
 
             // Fire raycast forward from camera center
             weapon.TryFire(playerCamera.position, playerCamera.forward, gameObject);
@@ -240,12 +389,6 @@ namespace TacticalShooter.Systems.Combat
                 richText = true
             };
             bodyStyle.normal.textColor = Color.white;
-
-            GUIStyle keyStyle = new GUIStyle(GUI.skin.label)
-            {
-                fontSize = 10
-            };
-            keyStyle.normal.textColor = new Color(0.7f, 0.7f, 0.7f);
 
             string viewName = isThirdPerson ? "3RD PERSON" : "1ST PERSON";
 

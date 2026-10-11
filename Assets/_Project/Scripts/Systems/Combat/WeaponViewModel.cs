@@ -26,6 +26,8 @@ namespace TacticalShooter.Systems.Combat
         private Vector3 defaultLocalPosition;
         private Quaternion defaultLocalRotation;
         private Coroutine recoilRoutine;
+        private CharacterController characterController;
+        private float walkBobTimer = 0f;
 
         public Transform MuzzlePoint => muzzlePoint != null ? muzzlePoint : transform;
 
@@ -33,6 +35,7 @@ namespace TacticalShooter.Systems.Combat
         {
             defaultLocalPosition = transform.localPosition;
             defaultLocalRotation = transform.localRotation;
+            characterController = GetComponentInParent<CharacterController>();
 
             if (muzzlePoint == null)
             {
@@ -48,15 +51,40 @@ namespace TacticalShooter.Systems.Combat
 
         private void HandleSway()
         {
-            if (Mouse.current == null) return;
+            float moveX = 0f;
+            float moveY = 0f;
 
-            Vector2 mouseDelta = Mouse.current.delta.ReadValue();
-            float moveX = Mathf.Clamp(-mouseDelta.x * swayAmount, -maxSwayAmount, maxSwayAmount);
-            float moveY = Mathf.Clamp(-mouseDelta.y * swayAmount, -maxSwayAmount, maxSwayAmount);
+            if (Mouse.current != null)
+            {
+                Vector2 mouseDelta = Mouse.current.delta.ReadValue();
+                moveX = Mathf.Clamp(-mouseDelta.x * swayAmount, -maxSwayAmount, maxSwayAmount);
+                moveY = Mathf.Clamp(-mouseDelta.y * swayAmount, -maxSwayAmount, maxSwayAmount);
+            }
+
+            // Tactical weapon bob while walking or sprinting
+            float walkBobX = 0f;
+            float walkBobY = 0f;
+            if (characterController != null)
+            {
+                float speed = characterController.velocity.magnitude;
+                if (speed > 0.2f && characterController.isGrounded)
+                {
+                    bool isSprinting = speed > 6f;
+                    float bobSpeed = isSprinting ? 15f : 9.5f;
+                    walkBobTimer += Time.deltaTime * bobSpeed;
+
+                    walkBobX = Mathf.Cos(walkBobTimer * 0.5f) * (isSprinting ? 0.02f : 0.008f);
+                    walkBobY = Mathf.Sin(walkBobTimer) * (isSprinting ? 0.022f : 0.01f);
+                }
+                else
+                {
+                    walkBobTimer = 0f;
+                }
+            }
 
             Vector3 finalPosition = new Vector3(
-                defaultLocalPosition.x + moveX,
-                defaultLocalPosition.y + moveY,
+                defaultLocalPosition.x + moveX + walkBobX,
+                defaultLocalPosition.y + moveY + walkBobY,
                 defaultLocalPosition.z
             );
 

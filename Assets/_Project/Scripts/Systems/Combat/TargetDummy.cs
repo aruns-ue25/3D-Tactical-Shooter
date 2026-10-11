@@ -231,8 +231,8 @@ namespace TacticalShooter.Systems.Combat
                 }
             }
 
-            // 2. Draw Target Dummy Health Bar
-            if (showFloatingHealth && health != null)
+            // 2. Draw Target Dummy Health Bar (Only when damaged and alive)
+            if (showFloatingHealth && health != null && health.IsAlive && health.CurrentHealth < health.MaxHealth)
             {
                 Vector3 worldPos = transform.position + Vector3.up * hudVerticalOffset;
                 Vector3 screenPos = cam.WorldToScreenPoint(worldPos);
