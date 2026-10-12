@@ -30,6 +30,7 @@ namespace TacticalShooter.Systems.Interaction
 
         public bool IsAlive => !isDestroyed && currentHealth > 0f;
         public bool CanTakeDamage => isDestructible && IsAlive;
+        public bool IsOpen => isOpen;
         public string PromptText => isDestroyed ? "" : (isOpen ? closePrompt : openPrompt);
 
         private void Awake()
