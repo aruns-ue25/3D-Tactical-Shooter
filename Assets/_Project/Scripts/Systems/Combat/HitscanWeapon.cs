@@ -59,6 +59,16 @@ namespace TacticalShooter.Systems.Combat
 
         private void ExecuteHitscanShot(Vector3 origin, Vector3 direction, GameObject instigator)
         {
+            // Broadcast gunshot noise to all AI agents in facility
+            var allPerceptions = UnityEngine.Object.FindObjectsByType<TacticalShooter.AI.Perception.AIPerception>(FindObjectsSortMode.None);
+            for (int i = 0; i < allPerceptions.Length; i++)
+            {
+                if (allPerceptions[i] != null && allPerceptions[i].gameObject != instigator)
+                {
+                    allPerceptions[i].ReportNoise(origin, 1.8f);
+                }
+            }
+
             Ray ray = new Ray(origin, direction);
             RaycastHit[] hits = Physics.RaycastAll(ray, maxRange, hitLayers, triggerInteraction);
 

@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using TacticalShooter.Systems.Mission;
+using TacticalShooter.AI.Core;
 
 namespace TacticalShooter.Systems.Combat
 {
@@ -196,7 +197,42 @@ namespace TacticalShooter.Systems.Combat
                 GUI.Label(new Rect(dummyRadarPos.x + 7, dummyRadarPos.y - 8, 80, 16), $"TARGET {dist:0.0}m", dummyLabelStyle);
             }
 
-            // 5b. Stage Mission Objectives on Radar
+            // 5b. Hostile AI Agents on Radar (Tactical Soldier / Guard)
+            AIAgentBase[] activeAgents = FindObjectsByType<AIAgentBase>(FindObjectsSortMode.None);
+            if (activeAgents != null)
+            {
+                for (int i = 0; i < activeAgents.Length; i++)
+                {
+                    AIAgentBase agent = activeAgents[i];
+                    if (agent != null && agent.IsAlive)
+                    {
+                        Vector3 delta = agent.transform.position - playerTransform.position;
+                        float dist = delta.magnitude;
+                        float mapScale = (halfSize - 12f) / radarRadiusMeters;
+                        float dx = delta.x * mapScale;
+                        float dy = -delta.z * mapScale;
+
+                        float clampedX = Mathf.Clamp(dx, -halfSize + 10f, halfSize - 10f);
+                        float clampedY = Mathf.Clamp(dy, -halfSize + 22f, halfSize - 10f);
+                        Vector2 agentRadarPos = radarCenter + new Vector2(clampedX, clampedY);
+
+                        float blink = Mathf.PingPong(Time.time * 4f, 1f);
+                        GUI.color = new Color(1f, 0.15f * blink, 0.15f * blink, 1f);
+                        GUI.DrawTexture(new Rect(agentRadarPos.x - 5, agentRadarPos.y - 5, 10, 10), dotTex);
+
+                        GUI.color = Color.white;
+                        GUIStyle agentLabelStyle = new GUIStyle(GUI.skin.label)
+                        {
+                            fontSize = 9,
+                            fontStyle = FontStyle.Bold
+                        };
+                        agentLabelStyle.normal.textColor = new Color(1f, 0.25f, 0.25f);
+                        GUI.Label(new Rect(agentRadarPos.x + 7, agentRadarPos.y - 8, 85, 16), $"[GUARD] {dist:0.0}m", agentLabelStyle);
+                    }
+                }
+            }
+
+            // 5c. Stage Mission Objectives on Radar
             bool isStage1 = MissionManager.Instance == null || MissionManager.Instance.CurrentState == MissionState.ObjectivePending;
 
             if (isStage1 && objectiveTransform != null)
