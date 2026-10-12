@@ -42,6 +42,11 @@ public class PlayerController : MonoBehaviour
     private float bobRoll = 0f;
     private float lastStepPhase = 0f;
 
+    private TacticalShooter.Systems.Combat.Health playerHealth;
+    private Vector3 initialSpawnPosition;
+    private Quaternion initialSpawnRotation;
+    private Vector3 initialCamLocalPos = new Vector3(0f, 1.6f, 0f);
+
     public Vector3 HeadBobOffset => bobOffset;
     public float HeadBobRoll => bobRoll;
     public float CurrentSpeed => currentPlanarVelocity.magnitude;
@@ -49,6 +54,9 @@ public class PlayerController : MonoBehaviour
 
     private void Awake()
     {
+        initialSpawnPosition = transform.position;
+        initialSpawnRotation = transform.rotation;
+
         characterController = GetComponent<CharacterController>();
         if (characterController != null)
         {
@@ -68,6 +76,13 @@ public class PlayerController : MonoBehaviour
             else if (Camera.main != null) playerCamera = Camera.main.transform;
         }
 
+        if (playerCamera != null)
+        {
+            initialCamLocalPos = playerCamera.localPosition;
+        }
+
+        playerHealth = GetComponent<TacticalShooter.Systems.Combat.Health>();
+
         if (GetComponent<TacticalShooter.Systems.Combat.PlayerCombatController>() == null)
         {
             gameObject.AddComponent<TacticalShooter.Systems.Combat.PlayerCombatController>();
@@ -82,11 +97,104 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
+        if (playerHealth == null)
+        {
+            playerHealth = GetComponent<TacticalShooter.Systems.Combat.Health>();
+        }
+
+        if (playerHealth != null && !playerHealth.IsAlive)
+        {
+            HandleDefeatedState();
+            return;
+        }
+
         HandleJump();
         HandleMovement();
         HandleGravity();
         HandleHeadBob();
         HandleLook();
+    }
+
+    private void HandleDefeatedState()
+    {
+        verticalVelocity = Vector3.zero;
+        currentPlanarVelocity = Vector3.zero;
+
+        // Smoothly sink camera toward floor and tilt down to simulate collapsing
+        if (playerCamera != null)
+        {
+            Vector3 floorCamPos = new Vector3(initialCamLocalPos.x, 0.28f, initialCamLocalPos.z);
+            playerCamera.localPosition = Vector3.Lerp(playerCamera.localPosition, floorCamPos, Time.deltaTime * 3.5f);
+            playerCamera.localRotation = Quaternion.Slerp(playerCamera.localRotation, Quaternion.Euler(38f, 0f, 15f), Time.deltaTime * 3.0f);
+        }
+
+        // Press 'R' to respawn
+        if (Keyboard.current != null && Keyboard.current.rKey.wasPressedThisFrame)
+        {
+            Respawn();
+        }
+    }
+
+    public void Respawn()
+    {
+        if (characterController != null) characterController.enabled = false;
+        transform.position = initialSpawnPosition;
+        transform.rotation = initialSpawnRotation;
+        if (characterController != null) characterController.enabled = true;
+
+        verticalVelocity = Vector3.zero;
+        currentPlanarVelocity = Vector3.zero;
+        cameraPitch = 0f;
+
+        if (playerCamera != null)
+        {
+            playerCamera.localPosition = initialCamLocalPos;
+            playerCamera.localRotation = Quaternion.identity;
+        }
+
+        if (playerHealth != null)
+        {
+            playerHealth.ResetHealth();
+        }
+
+        EnsureGuardForNewRun();
+    }
+
+    private void EnsureGuardForNewRun()
+    {
+        var guard = UnityEngine.Object.FindFirstObjectByType<TacticalShooter.AI.Agents.TacticalSoldierAgent>();
+        if (guard != null)
+        {
+            if (!guard.IsAlive)
+            {
+                UnityEngine.Object.Destroy(guard.gameObject);
+                TacticalShooter.AI.Agents.TacticalSoldierSpawner.SpawnTacticalSoldier(
+                    new Vector3(30f, 0.1f, 25f),
+                    new Vector3[]
+                    {
+                        new Vector3(30f, 0.1f, 27.5f),  // North central corridor
+                        new Vector3(34.5f, 0.1f, 27.5f),// East corridor entry (north of cover)
+                        new Vector3(34.5f, 0.1f, 22.5f),// East corridor entry (south of cover)
+                        new Vector3(30f, 0.1f, 22.5f)   // South central corridor (north of crates)
+                    },
+                    28f
+                );
+            }
+        }
+        else
+        {
+            TacticalShooter.AI.Agents.TacticalSoldierSpawner.SpawnTacticalSoldier(
+                new Vector3(30f, 0.1f, 25f),
+                new Vector3[]
+                {
+                    new Vector3(30f, 0.1f, 27.5f),  // North central corridor
+                    new Vector3(34.5f, 0.1f, 27.5f),// East corridor entry (north of cover)
+                    new Vector3(34.5f, 0.1f, 22.5f),// East corridor entry (south of cover)
+                    new Vector3(30f, 0.1f, 22.5f)   // South central corridor (north of crates)
+                },
+                28f
+            );
+        }
     }
 
     private void HandleJump()

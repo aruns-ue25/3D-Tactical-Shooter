@@ -418,6 +418,19 @@ namespace TacticalShooter.Systems.Combat
         {
             if (bodyRoot == null || !bodyRoot.activeSelf) return;
 
+            bool isDead = combatController != null && combatController.PlayerHealth != null && !combatController.PlayerHealth.IsAlive;
+            if (isDead)
+            {
+                bodyRoot.transform.localRotation = Quaternion.Slerp(bodyRoot.transform.localRotation, Quaternion.Euler(-75f, 0f, 0f), Time.deltaTime * 4.5f);
+                bodyRoot.transform.localPosition = Vector3.Lerp(bodyRoot.transform.localPosition, new Vector3(0f, -0.65f, -0.35f), Time.deltaTime * 4.5f);
+                return;
+            }
+            else if (bodyRoot.transform.localRotation != Quaternion.identity)
+            {
+                bodyRoot.transform.localRotation = Quaternion.Slerp(bodyRoot.transform.localRotation, Quaternion.identity, Time.deltaTime * 8f);
+                bodyRoot.transform.localPosition = Vector3.Lerp(bodyRoot.transform.localPosition, new Vector3(0f, -0.10f, 0f), Time.deltaTime * 8f);
+            }
+
             if (customAnimator != null)
             {
                 float animSpeed = characterController != null ? characterController.velocity.magnitude : 0f;
