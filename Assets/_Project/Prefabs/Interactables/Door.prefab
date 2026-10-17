@@ -82,6 +82,10 @@ MonoBehaviour:
   duration: 0.8
   openPrompt: Press E to open door
   closePrompt: Press E to close door
+  isDestructible: 1
+  maxHealth: 70
+  currentHealth: 0
+  isDestroyed: 0
 --- !u!1 &6779259528681558022
 GameObject:
   m_ObjectHideFlags: 0
@@ -170,7 +174,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: a5159e3bba9890b4c8e28420c21408a0, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

@@ -1,0 +1,528 @@
+[Licensing::Module] Trying to connect to existing licensing client channel...
+Built from '6000.3/staging' branch; Version is '6000.3.25f1 (e1dba0a9aba4) revision 14801824'; Using compiler version '194234433'; Build Type 'Release'
+OS: 'Windows 11  (10.0.26200) Professional' Language: 'en' Physical Memory: 7884 MB
+BatchMode: 1, IsHumanControllingUs: 0, StartBugReporterOnCrash: 0, Is64bit: 1
+System  architecture: x64
+Process architecture: x64
+Date: 2026-10-15T10:43:23Z
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-Admin" at "2026-10-15T10:43:23.8269571Z"
+[Licensing::Client] Code 10 while verifying Licensing Client signature (process Id: 11804, path: "C:/Program Files/Unity Hub/UnityLicensingClient_V1/Unity.Licensing.Client.exe")
+[Licensing::Module] LicensingClient has failed validation; ignoring
+[Licensing::Client] Handshaking with LicensingClient:
+  Version:                 1.18.3+d7ffd15
+  Session Id:              26b61aaab1804514964571ed1410c888
+  Correlation Id:          26a22b5cc031366a9fe5393693e537b2
+  External correlation Id: 8856965700315218527
+  Machine Id:              C7/GUQObcrPdwf4xLRtWBc6fFj0=
+[Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-Admin" (connect: 0.00s, validation: 0.01s, handshake: 0.11s)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-Admin-notifications" at "2026-10-15T10:43:23.9429264Z"
+[Licensing::Module] Error: Access token is unavailable; failed to update
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Module] License group:
+  Id: 18968517856249-UnityPersXXXX
+  Product: Unity Personal
+  Type: Assigned
+  Expiration: Unlimited
+[Licensing::Client] Successfully updated license, isAsync: True, time: 0.00
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Module] Licensing Background thread has ended after 0.14s
+
+COMMAND LINE ARGUMENTS:
+C:\Program Files\Unity\Hub\Editor\6000.3.25f1\Editor\Unity.exe
+-batchmode
+-quit
+-projectPath
+C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter
+-executeMethod
+TacticalShooter.EditorTools.ConfigureSrikarsanCharacter.SetupCharacterAndCapture
+-logFile
+unity_batch_srikarsan.log
+Successfully changed project path to: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter
+C:/Users/Admin/Desktop/Game/3D-Tactical-Shooter
+[UnityMemory] Configuration Parameters - Can be set up in boot.config
+    "memorysetup-temp-allocator-size-nav-mesh-worker=65536"
+    "memorysetup-temp-allocator-size-audio-worker=65536"
+    "memorysetup-temp-allocator-size-gfx=262144"
+    "memorysetup-allocator-temp-initial-block-size-main=262144"
+    "memorysetup-allocator-temp-initial-block-size-worker=262144"
+    "memorysetup-temp-allocator-size-background-worker=32768"
+    "memorysetup-temp-allocator-size-job-worker=262144"
+    "memorysetup-temp-allocator-size-preload-manager=33554432"
+    "memorysetup-remapper-allocator-initial-capacity=32768"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-bucket-allocator-granularity=16"
+    "memorysetup-bucket-allocator-bucket-count=8"
+    "memorysetup-bucket-allocator-block-size=33554432"
+    "memorysetup-bucket-allocator-block-count=8"
+    "memorysetup-main-allocator-block-size=16777216"
+    "memorysetup-thread-allocator-block-size=16777216"
+    "memorysetup-gfx-main-allocator-block-size=16777216"
+    "memorysetup-gfx-thread-allocator-block-size=16777216"
+    "memorysetup-cache-allocator-block-size=4194304"
+    "memorysetup-typetree-allocator-block-size=2097152"
+    "memorysetup-profiler-bucket-allocator-granularity=16"
+    "memorysetup-profiler-bucket-allocator-bucket-count=8"
+    "memorysetup-profiler-bucket-allocator-block-size=33554432"
+    "memorysetup-profiler-bucket-allocator-block-count=8"
+    "memorysetup-profiler-allocator-block-size=16777216"
+    "memorysetup-profiler-editor-allocator-block-size=1048576"
+    "memorysetup-temp-allocator-size-main=16777216"
+    "memorysetup-job-temp-allocator-block-size=2097152"
+    "memorysetup-job-temp-allocator-block-size-background=1048576"
+    "memorysetup-job-temp-allocator-reduction-small-platforms=262144"
+    "memorysetup-temp-allocator-size-cloud-worker=32768"
+Player connection [9124]  Target information:
+
+Player connection [9124]  * "[IP] 172.28.30.167 [Port] 55504 [Flags] 2 [Guid] 1059144520 [EditorId] 1059144520 [Version] 1048832 [Id] WindowsEditor(7,Srikarsan) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+
+Player connection [9124] Host joined multi-casting on [225.0.0.222:54997]...
+Player connection [9124] Host joined alternative multi-casting on [225.0.0.222:34997]...
+Input System module state changed to: Initialized.
+[Physics::Module] Initialized fallback backend.
+[Physics::Module] Id: 0xdecafbad
+[Package Manager] Connected to IPC stream "Upm-20256" after 0.7 seconds.
+[Licensing::Client] Successfully resolved entitlement details
+Library Redirect Path: Library/
+[Physics::Module] Selected backend.
+[Physics::Module] Name: PhysX
+[Physics::Module] Id: 0xf2b8ea05
+[Physics::Module] SDK Version: 4.1.2
+[Physics::Module] Integration Version: 1.0.0
+[Physics::Module] Threading Mode: Multi-Threaded
+Refreshing native plugins compatible for Editor in 0.55 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Initialize engine version: 6000.3.25f1 (e1dba0a9aba4)
+[Subsystems] Discovering subsystems at path C:/Program Files/Unity/Hub/Editor/6000.3.25f1/Editor/Data/Resources/UnitySubsystems
+[Subsystems] Discovering subsystems at path C:/Users/Admin/Desktop/Game/3D-Tactical-Shooter/Assets
+GfxDevice: creating device client; kGfxThreadingModeNonThreaded
+d3d12: failed to query info queue interface (0x80004002).
+Direct3D:
+    Version:         Direct3D 12 [level 12.1]
+    Renderer:        Intel(R) UHD Graphics (ID=0xa7a9)
+    Vendor:          Intel
+    VRAM:            3942 MB
+    App VRAM Budget: 3548 MB
+    Driver:          32.0.101.7076
+    Unified Memory Architecture
+    Cache Coherent UMA
+Initialize mono
+Mono path[0] = 'C:/Program Files/Unity/Hub/Editor/6000.3.25f1/Editor/Data/Managed'
+Mono path[1] = 'C:/Program Files/Unity/Hub/Editor/6000.3.25f1/Editor/Data/MonoBleedingEdge/lib/mono/unityjit-win32'
+Mono config path = 'C:/Program Files/Unity/Hub/Editor/6000.3.25f1/Editor/Data/MonoBleedingEdge/etc'
+Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56256
+Using cacheserver namespaces - metadata:defaultmetadata, artifacts:defaultartifacts
+Using cacheserver namespaces - metadata:defaultmetadata, artifacts:defaultartifacts
+ImportWorker Server TCP listen port: 0
+AcceleratorClientConnectionCallback - disconnected - :0
+Begin MonoManager ReloadAssembly
+Registering precompiled unity dll's ...
+Register platform support module: C:/Program Files/Unity/Hub/Editor/6000.3.25f1/Editor/Data/PlaybackEngines/WindowsStandaloneSupport/UnityEditor.WindowsStandalone.Extensions.dll
+Registered in 0.004297 seconds.
+- Loaded All Assemblies, in  1.193 seconds
+Native extension for WindowsStandalone target not found
+Package Manager log level set to [2]
+ScheduleIndexationOnStartup MainProcess:False IndexOnStartup:True
+Mono: successfully reloaded assembly
+- Finished resetting the current domain, in  1.264 seconds
+Domain Reload Profiling: 2452ms
+	BeginReloadAssembly (471ms)
+		ExecutionOrderSort (0ms)
+		DisableScriptedObjects (0ms)
+		BackupInstance (0ms)
+		ReleaseScriptingObjects (0ms)
+		CreateAndSetChildDomain (21ms)
+	RebuildCommonClasses (102ms)
+	RebuildNativeTypeToScriptingClass (32ms)
+	initialDomainReloadingComplete (126ms)
+	LoadAllAssembliesAndSetupDomain (455ms)
+		LoadAssemblies (447ms)
+		RebuildTransferFunctionScriptingTraits (0ms)
+		AnalyzeDomain (448ms)
+			TypeCache.Refresh (444ms)
+				TypeCache.ScanAssembly (392ms)
+			BuildScriptInfoCaches (0ms)
+			ResolveRequiredComponents (1ms)
+	FinalizeReload (1266ms)
+		ReleaseScriptCaches (0ms)
+		RebuildScriptCaches (0ms)
+		SetupLoadedEditorAssemblies (1143ms)
+			LogAssemblyErrors (0ms)
+			InitializePlatformSupportModulesInManaged (152ms)
+			SetLoadedEditorAssemblies (15ms)
+			BeforeProcessingInitializeOnLoad (264ms)
+			ProcessInitializeOnLoadAttributes (388ms)
+			ProcessInitializeOnLoadMethodAttributes (323ms)
+			AfterProcessingInitializeOnLoad (0ms)
+			EditorAssembliesLoaded (0ms)
+		ExecutionOrderSort2 (0ms)
+		AwakeInstancesAfterBackupRestoration (0ms)
+[Licensing::Client] Successfully resolved entitlement details
+Application.AssetDatabase Initial Refresh Start
+[Package Manager] Restoring resolved packages state from cache
+[Licensing::Client] Successfully resolved entitlement details
+[Package Manager] Registered 58 packages:
+  Packages from [https://packages.unity.com]:
+    com.unity.ai.navigation@2.0.14 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.ai.navigation@134dd6a3b97b)
+    com.unity.collab-proxy@2.13.6 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.collab-proxy@4628d2ba6ea4)
+    com.unity.device-simulator.devices@1.0.1 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.device-simulator.devices@2af643ceec84)
+    com.unity.ide.rider@3.0.40 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.ide.rider@e4950c6d131b)
+    com.unity.ide.visualstudio@2.0.26 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.ide.visualstudio@a99d56dec63f)
+    com.unity.inputsystem@1.20.0 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.inputsystem@7a4e1a2a8194)
+    com.unity.timeline@1.8.13 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.timeline@3a22918286f5)
+    com.unity.visualscripting@1.9.12 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.visualscripting@4edfcc09512f)
+    com.unity.searcher@4.9.5 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.searcher@a463122f2c00)
+    com.unity.burst@1.8.30 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.burst@2f3d916873ea)
+    com.unity.mathematics@1.3.3 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.mathematics@19a9377c4ffa)
+    com.unity.collections@2.6.8 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.collections@84e8eb3fc12e)
+    com.unity.nuget.mono-cecil@1.11.6 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.nuget.mono-cecil@ecb9724e46ff)
+    com.unity.test-framework.performance@3.5.0 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.test-framework.performance@8b56083ec0f0)
+  Built-in packages:
+    com.unity.multiplayer.center@1.0.1 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.multiplayer.center@f01f4ba8d00a)
+    com.unity.render-pipelines.universal@17.3.0 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.render-pipelines.universal@a0dd9d2bd983)
+    com.unity.test-framework@1.6.0 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.test-framework@bd7f943e9647)
+    com.unity.ugui@2.0.0 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.ugui@f3ea87521141)
+    com.unity.modules.accessibility@1.0.0 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.modules.accessibility)
+    com.unity.modules.adaptiveperformance@1.0.0 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.modules.adaptiveperformance)
+    com.unity.modules.ai@1.0.0 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.modules.ai)
+    com.unity.modules.androidjni@1.0.0 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.modules.androidjni)
+    com.unity.modules.animation@1.0.0 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.modules.animation)
+    com.unity.modules.assetbundle@1.0.0 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.modules.assetbundle)
+    com.unity.modules.audio@1.0.0 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.modules.audio)
+    com.unity.modules.cloth@1.0.0 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.modules.cloth)
+    com.unity.modules.director@1.0.0 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.modules.director)
+    com.unity.modules.imageconversion@1.0.0 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.modules.imageconversion)
+    com.unity.modules.imgui@1.0.0 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.modules.imgui)
+    com.unity.modules.jsonserialize@1.0.0 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.modules.jsonserialize)
+    com.unity.modules.particlesystem@1.0.0 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.modules.particlesystem)
+    com.unity.modules.physics@1.0.0 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.modules.physics)
+    com.unity.modules.physics2d@1.0.0 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.modules.physics2d)
+    com.unity.modules.screencapture@1.0.0 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.modules.screencapture)
+    com.unity.modules.terrain@1.0.0 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.modules.terrain)
+    com.unity.modules.terrainphysics@1.0.0 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.modules.terrainphysics)
+    com.unity.modules.tilemap@1.0.0 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.modules.tilemap)
+    com.unity.modules.ui@1.0.0 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.modules.ui)
+    com.unity.modules.uielements@1.0.0 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.modules.uielements)
+    com.unity.modules.umbra@1.0.0 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.modules.umbra)
+    com.unity.modules.unityanalytics@1.0.0 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.modules.unityanalytics)
+    com.unity.modules.unitywebrequest@1.0.0 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.modules.unitywebrequest)
+    com.unity.modules.unitywebrequestassetbundle@1.0.0 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.modules.unitywebrequestassetbundle)
+    com.unity.modules.unitywebrequestaudio@1.0.0 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.modules.unitywebrequestaudio)
+    com.unity.modules.unitywebrequesttexture@1.0.0 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.modules.unitywebrequesttexture)
+    com.unity.modules.unitywebrequestwww@1.0.0 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.modules.unitywebrequestwww)
+    com.unity.modules.vectorgraphics@1.0.0 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.modules.vectorgraphics)
+    com.unity.modules.vehicles@1.0.0 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.modules.vehicles)
+    com.unity.modules.video@1.0.0 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.modules.video)
+    com.unity.modules.vr@1.0.0 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.modules.vr)
+    com.unity.modules.wind@1.0.0 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.modules.wind)
+    com.unity.modules.xr@1.0.0 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.modules.xr)
+    com.unity.modules.subsystems@1.0.0 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.modules.subsystems)
+    com.unity.modules.hierarchycore@1.0.0 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.modules.hierarchycore)
+    com.unity.ext.nunit@2.0.5 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.ext.nunit@d8c07649098d)
+    com.unity.render-pipelines.core@17.3.0 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.render-pipelines.core@3f80e92e91c2)
+    com.unity.shadergraph@17.3.0 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.shadergraph@2fa139ee8b62)
+    com.unity.render-pipelines.universal-config@17.0.3 (location: C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Library\PackageCache\com.unity.render-pipelines.universal-config@8dc1aab4af1d)
+[Subsystems] No new subsystems found in resolved package list.
+[Package Manager] Done registering packages in 0.07 seconds
+[ScriptCompilation] Requested script compilation because: Assetdatabase observed changes in script compilation related files
+Starting: C:\Program Files\Unity\Hub\Editor\6000.3.25f1\Editor\Data\Tools\BuildPipeline\bee_backend.exe --ipc --defer-dag-verification --dagfile="Library/Bee/1900b0aE.dag" --continue-on-failure --profile="Library/Bee/backend1.traceevents" ScriptAssemblies
+WorkingDir: C:/Users/Admin/Desktop/Game/3D-Tactical-Shooter
+DisplayProgressbar: Compiling Scripts
+ExitCode: 4 Duration: 1s517ms
+Rebuilding DAG because FileSignature timestamp changed: Library/Bee/1900b0aE-inputdata.json
+[587/879    0s] ILPP-Configuration Library/ilpp-configuration.nevergeneratedoutput
+*** Tundra requires additional run (0.99 seconds), 1 items updated, 582 evaluated
+Starting: C:\Program Files\Unity\Hub\Editor\6000.3.25f1\Editor\Data\netcorerun\netcorerun.exe "C:\Program Files\Unity\Hub\Editor\6000.3.25f1\Editor\Data\Tools\BuildPipeline\ScriptCompilationBuildProgram.exe" "Library/Bee/1900b0aE.dag.json" "Library/Bee/1900b0aE-inputdata.json" "Library\Bee\buildprogram0.traceevents"
+WorkingDir: C:/Users/Admin/Desktop/Game/3D-Tactical-Shooter
+ExitCode: 0 Duration: 2s84ms
+Starting: C:\Program Files\Unity\Hub\Editor\6000.3.25f1\Editor\Data\Tools\BuildPipeline\bee_backend.exe --ipc --defer-dag-verification --dagfile="Library/Bee/1900b0aE.dag" --continue-on-failure --dagfilejson="Library\Bee\1900b0aE.dag.json" --profile="Library/Bee/backend2.traceevents" ScriptAssemblies
+WorkingDir: C:/Users/Admin/Desktop/Game/3D-Tactical-Shooter
+ExitCode: 0 Duration: 11s
+Finished compiling graph: 882 nodes, 16025 flattened edges (13301 ToBuild, 136 ToUse), maximum node priority 930
+[691/879    0s] ILPP-Configuration Library/ilpp-configuration.nevergeneratedoutput
+[875/879    4s] Csc Library/Bee/artifacts/1900b0aE.dag/Assembly-CSharp-Editor.dll (+2 others)
+Assets\_Project\Scripts\Environment\Editor\ConfigureEnvironmentMaterials.cs(252,18): warning CS0219: The variable 'sceneOpened' is assigned but its value is never used
+[876/879    4s] ILPostProcess Library/Bee/artifacts/1900b0aE.dag/post-processed/Assembly-CSharp-Editor.dll (+pdb)
+Processing assembly Library/Bee/artifacts/1900b0aE.dag/Assembly-CSharp-Editor.dll, with 137 defines and 335 references
+
+processors: Unity.Jobs.CodeGen.JobsILPostProcessor, zzzUnity.Burst.CodeGen.BurstILPostProcessor
+
+running Unity.Jobs.CodeGen.JobsILPostProcessor
+
+running zzzUnity.Burst.CodeGen.BurstILPostProcessor
+[877/879    0s] CopyFiles Library/ScriptAssemblies/Assembly-CSharp-Editor.pdb
+[878/879    0s] CopyFiles Library/ScriptAssemblies/Assembly-CSharp-Editor.dll
+*** Tundra build success (11.58 seconds), 5 items updated, 879 evaluated
+Assets\_Project\Scripts\Environment\Editor\ConfigureEnvironmentMaterials.cs(252,18): warning CS0219: The variable 'sceneOpened' is assigned but its value is never used
+AssetDatabase: script compilation time: 17.257985s
+Begin MonoManager ReloadAssembly
+- Loaded All Assemblies, in  3.458 seconds
+Refreshing native plugins compatible for Editor in 13.70 ms, found 4 plugins.
+Native extension for WindowsStandalone target not found
+Refreshing native plugins compatible for Editor in 9.73 ms, found 4 plugins.
+ScheduleIndexationOnStartup MainProcess:True IndexOnStartup:True
+Mono: successfully reloaded assembly
+- Finished resetting the current domain, in  8.728 seconds
+Domain Reload Profiling: 12178ms
+	BeginReloadAssembly (765ms)
+		ExecutionOrderSort (0ms)
+		DisableScriptedObjects (74ms)
+		BackupInstance (0ms)
+		ReleaseScriptingObjects (0ms)
+		CreateAndSetChildDomain (228ms)
+	RebuildCommonClasses (102ms)
+	RebuildNativeTypeToScriptingClass (35ms)
+	initialDomainReloadingComplete (78ms)
+	LoadAllAssembliesAndSetupDomain (2469ms)
+		LoadAssemblies (2023ms)
+		RebuildTransferFunctionScriptingTraits (0ms)
+		AnalyzeDomain (788ms)
+			TypeCache.Refresh (511ms)
+				TypeCache.ScanAssembly (481ms)
+			BuildScriptInfoCaches (220ms)
+			ResolveRequiredComponents (40ms)
+	FinalizeReload (8729ms)
+		ReleaseScriptCaches (0ms)
+		RebuildScriptCaches (0ms)
+		SetupLoadedEditorAssemblies (7772ms)
+			LogAssemblyErrors (0ms)
+			InitializePlatformSupportModulesInManaged (53ms)
+			SetLoadedEditorAssemblies (17ms)
+			BeforeProcessingInitializeOnLoad (558ms)
+			ProcessInitializeOnLoadAttributes (6755ms)
+			ProcessInitializeOnLoadMethodAttributes (361ms)
+			AfterProcessingInitializeOnLoad (26ms)
+			EditorAssembliesLoaded (2ms)
+		ExecutionOrderSort2 (0ms)
+		AwakeInstancesAfterBackupRestoration (96ms)
+Start importing Packages/com.unity.render-pipelines.core/Tests/Editor/UnifiedRayTracing/TraceRays.urtshader using Guid(1142bbad8b9e8c44c83a9775ff120d37) (ScriptedImporter)Launched and connected shader compiler UnityShaderCompiler.exe after 0.06 seconds
+
+Compiling Ray Tracing Shader "TraceRays.urtshader", keywords = <no keywords>
+    finished in 0.04 seconds. Local cache hits 1, remote cache hits 0, compiled 0 platform variants
+ -> (artifact id: '5553b18b7c8112bb9ccf89122cb67ade') in 0.6853355 seconds
+Start importing Packages/com.unity.render-pipelines.universal/Runtime/RendererFeatures/SurfaceCacheGI/SurfaceCacheCore/RisEstimation.urtshader using Guid(713f6141bd66a134383b787f2eaa7c11) (ScriptedImporter)
+Compiling Ray Tracing Shader "RisEstimation.urtshader", keywords = <no keywords>
+    finished in 0.00 seconds. Local cache hits 1, remote cache hits 0, compiled 0 platform variants
+ -> (artifact id: 'f3e1c77ba19ceee35f0267b5d0e51b7e') in 0.0685597 seconds
+Start importing Packages/com.unity.render-pipelines.core/Editor/Lighting/ProbeVolume/RenderingLayerMask/TraceRenderingLayerMask.urtshader using Guid(94a070d33e408384bafc1dea4a565df9) (ScriptedImporter)
+Compiling Ray Tracing Shader "TraceRenderingLayerMask.urtshader", keywords = <no keywords>
+    finished in 0.00 seconds. Local cache hits 1, remote cache hits 0, compiled 0 platform variants
+ -> (artifact id: '00bbb221d1e27c0f9443856a5487c0b3') in 0.0569442 seconds
+Start importing Packages/com.unity.render-pipelines.universal/Runtime/RendererFeatures/SurfaceCacheGI/SurfaceCacheCore/UniformEstimation.urtshader using Guid(94a39d12848d8d64ca962a72b74e7c50) (ScriptedImporter)
+Compiling Ray Tracing Shader "UniformEstimation.urtshader", keywords = <no keywords>
+    finished in 0.00 seconds. Local cache hits 1, remote cache hits 0, compiled 0 platform variants
+ -> (artifact id: '196b48d16add00849a1cec00bdd2d24f') in 0.041692 seconds
+Start importing Packages/com.unity.render-pipelines.core/Tests/Editor/UnifiedRayTracing/TraceTransparentRays.urtshader using Guid(6513c3b892e933c4f8d00c19d5c47532) (ScriptedImporter)
+Compiling Ray Tracing Shader "TraceTransparentRays.urtshader", keywords = <no keywords>
+    finished in 0.00 seconds. Local cache hits 1, remote cache hits 0, compiled 0 platform variants
+ -> (artifact id: '54b3dc491ce57cafb618490eab295fc7') in 0.0219753 seconds
+Start importing Packages/com.unity.render-pipelines.core/Editor/Lighting/ProbeVolume/DynamicGI/DynamicGISkyOcclusion.urtshader using Guid(5a2a534753fbdb44e96c3c78b5a6999d) (ScriptedImporter)
+Compiling Ray Tracing Shader "DynamicGISkyOcclusion.urtshader", keywords = <no keywords>
+    finished in 0.00 seconds. Local cache hits 1, remote cache hits 0, compiled 0 platform variants
+ -> (artifact id: '85aff15bdeaa166b3ec75f6e9791ba7e') in 0.0388492 seconds
+Start importing Packages/com.unity.render-pipelines.core/Tests/Editor/UnifiedRayTracing/TraceRaysAndFetchAttributes.urtshader using Guid(fbc59f55df2416344b008dc23753cae2) (ScriptedImporter)
+Compiling Ray Tracing Shader "TraceRaysAndFetchAttributes.urtshader", keywords = <no keywords>
+    finished in 0.00 seconds. Local cache hits 1, remote cache hits 0, compiled 0 platform variants
+ -> (artifact id: 'bb9357e14210f19acbd00034a5eda908') in 0.0327005 seconds
+Start importing Packages/com.unity.render-pipelines.universal/Runtime/RendererFeatures/SurfaceCacheGI/SurfaceCacheCore/RestirCandidateTemporal.urtshader using Guid(ad3a9f9982f8c4f4a839a78955e78458) (ScriptedImporter)
+Compiling Ray Tracing Shader "RestirCandidateTemporal.urtshader", keywords = <no keywords>
+    finished in 0.00 seconds. Local cache hits 1, remote cache hits 0, compiled 0 platform variants
+ -> (artifact id: '2a77cd8c49e7ad2366be5bb7e4a8b440') in 0.0812888 seconds
+Start importing Packages/com.unity.render-pipelines.core/Editor/Lighting/ProbeVolume/VirtualOffset/TraceVirtualOffset.urtshader using Guid(ff2cbab5da58bf04d82c5f34037ed123) (ScriptedImporter)
+Compiling Ray Tracing Shader "TraceVirtualOffset.urtshader", keywords = <no keywords>
+    finished in 0.00 seconds. Local cache hits 1, remote cache hits 0, compiled 0 platform variants
+ -> (artifact id: '1e33304e9d405c62e9503b03959361c1') in 0.053443 seconds
+Refreshing native plugins compatible for Editor in 6.87 ms, found 4 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=55efdab223b0dce4e9974427af4d8c6b): Total: 33.876 seconds - Initiated by InitialRefreshV2(ForceSynchronousImport)
+	Summary:
+		Imports: total=9 (actual=9, local cache=0, cache server=0)
+		Asset DB Process Time: managed=41 ms, native=11390 ms
+		Asset DB Callback time: managed=1139 ms, native=422 ms
+		Scripting: domain reloads=1, domain reload time=3459 ms, compile time=17263 ms, other=157 ms
+		Project Asset Count: scripts=1384, non-scripts=2626
+		Asset File Changes: new=0, changed=1, moved=0, deleted=0
+		Scan Filter Count: 0
+	InvokeCustomDependenciesCallbacks: 0.003ms
+	InvokePackagesCallback: 82.391ms
+	ApplyChangesToAssetFolders: 2.010ms
+	Scan: 453.359ms
+	OnSourceAssetsModified: 1.771ms
+	CategorizeAssetsWithTransientArtifact: 183.307ms
+	ProcessAssetsWithTransientArtifactChanges: 277.913ms
+	CategorizeAssets: 158.194ms
+	ImportOutOfDateAssets: 9880.697ms (-8499.112ms without children)
+		ImportManagerImport: 1104.330ms (13.181ms without children)
+			ImportInProcess: 1089.657ms
+			UpdateCategorizedAssets: 1.491ms
+		CompileScripts: 17263.467ms
+		ReloadNativeAssets: 0.100ms
+		UnloadImportedAssets: 2.484ms
+		ReloadImportedAssets: 5.659ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 2.163ms
+		InitializingProgressBar: 0.022ms
+		PostProcessAllAssetNotificationsAddChangedAssets: 0.002ms
+		OnDemandSchedulerStart: 1.584ms
+	PostProcessAllAssets: 1467.983ms
+	Hotreload: 17.808ms
+	GatherAllCurrentPrimaryArtifactRevisions: 0.005ms
+	UnloadStreamsBegin: 6.219ms
+	PersistCurrentRevisions: 0.955ms
+	UnloadStreamsEnd: 0.004ms
+	GenerateScriptTypeHashes: 9.170ms
+	Untracked: 21343.557ms
+
+Application.AssetDatabase Initial Refresh End
+Scanning for USB devices : 2.388ms
+Initializing Unity extensions:
+[MODES] ModeService[none].Initialize
+[MODES] ModeService[none].LoadModes
+[MODES] Loading mode Default (0) for mode-current-id-3D-Tactical-Shooter
+Unloading 25 Unused Serialized files (Serialized files now loaded: 0)
+Unloading 6719 unused Assets / (4.6 MB). Loaded Objects now: 7551.
+Memory consumption went from 216.1 MB to 211.5 MB.
+Total: 37.947000 ms (FindLiveObjects: 3.915600 ms CreateObjectMapping: 2.554700 ms MarkObjects: 22.671100 ms  DeleteObjects: 8.800200 ms)
+
+[ConfigureSrikarsanCharacter] Setting up Srikarsan materials and character...
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+TacticalShooter.EditorTools.ConfigureSrikarsanCharacter:SetupCharacterAndCapture () (at Assets/_Project/Scripts/Environment/Editor/ConfigureSrikarsanCharacter.cs:21)
+
+(Filename: Assets/_Project/Scripts/Environment/Editor/ConfigureSrikarsanCharacter.cs Line: 21)
+
+Asset Pipeline Refresh (id=2eb003ea834134043ba1c275c37d4e4e): Total: 0.151 seconds - Initiated by RefreshV2(NoUpdateAssetOptions)
+Start importing ProjectSettings/EditorBuildSettings.asset using Guid(0000000000000000b000000000000000) (LibraryAssetImporter) -> (artifact id: '872ff2c5a08ffc2295c94e4af712a39b') in 0.0226427 seconds
+Start importing Assets/_Project/Art/Materials/M_Srikarsan_Shoes.mat using Guid(30a7ca57c4d8bb049aea1ffb3cda49a7) (NativeFormatImporter) -> (artifact id: 'a20fe905c49fd3377bb3025824200cb8') in 0.0149738 seconds
+Start importing Assets/_Project/Art/Materials/M_Srikarsan_Sole.mat using Guid(4021a7e250a94bc49b394e630057ba38) (NativeFormatImporter) -> (artifact id: 'fd04f5be974047f0e4dec8e8af2232c9') in 0.0095323 seconds
+Start importing Assets/_Project/Art/Materials/M_Srikarsan_Watch.mat using Guid(e1c7d49afb9850e4f8318ae1ae00b356) (NativeFormatImporter) -> (artifact id: 'e9f7d12c4d3a35ab14a0d5a75e2525ef') in 0.0109994 seconds
+Start importing Assets/_Project/Art/Materials/M_Srikarsan_Shirt.mat using Guid(634eba5b05ebe9948953e03e5cd22d18) (NativeFormatImporter) -> (artifact id: '3b68e4f2a3e34881c2e042b6902355e0') in 0.0121601 seconds
+Start importing Assets/_Project/Art/Materials/M_Srikarsan_Hair.mat using Guid(0635bc6e99a59714d8f0f703c95ca460) (NativeFormatImporter) -> (artifact id: 'a4df48d74b3cbbfd1bd63df2d1d82f90') in 0.0090344 seconds
+Start importing Assets/_Project/Art/Materials/M_Srikarsan_Belt.mat using Guid(b6e10555800a7ae42b09fe795df2a053) (NativeFormatImporter) -> (artifact id: '7a8d93e5058ec405e958d37e0eb854e8') in 0.0074116 seconds
+Start importing Assets/_Project/Art/Materials/M_Srikarsan_Jeans.mat using Guid(7b5fd9084926fa64594cc4d2775446f1) (NativeFormatImporter) -> (artifact id: '5e6126706f7aa147184f58d8ad5fe3bd') in 0.0085594 seconds
+Start importing Assets/_Project/Art/Materials/M_Srikarsan_Face.mat using Guid(7c8f86d5beb2a6545b8c90bce9276e4a) (NativeFormatImporter) -> (artifact id: '9101c2af9e49a6db18ebfebf0e6ea3d6') in 0.0100326 seconds
+Start importing Assets/_Project/Art/Materials/M_Srikarsan_Skin.mat using Guid(fe98dc8f1a65f3f49b795d09804014cc) (NativeFormatImporter) -> (artifact id: '7156ac40f1bc3e1dc1331ef25ba965a4') in 0.0067361 seconds
+Refreshing native plugins compatible for Editor in 8.47 ms, found 4 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=be190923b7ab7304e9fd19f716f2715c): Total: 0.357 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+	Summary:
+		Imports: total=10 (actual=10, local cache=0, cache server=0)
+		Asset DB Process Time: managed=7 ms, native=289 ms
+		Asset DB Callback time: managed=42 ms, native=18 ms
+		Scripting: domain reloads=0, domain reload time=0 ms, compile time=0 ms, other=0 ms
+		Project Asset Count: scripts=1384, non-scripts=2626
+		Asset File Changes: new=0, changed=4, moved=0, deleted=0
+		Scan Filter Count: 14
+	InvokeCustomDependenciesCallbacks: 0.001ms
+	InvokePackagesCallback: 0.002ms
+	ApplyChangesToAssetFolders: 0.282ms
+	Scan: 67.110ms
+	OnSourceAssetsModified: 4.265ms
+	CategorizeAssetsWithTransientArtifact: 0.082ms
+	ProcessAssetsWithTransientArtifactChanges: 0.213ms
+	CategorizeAssets: 66.598ms
+	ImportOutOfDateAssets: 151.653ms (0.785ms without children)
+		ImportManagerImport: 144.181ms (9.147ms without children)
+			ImportInProcess: 134.814ms
+			UpdateCategorizedAssets: 0.219ms
+		ReloadNativeAssets: 0.153ms
+		UnloadImportedAssets: 0.655ms
+		ReloadImportedAssets: 0.003ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 1.850ms
+		InitializingProgressBar: 0.017ms
+		PostProcessAllAssetNotificationsAddChangedAssets: 0.003ms
+		OnDemandSchedulerStart: 4.007ms
+	PostProcessAllAssets: 45.821ms
+	Hotreload: 10.230ms
+	GatherAllCurrentPrimaryArtifactRevisions: 0.470ms
+	UnloadStreamsBegin: 0.172ms
+	PersistCurrentRevisions: 0.638ms
+	UnloadStreamsEnd: 0.789ms
+	Untracked: 8.392ms
+
+Opening scene 'Assets/_Project/Scenes/Main/Main.unity'
+Unloading 20 Unused Serialized files (Serialized files now loaded: 0)
+Loaded scene 'Assets/_Project/Scenes/Main/Main.unity'
+	Deserialize:            115.083 ms
+	Integration:            1292.949 ms
+	Integration of assets:  21.729 ms
+	Thread Wait Time:       -21.561 ms
+	Total Operation Time:   1408.200 ms
+Unloading 45 unused Assets / (9.3 KB). Loaded Objects now: 8981.
+Memory consumption went from 193.9 MB to 193.9 MB.
+Total: 18.516700 ms (FindLiveObjects: 1.725800 ms CreateObjectMapping: 0.685600 ms MarkObjects: 15.735500 ms  DeleteObjects: 0.365200 ms)
+
+[ConfigureSrikarsanCharacter] Deleted TargetDummy_CombatTest from scene.
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+TacticalShooter.EditorTools.ConfigureSrikarsanCharacter:SetupCharacterAndCapture () (at Assets/_Project/Scripts/Environment/Editor/ConfigureSrikarsanCharacter.cs:74)
+
+(Filename: Assets/_Project/Scripts/Environment/Editor/ConfigureSrikarsanCharacter.cs Line: 74)
+
+[ConfigureSrikarsanCharacter] Saved screenshot to: Assets/_Project/Art/SourceArt/Srikarsan_Game_Portrait.png
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+TacticalShooter.EditorTools.ConfigureSrikarsanCharacter:CaptureCameraView (UnityEngine.Camera,string,int,int) (at Assets/_Project/Scripts/Environment/Editor/ConfigureSrikarsanCharacter.cs:267)
+TacticalShooter.EditorTools.ConfigureSrikarsanCharacter:SetupCharacterAndCapture () (at Assets/_Project/Scripts/Environment/Editor/ConfigureSrikarsanCharacter.cs:121)
+
+(Filename: Assets/_Project/Scripts/Environment/Editor/ConfigureSrikarsanCharacter.cs Line: 267)
+
+[ConfigureSrikarsanCharacter] Saved screenshot to: Assets/_Project/Art/SourceArt/Srikarsan_Game_ThirdPerson.png
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+TacticalShooter.EditorTools.ConfigureSrikarsanCharacter:CaptureCameraView (UnityEngine.Camera,string,int,int) (at Assets/_Project/Scripts/Environment/Editor/ConfigureSrikarsanCharacter.cs:267)
+TacticalShooter.EditorTools.ConfigureSrikarsanCharacter:SetupCharacterAndCapture () (at Assets/_Project/Scripts/Environment/Editor/ConfigureSrikarsanCharacter.cs:126)
+
+(Filename: Assets/_Project/Scripts/Environment/Editor/ConfigureSrikarsanCharacter.cs Line: 267)
+
+Start importing Assets/_Project/Art/Materials/M_Srikarsan_Hair.mat using Guid(0635bc6e99a59714d8f0f703c95ca460) (NativeFormatImporter) -> (artifact id: 'c92f1d3897dedc326ecce22025a3a5a7') in 0.0121124 seconds
+Start importing Assets/_Project/Art/Materials/M_Srikarsan_Belt.mat using Guid(b6e10555800a7ae42b09fe795df2a053) (NativeFormatImporter) -> (artifact id: '8b018abc607a24d4e68ef85ba98b01d1') in 0.0086113 seconds
+Start importing Assets/_Project/Art/Materials/M_Srikarsan_Skin.mat using Guid(fe98dc8f1a65f3f49b795d09804014cc) (NativeFormatImporter) -> (artifact id: '710fcebe09ca6d932cc6d12354b3e763') in 0.0065612 seconds
+Refreshing native plugins compatible for Editor in 8.29 ms, found 4 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=5ce54abfc3452a541b45c80a1c47bf08): Total: 0.181 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+Start importing Assets/_Project/Scenes/Main/Main.unity using Guid(8b272984c42606a40824ff174982e3a5) (DefaultImporter) -> (artifact id: '04fd136c9b1b9413e58d8258a6b6865f') in 0.0038943 seconds
+Refreshing native plugins compatible for Editor in 6.98 ms, found 4 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Asset Pipeline Refresh (id=e739958a7fd4d644595f061ec53ac0f0): Total: 0.106 seconds - Initiated by StopAssetImportingV2(NoUpdateAssetOptions)
+[ConfigureSrikarsanCharacter] Successfully configured Srikarsan and captured screenshots!
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+TacticalShooter.EditorTools.ConfigureSrikarsanCharacter:SetupCharacterAndCapture () (at Assets/_Project/Scripts/Environment/Editor/ConfigureSrikarsanCharacter.cs:140)
+
+(Filename: Assets/_Project/Scripts/Environment/Editor/ConfigureSrikarsanCharacter.cs Line: 140)
+
+Batchmode quit successfully invoked - shutting down!
+[Physics::Module] Cleanup current backend.
+[Physics::Module] Id: 0xf2b8ea05
+Input System module state changed to: ShutdownInProgress.
+Input System polling thread exited.
+Input System module state changed to: Shutdown.
+[Licensing::IpcConnector] LicenseClient-Admin-notifications channel disconnected successfully.
+[Licensing::IpcConnector] LicenseClient-Admin channel disconnected successfully.
+AcceleratorClientConnectionCallback - disconnected - :0
+Cleanup mono
+Exiting batchmode successfully now!
+Exiting without the bug reporter. Application will terminate with return code 0

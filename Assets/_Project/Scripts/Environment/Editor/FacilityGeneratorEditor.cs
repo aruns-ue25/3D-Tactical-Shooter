@@ -4,7 +4,7 @@ using UnityEngine;
 namespace TacticalShooter.Environment
 {
     [CustomEditor(typeof(FacilityGenerator))]
-    public class FacilityGeneratorEditor : Editor
+    public class FacilityGeneratorEditor : UnityEditor.Editor
     {
         public override void OnInspectorGUI()
         {

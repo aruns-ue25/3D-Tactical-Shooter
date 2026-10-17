@@ -11,9 +11,9 @@ namespace TacticalShooter.Systems.Combat
     public class HitscanWeapon : MonoBehaviour, IWeapon
     {
         [Header("Weapon Tuning")]
-        [SerializeField] private float damagePerShot = 25f;
+        [SerializeField] private float damagePerShot = 45f;
         [SerializeField] private float maxRange = 100f;
-        [SerializeField] private float fireRate = 4f; // Shots per second (4 = 0.25s cooldown)
+        [SerializeField] private float fireRate = 5f; // Shots per second (0.20s cooldown)
 
         [Header("Targeting")]
         [SerializeField] private LayerMask hitLayers = ~0;

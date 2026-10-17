@@ -13,8 +13,8 @@ namespace TacticalShooter.Systems.Combat
         [SerializeField] private float maxHealth = 100f;
 
         [Header("Runtime State")]
-        [SerializeField] private float currentHealth;
-        [SerializeField] private bool isDefeated;
+        [SerializeField] private float currentHealth = 100f;
+        [SerializeField] private bool isDefeated = false;
 
         public float CurrentHealth => currentHealth;
         public float MaxHealth => maxHealth;
@@ -28,8 +28,10 @@ namespace TacticalShooter.Systems.Combat
 
         private void Awake()
         {
-            currentHealth = maxHealth;
-            isDefeated = false;
+            if (currentHealth <= 0f && !isDefeated)
+            {
+                currentHealth = maxHealth;
+            }
         }
 
         public void TakeDamage(DamageInfo damageInfo)
@@ -57,6 +59,24 @@ namespace TacticalShooter.Systems.Combat
         {
             currentHealth = maxHealth;
             isDefeated = false;
+            OnHealthChanged?.Invoke(currentHealth, maxHealth);
+        }
+
+        /// <summary>
+        /// Configures maximum health and optionally heals to maximum.
+        /// </summary>
+        public void SetMaxHealth(float max, bool healToFull = true)
+        {
+            maxHealth = Mathf.Max(1f, max);
+            if (healToFull)
+            {
+                currentHealth = maxHealth;
+                isDefeated = false;
+            }
+            else
+            {
+                currentHealth = Mathf.Min(currentHealth, maxHealth);
+            }
             OnHealthChanged?.Invoke(currentHealth, maxHealth);
         }
     }

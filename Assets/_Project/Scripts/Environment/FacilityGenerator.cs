@@ -194,11 +194,11 @@ namespace TacticalShooter.Environment
             // East Flank Passage: Col 9..10, Row 3..6
             // North Extraction LZ: Col 5..6, Row 9
 
-            // 1. Perimeter Walls (Boundary around 60m x 50m)
-            BuildWallSegment(wallsRoot, new Vector3(facilityWidth * 0.5f, wallHeight * 0.5f, 0), new Vector3(facilityWidth, wallHeight, wallThickness)); // South
-            BuildWallSegment(wallsRoot, new Vector3(facilityWidth * 0.5f, wallHeight * 0.5f, facilityDepth), new Vector3(facilityWidth, wallHeight, wallThickness)); // North
-            BuildWallSegment(wallsRoot, new Vector3(0, wallHeight * 0.5f, facilityDepth * 0.5f), new Vector3(wallThickness, wallHeight, facilityDepth)); // West
-            BuildWallSegment(wallsRoot, new Vector3(facilityWidth, wallHeight * 0.5f, facilityDepth * 0.5f), new Vector3(wallThickness, wallHeight, facilityDepth)); // East
+            // 1. Perimeter Walls with Exterior Exits & Entrances
+            BuildWallWithDoorwayHorizontal(wallsRoot, doorwaysRoot, startX: 0f, endX: facilityWidth, z: 0f, doorCenterX: 30f, customWidth: 6.0f); // South Grand Entrance
+            BuildWallWithDoorwayHorizontal(wallsRoot, doorwaysRoot, startX: 0f, endX: facilityWidth, z: facilityDepth, doorCenterX: 30f, customWidth: 6.0f); // North Rear LZ Exit
+            BuildWallWithDoorway(wallsRoot, doorwaysRoot, start: new Vector3(0f, 0f, 0f), end: new Vector3(0f, 0f, facilityDepth), doorCenterZ: 22.5f, customWidth: 3.5f); // West Service Exit
+            BuildWallWithDoorway(wallsRoot, doorwaysRoot, start: new Vector3(facilityWidth, 0f, 0f), end: new Vector3(facilityWidth, 0f, facilityDepth), doorCenterZ: 25.0f, customWidth: 3.5f); // East Loading Dock Exit
 
             // 2. Interior Division Walls with Doorway Choke Points
 
@@ -294,13 +294,14 @@ namespace TacticalShooter.Environment
             wall.isStatic = true;
         }
 
-        private void BuildWallWithDoorway(Transform wallsRoot, Transform doorwaysRoot, Vector3 start, Vector3 end, float doorCenterZ)
+        private void BuildWallWithDoorway(Transform wallsRoot, Transform doorwaysRoot, Vector3 start, Vector3 end, float doorCenterZ, float customWidth = -1f)
         {
+            float width = customWidth > 0f ? customWidth : doorWidth;
             float x = start.x;
             float zMin = Mathf.Min(start.z, end.z);
             float zMax = Mathf.Max(start.z, end.z);
-            float doorMinZ = doorCenterZ - (doorWidth * 0.5f);
-            float doorMaxZ = doorCenterZ + (doorWidth * 0.5f);
+            float doorMinZ = doorCenterZ - (width * 0.5f);
+            float doorMaxZ = doorCenterZ + (width * 0.5f);
 
             // Wall Segment 1 (start to door)
             if (doorMinZ > zMin)
@@ -324,12 +325,13 @@ namespace TacticalShooter.Environment
             doorFrame.transform.position = new Vector3(x, wallHeight * 0.5f, doorCenterZ);
         }
 
-        private void BuildWallWithDoorwayHorizontal(Transform wallsRoot, Transform doorwaysRoot, float startX, float endX, float z, float doorCenterX)
+        private void BuildWallWithDoorwayHorizontal(Transform wallsRoot, Transform doorwaysRoot, float startX, float endX, float z, float doorCenterX, float customWidth = -1f)
         {
+            float width = customWidth > 0f ? customWidth : doorWidth;
             float xMin = Mathf.Min(startX, endX);
             float xMax = Mathf.Max(startX, endX);
-            float doorMinX = doorCenterX - (doorWidth * 0.5f);
-            float doorMaxX = doorCenterX + (doorWidth * 0.5f);
+            float doorMinX = doorCenterX - (width * 0.5f);
+            float doorMaxX = doorCenterX + (width * 0.5f);
 
             // Segment 1
             if (doorMinX > xMin)
@@ -375,7 +377,7 @@ namespace TacticalShooter.Environment
             GameObject crate1 = GameObject.CreatePrimitive(PrimitiveType.Cube);
             crate1.name = "Crate_Obstacle_1";
             crate1.transform.SetParent(parent, false);
-            crate1.transform.position = basePosition + new Vector3(0, 0.5f, 0);
+            crate1.transform.position = new Vector3(basePosition.x, 0.5f, basePosition.z);
             crate1.transform.localScale = crateSize;
             if (wallMaterial != null) crate1.GetComponent<Renderer>().sharedMaterial = wallMaterial;
             crate1.isStatic = true;
@@ -383,7 +385,7 @@ namespace TacticalShooter.Environment
             GameObject crate2 = GameObject.CreatePrimitive(PrimitiveType.Cube);
             crate2.name = "Crate_Obstacle_2";
             crate2.transform.SetParent(parent, false);
-            crate2.transform.position = basePosition + new Vector3(1.1f, 0.5f, 0);
+            crate2.transform.position = new Vector3(basePosition.x + 1.1f, 0.5f, basePosition.z);
             crate2.transform.localScale = crateSize;
             if (wallMaterial != null) crate2.GetComponent<Renderer>().sharedMaterial = wallMaterial;
             crate2.isStatic = true;
@@ -391,7 +393,7 @@ namespace TacticalShooter.Environment
             GameObject crate3 = GameObject.CreatePrimitive(PrimitiveType.Cube);
             crate3.name = "Crate_Obstacle_Top";
             crate3.transform.SetParent(parent, false);
-            crate3.transform.position = basePosition + new Vector3(0.55f, 1.5f, 0);
+            crate3.transform.position = new Vector3(basePosition.x + 0.55f, 1.5f, basePosition.z);
             crate3.transform.localScale = crateSize;
             if (wallMaterial != null) crate3.GetComponent<Renderer>().sharedMaterial = wallMaterial;
             crate3.isStatic = true;

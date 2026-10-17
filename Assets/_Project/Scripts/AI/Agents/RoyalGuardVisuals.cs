@@ -54,7 +54,7 @@ namespace TacticalShooter.AI.Agents
         // References
         private CharacterController characterController;
         private AIMovement movement;
-        private TacticalSoldierAgent agent;
+        private AIAgentBase agent;
         private AIPerception perception;
 
         // Material caching for hit flashes
@@ -90,19 +90,20 @@ namespace TacticalShooter.AI.Agents
         {
             characterController = GetComponent<CharacterController>();
             movement = GetComponent<AIMovement>();
-            agent = GetComponent<TacticalSoldierAgent>();
+            agent = GetComponent<AIAgentBase>();
             perception = GetComponent<AIPerception>();
 
             BuildVisualHierarchy();
         }
 
-        private void BuildVisualHierarchy()
+        public void BuildVisualHierarchy()
         {
             // Remove any legacy placeholder visual
             Transform oldVis = transform.Find("Visuals");
             if (oldVis != null)
             {
-                Destroy(oldVis.gameObject);
+                if (Application.isPlaying) Destroy(oldVis.gameObject);
+                else DestroyImmediate(oldVis.gameObject);
             }
 
             GameObject rootObj = new GameObject("Visuals");

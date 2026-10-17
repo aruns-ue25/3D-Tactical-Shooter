@@ -44,38 +44,18 @@ namespace TacticalShooter.Systems.Combat
                 if (player != null) playerTransform = player.transform;
             }
 
-            if (dummyTransform == null)
+            if (dummyTransform == null || dummyHealth == null || !dummyHealth.IsAlive)
             {
-                GameObject dummy = GameObject.Find("TargetDummy_CombatTest");
-                if (dummy == null)
+                // Find an active enemy agent in the scene to track on radar
+                var enemies = FindObjectsByType<TacticalShooter.AI.Core.AIAgentBase>(FindObjectsSortMode.None);
+                foreach (var enemy in enemies)
                 {
-                    dummy = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-                    dummy.name = "TargetDummy_CombatTest";
-                    dummy.transform.position = new Vector3(30f, 1f, 7.5f);
-                    dummy.transform.localScale = new Vector3(0.85f, 1.0f, 0.85f);
-                    dummy.AddComponent<Health>();
-                    dummy.AddComponent<TargetDummy>();
-
-                    Renderer rend = dummy.GetComponent<Renderer>();
-                    if (rend != null)
+                    if (enemy != null && enemy.IsAlive)
                     {
-                        Shader shader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard") ?? Shader.Find("Diffuse");
-                        Material mat = new Material(shader);
-                        mat.color = new Color(0.95f, 0.25f, 0.15f);
-                        rend.material = mat;
+                        dummyTransform = enemy.transform;
+                        dummyHealth = enemy.GetComponent<Health>();
+                        break;
                     }
-                }
-
-                dummyTransform = dummy.transform;
-                targetDummy = dummy.GetComponent<TargetDummy>();
-                dummyHealth = dummy.GetComponent<Health>();
-            }
-            else if (dummyHealth == null)
-            {
-                dummyHealth = dummyTransform.GetComponent<Health>();
-                if (dummyHealth == null && targetDummy != null)
-                {
-                    dummyHealth = targetDummy.HealthComponent;
                 }
             }
 

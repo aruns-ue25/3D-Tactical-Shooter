@@ -53,6 +53,7 @@ namespace TacticalShooter.Systems.Combat
             {
                 playerHealth = gameObject.AddComponent<Health>();
             }
+            playerHealth.SetMaxHealth(250f);
             playerHealth.OnDamaged += HandlePlayerDamaged;
 
             // Ensure Player has a real CapsuleCollider for incoming bullet raycasts and spherecasts
@@ -190,6 +191,30 @@ namespace TacticalShooter.Systems.Combat
             vmRoot.transform.localRotation = Quaternion.identity;
 
             WeaponViewModel vm = vmRoot.AddComponent<WeaponViewModel>();
+
+#if UNITY_EDITOR
+            GameObject customPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/_Project/Prefabs/Weapons/PlayerRifle_Custom.prefab");
+            if (customPrefab != null)
+            {
+                GameObject visual = UnityEngine.Object.Instantiate(customPrefab, vmRoot.transform);
+                visual.name = "PlayerRifle_Visual";
+                visual.transform.localPosition = Vector3.zero;
+                visual.transform.localRotation = Quaternion.identity;
+                visual.transform.localScale = Vector3.one;
+
+                foreach (var col in visual.GetComponentsInChildren<Collider>())
+                {
+                    Destroy(col);
+                }
+
+                Transform customMuzzle = visual.transform.Find("MuzzlePoint");
+                if (customMuzzle != null && weapon != null)
+                {
+                    weapon.MuzzlePoint = customMuzzle;
+                }
+                return vm;
+            }
+#endif
 
             Color darkMetal = new Color(0.18f, 0.2f, 0.22f);
             Color darkAccents = new Color(0.1f, 0.1f, 0.1f);

@@ -18,7 +18,7 @@ namespace TacticalShooter.AI.Core
     {
         [Header("Agent Identity")]
         [SerializeField] protected AgentRole agentRole = AgentRole.Guard;
-        [SerializeField] protected string agentDisplayName = "Tactical Agent";
+        [SerializeField] protected string agentDisplayName = "Tactical Soldier (Guard)";
 
         [Header("State Tracking")]
         [SerializeField] protected AgentState currentState = AgentState.Idle;
@@ -32,10 +32,44 @@ namespace TacticalShooter.AI.Core
         public string DisplayName => agentDisplayName;
         public AgentState CurrentState => currentState;
         public AlertLevel CurrentAlertness => alertLevel;
-        public Health HealthComponent => health;
-        public AIPerception Perception => perception;
-        public AIMovement Movement => movement;
-        public bool IsAlive => health != null && health.IsAlive;
+        public Health HealthComponent
+        {
+            get
+            {
+                if (health == null)
+                {
+                    health = GetComponent<Health>();
+                    if (health != null)
+                    {
+                        health.OnDamaged -= HandleDamaged;
+                        health.OnDamaged += HandleDamaged;
+                        health.OnDefeated -= HandleDefeated;
+                        health.OnDefeated += HandleDefeated;
+                    }
+                }
+                return health;
+            }
+        }
+
+        public AIPerception Perception
+        {
+            get
+            {
+                if (perception == null) perception = GetComponent<AIPerception>();
+                return perception;
+            }
+        }
+
+        public AIMovement Movement
+        {
+            get
+            {
+                if (movement == null) movement = GetComponent<AIMovement>();
+                return movement;
+            }
+        }
+
+        public bool IsAlive => HealthComponent != null && HealthComponent.IsAlive;
 
         public event Action<AgentState, AgentState> OnStateChanged;
         public event Action<AlertLevel> OnAlertnessChanged;

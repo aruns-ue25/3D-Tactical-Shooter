@@ -123,9 +123,33 @@ namespace TacticalShooter.Systems.Combat
             }
             else if (fallbackToProceduralShapes)
             {
-                bodyRoot = BuildLuffyCharacterBody();
+                bodyRoot = BuildSrikarsanCharacterBody();
             }
 
+            if (bodyRoot != null)
+            {
+                bool shouldBeActive = combatController != null ? combatController.IsThirdPerson : true;
+                bodyRoot.SetActive(shouldBeActive);
+            }
+
+            if (pelvis != null) defaultPelvisPos = pelvis.localPosition;
+            if (upperBody != null) defaultUpperBodyLocalPos = upperBody.localPosition;
+        }
+
+        public void RebuildCharacterBody()
+        {
+            if (bodyRoot != null)
+            {
+                DestroyImmediate(bodyRoot);
+                bodyRoot = null;
+            }
+            Transform found = transform.Find("CharacterBody");
+            if (found != null)
+            {
+                DestroyImmediate(found.gameObject);
+            }
+
+            bodyRoot = BuildSrikarsanCharacterBody();
             if (bodyRoot != null)
             {
                 bool shouldBeActive = combatController != null ? combatController.IsThirdPerson : true;
@@ -141,166 +165,154 @@ namespace TacticalShooter.Systems.Combat
             UpdateVisibility();
         }
 
-        private GameObject BuildLuffyCharacterBody()
+        private GameObject BuildSrikarsanCharacterBody()
         {
             GameObject root = new GameObject("CharacterBody");
             root.transform.SetParent(transform, false);
             root.transform.localPosition = new Vector3(0f, -0.10f, 0f);
             root.transform.localRotation = Quaternion.identity;
 
-            // Anime Luffy Color Palette
-            Color luffySkin = new Color(1f, 0.88f, 0.78f);        // Anime skin tone
-            Color luffyScar = new Color(0.82f, 0.58f, 0.50f);      // Chest X-scar and eye scar
-            Color strawYellow = new Color(0.92f, 0.80f, 0.44f);    // Straw Hat yellow
-            Color ribbonRed = new Color(0.85f, 0.15f, 0.15f);      // Hat ribbon red
-            Color vestRed = new Color(0.92f, 0.18f, 0.18f);        // Open red cardigan
-            Color sashYellow = new Color(0.98f, 0.85f, 0.22f);     // Waist sash yellow
-            Color denimBlue = new Color(0.15f, 0.52f, 0.90f);      // Denim shorts blue
-            Color fleeceWhite = new Color(0.95f, 0.95f, 0.98f);    // Fluffy shorts cuffs
-            Color sandalStraw = new Color(0.82f, 0.72f, 0.58f);    // Straw sandal base
-            Color sandalStrap = new Color(0.15f, 0.15f, 0.15f);    // Sandal straps
-            Color hairBlack = new Color(0.12f, 0.12f, 0.14f);      // Messy black hair
+            // Load Materials
+            Material shirtMat = LoadMaterial("Assets/_Project/Art/Materials/M_Srikarsan_Shirt.mat");
+            Material faceMat  = LoadMaterial("Assets/_Project/Art/Materials/M_Srikarsan_Face.mat");
+            Material jeansMat = LoadMaterial("Assets/_Project/Art/Materials/M_Srikarsan_Jeans.mat");
+            Material skinMat  = LoadMaterial("Assets/_Project/Art/Materials/M_Srikarsan_Skin.mat");
+            Material hairMat  = LoadMaterial("Assets/_Project/Art/Materials/M_Srikarsan_Hair.mat");
+            Material shoesMat = LoadMaterial("Assets/_Project/Art/Materials/M_Srikarsan_Shoes.mat");
+            Material soleMat  = LoadMaterial("Assets/_Project/Art/Materials/M_Srikarsan_Sole.mat");
+            Material watchMat = LoadMaterial("Assets/_Project/Art/Materials/M_Srikarsan_Watch.mat");
+            Material beltMat  = LoadMaterial("Assets/_Project/Art/Materials/M_Srikarsan_Belt.mat");
 
-            // 1. Pelvis / Hips (Root of lower body)
+            Color skinCol = new Color(0.70f, 0.52f, 0.40f);
+            Color hairCol = new Color(0.08f, 0.08f, 0.09f);
+            Color shirtCol = new Color(0.28f, 0.36f, 0.25f);
+            Color jeansCol = new Color(0.35f, 0.44f, 0.54f);
+            Color beltCol = new Color(0.24f, 0.16f, 0.10f);
+            Color silverCol = new Color(0.85f, 0.85f, 0.88f);
+            Color shoeCol = new Color(0.18f, 0.20f, 0.22f);
+            Color soleCol = new Color(0.92f, 0.92f, 0.94f);
+            Color bandRed = new Color(0.85f, 0.18f, 0.15f);
+
+            // 1. Pelvis / Hips & Blue Denim Jeans Waist
             GameObject pelvisObj = new GameObject("Pelvis");
             pelvisObj.transform.SetParent(root.transform, false);
-            pelvisObj.transform.localPosition = new Vector3(0f, 0.82f, 0f);
+            pelvisObj.transform.localPosition = new Vector3(0f, 0.84f, 0f);
             pelvis = pelvisObj.transform;
 
-            // Denim Shorts (Waist) - Smooth curved pelvis
-            CreatePart(PrimitiveType.Capsule, "Shorts_Pelvis", pelvisObj.transform, Vector3.zero, new Vector3(0.28f, 0.16f, 0.22f), denimBlue, Quaternion.Euler(0f, 0f, 90f));
+            CreatePart(PrimitiveType.Capsule, "Jeans_Pelvis", pelvisObj.transform, Vector3.zero, new Vector3(0.30f, 0.18f, 0.22f), jeansMat, jeansCol, Quaternion.Euler(0f, 0f, 90f));
+            CreatePart(PrimitiveType.Capsule, "Belt_Leather", pelvisObj.transform, new Vector3(0f, 0.06f, 0f), new Vector3(0.31f, 0.06f, 0.23f), beltMat, beltCol, Quaternion.Euler(0f, 0f, 90f));
+            CreatePart(PrimitiveType.Cube, "Belt_Buckle", pelvisObj.transform, new Vector3(0f, 0.06f, 0.12f), new Vector3(0.06f, 0.04f, 0.02f), watchMat, silverCol);
 
-            // Yellow Sash wrapped around waist
-            CreatePart(PrimitiveType.Capsule, "YellowSash_Belt", pelvisObj.transform, new Vector3(0f, 0.05f, 0f), new Vector3(0.31f, 0.10f, 0.24f), sashYellow, Quaternion.Euler(0f, 0f, 90f));
-            CreatePart(PrimitiveType.Sphere, "SashKnot", pelvisObj.transform, new Vector3(0.16f, 0.04f, 0.05f), new Vector3(0.09f, 0.09f, 0.09f), sashYellow);
-
-            // Trailing sash cloth (sways during locomotion)
-            GameObject sashTailObj = new GameObject("SashTail");
-            sashTailObj.transform.SetParent(pelvisObj.transform, false);
-            sashTailObj.transform.localPosition = new Vector3(0.20f, -0.02f, 0.02f);
-            sashTail = sashTailObj.transform;
-            CreatePart(PrimitiveType.Capsule, "SashCloth", sashTailObj.transform, new Vector3(0f, -0.14f, 0f), new Vector3(0.06f, 0.26f, 0.08f), sashYellow, Quaternion.Euler(15f, 0f, 12f));
-
-            // 2. Left Leg (Hip -> Thigh -> Knee -> Shin -> Ankle -> Sandal)
+            // 2. Left Leg (Thigh -> Shin -> Casual Sneaker)
             GameObject thighLObj = new GameObject("Thigh_L");
             thighLObj.transform.SetParent(pelvisObj.transform, false);
             thighLObj.transform.localPosition = new Vector3(-0.11f, -0.06f, 0f);
             thighL = thighLObj.transform;
-
-            CreatePart(PrimitiveType.Capsule, "ShortsLeg_L", thighLObj.transform, new Vector3(0f, -0.09f, 0f), new Vector3(0.14f, 0.17f, 0.14f), denimBlue);
-            CreatePart(PrimitiveType.Sphere, "FluffyCuff_L", thighLObj.transform, new Vector3(0f, -0.21f, 0f), new Vector3(0.16f, 0.06f, 0.16f), fleeceWhite);
-            CreatePart(PrimitiveType.Capsule, "BareThigh_L", thighLObj.transform, new Vector3(0f, -0.26f, 0f), new Vector3(0.10f, 0.10f, 0.10f), luffySkin);
+            CreatePart(PrimitiveType.Capsule, "Jeans_Thigh_L", thighLObj.transform, new Vector3(0f, -0.15f, 0f), new Vector3(0.14f, 0.28f, 0.14f), jeansMat, jeansCol);
 
             GameObject shinLObj = new GameObject("Shin_L");
             shinLObj.transform.SetParent(thighLObj.transform, false);
             shinLObj.transform.localPosition = new Vector3(0f, -0.32f, 0f);
             shinL = shinLObj.transform;
-
-            CreatePart(PrimitiveType.Capsule, "BareCalf_L", shinLObj.transform, new Vector3(0f, -0.16f, 0f), new Vector3(0.09f, 0.22f, 0.09f), luffySkin);
+            CreatePart(PrimitiveType.Capsule, "Jeans_Shin_L", shinLObj.transform, new Vector3(0f, -0.16f, 0f), new Vector3(0.12f, 0.30f, 0.12f), jeansMat, jeansCol);
+            CreatePart(PrimitiveType.Cylinder, "Jeans_Cuff_L", shinLObj.transform, new Vector3(0f, -0.30f, 0f), new Vector3(0.13f, 0.03f, 0.13f), jeansMat, jeansCol);
 
             GameObject footLObj = new GameObject("Foot_L");
             footLObj.transform.SetParent(shinLObj.transform, false);
-            footLObj.transform.localPosition = new Vector3(0f, -0.32f, 0.04f);
+            footLObj.transform.localPosition = new Vector3(0f, -0.34f, 0.04f);
             footL = footLObj.transform;
+            CreatePart(PrimitiveType.Cube, "Shoe_Sole_L", footLObj.transform, new Vector3(0f, -0.02f, 0.02f), new Vector3(0.12f, 0.035f, 0.24f), soleMat, soleCol);
+            CreatePart(PrimitiveType.Cube, "Shoe_Upper_L", footLObj.transform, new Vector3(0f, 0.02f, 0.01f), new Vector3(0.11f, 0.065f, 0.21f), shoesMat, shoeCol);
+            CreatePart(PrimitiveType.Sphere, "Shoe_ToeCap_L", footLObj.transform, new Vector3(0f, 0f, 0.12f), new Vector3(0.10f, 0.045f, 0.06f), soleMat, soleCol);
 
-            CreatePart(PrimitiveType.Capsule, "SandalSole_L", footLObj.transform, Vector3.zero, new Vector3(0.11f, 0.035f, 0.21f), sandalStraw, Quaternion.Euler(0f, 0f, 90f));
-            CreatePart(PrimitiveType.Cube, "Strap_L1", footLObj.transform, new Vector3(0.02f, 0.02f, 0.01f), new Vector3(0.02f, 0.025f, 0.08f), sandalStrap, Quaternion.Euler(25f, -30f, 0f));
-            CreatePart(PrimitiveType.Cube, "Strap_L2", footLObj.transform, new Vector3(-0.02f, 0.02f, 0.01f), new Vector3(0.02f, 0.025f, 0.08f), sandalStrap, Quaternion.Euler(25f, 30f, 0f));
-
-            // 3. Right Leg (Hip -> Thigh -> Knee -> Shin -> Ankle -> Sandal)
+            // 3. Right Leg (Thigh -> Shin -> Casual Sneaker)
             GameObject thighRObj = new GameObject("Thigh_R");
             thighRObj.transform.SetParent(pelvisObj.transform, false);
             thighRObj.transform.localPosition = new Vector3(0.11f, -0.06f, 0f);
             thighR = thighRObj.transform;
-
-            CreatePart(PrimitiveType.Capsule, "ShortsLeg_R", thighRObj.transform, new Vector3(0f, -0.09f, 0f), new Vector3(0.14f, 0.17f, 0.14f), denimBlue);
-            CreatePart(PrimitiveType.Sphere, "FluffyCuff_R", thighRObj.transform, new Vector3(0f, -0.21f, 0f), new Vector3(0.16f, 0.06f, 0.16f), fleeceWhite);
-            CreatePart(PrimitiveType.Capsule, "BareThigh_R", thighRObj.transform, new Vector3(0f, -0.26f, 0f), new Vector3(0.10f, 0.10f, 0.10f), luffySkin);
+            CreatePart(PrimitiveType.Capsule, "Jeans_Thigh_R", thighRObj.transform, new Vector3(0f, -0.15f, 0f), new Vector3(0.14f, 0.28f, 0.14f), jeansMat, jeansCol);
 
             GameObject shinRObj = new GameObject("Shin_R");
             shinRObj.transform.SetParent(thighRObj.transform, false);
             shinRObj.transform.localPosition = new Vector3(0f, -0.32f, 0f);
             shinR = shinRObj.transform;
-
-            CreatePart(PrimitiveType.Capsule, "BareCalf_R", shinRObj.transform, new Vector3(0f, -0.16f, 0f), new Vector3(0.09f, 0.22f, 0.09f), luffySkin);
+            CreatePart(PrimitiveType.Capsule, "Jeans_Shin_R", shinRObj.transform, new Vector3(0f, -0.16f, 0f), new Vector3(0.12f, 0.30f, 0.12f), jeansMat, jeansCol);
+            CreatePart(PrimitiveType.Cylinder, "Jeans_Cuff_R", shinRObj.transform, new Vector3(0f, -0.30f, 0f), new Vector3(0.13f, 0.03f, 0.13f), jeansMat, jeansCol);
 
             GameObject footRObj = new GameObject("Foot_R");
             footRObj.transform.SetParent(shinRObj.transform, false);
-            footRObj.transform.localPosition = new Vector3(0f, -0.32f, 0.04f);
+            footRObj.transform.localPosition = new Vector3(0f, -0.34f, 0.04f);
             footR = footRObj.transform;
+            CreatePart(PrimitiveType.Cube, "Shoe_Sole_R", footRObj.transform, new Vector3(0f, -0.02f, 0.02f), new Vector3(0.12f, 0.035f, 0.24f), soleMat, soleCol);
+            CreatePart(PrimitiveType.Cube, "Shoe_Upper_R", footRObj.transform, new Vector3(0f, 0.02f, 0.01f), new Vector3(0.11f, 0.065f, 0.21f), shoesMat, shoeCol);
+            CreatePart(PrimitiveType.Sphere, "Shoe_ToeCap_R", footRObj.transform, new Vector3(0f, 0f, 0.12f), new Vector3(0.10f, 0.045f, 0.06f), soleMat, soleCol);
 
-            CreatePart(PrimitiveType.Capsule, "SandalSole_R", footRObj.transform, Vector3.zero, new Vector3(0.11f, 0.035f, 0.21f), sandalStraw, Quaternion.Euler(0f, 0f, 90f));
-            CreatePart(PrimitiveType.Cube, "Strap_R1", footRObj.transform, new Vector3(0.02f, 0.02f, 0.01f), new Vector3(0.02f, 0.025f, 0.08f), sandalStrap, Quaternion.Euler(25f, -30f, 0f));
-            CreatePart(PrimitiveType.Cube, "Strap_R2", footRObj.transform, new Vector3(-0.02f, 0.02f, 0.01f), new Vector3(0.02f, 0.025f, 0.08f), sandalStrap, Quaternion.Euler(25f, 30f, 0f));
-
-            // 4. Upper Body (Smooth muscular torso & Open Red Cardigan)
+            // 4. Upper Body - Olive Green T-Shirt with "TOKYO" print
             GameObject torsoObj = new GameObject("Torso");
             torsoObj.transform.SetParent(root.transform, false);
-            torsoObj.transform.localPosition = new Vector3(0f, 1.14f, 0f);
+            torsoObj.transform.localPosition = new Vector3(0f, 1.16f, 0f);
             upperBody = torsoObj.transform;
 
-            // Bare Muscular Chest / Core
-            CreatePart(PrimitiveType.Capsule, "Torso_Core", torsoObj.transform, Vector3.zero, new Vector3(0.28f, 0.22f, 0.22f), luffySkin);
-            CreatePart(PrimitiveType.Cube, "XScar_1", torsoObj.transform, new Vector3(0f, 0.06f, 0.105f), new Vector3(0.025f, 0.15f, 0.01f), luffyScar, Quaternion.Euler(0f, 0f, 35f));
-            CreatePart(PrimitiveType.Cube, "XScar_2", torsoObj.transform, new Vector3(0f, 0.06f, 0.105f), new Vector3(0.025f, 0.15f, 0.01f), luffyScar, Quaternion.Euler(0f, 0f, -35f));
+            // Torso shirt body with TOKYO print on front chest (upright)
+            CreatePart(PrimitiveType.Cube, "Torso_Shirt", torsoObj.transform, new Vector3(0f, 0.02f, 0f), new Vector3(0.33f, 0.38f, 0.21f), shirtMat, shirtCol, Quaternion.Euler(0f, 180f, 180f));
+            CreatePart(PrimitiveType.Cylinder, "Crewneck_Collar", torsoObj.transform, new Vector3(0f, 0.21f, 0f), new Vector3(0.16f, 0.025f, 0.16f), shirtMat, shirtCol);
 
-            // Open Red Cardigan (Curved vest hugging shoulders and torso)
-            CreatePart(PrimitiveType.Capsule, "Vest_Back", torsoObj.transform, new Vector3(0f, 0.02f, -0.04f), new Vector3(0.31f, 0.24f, 0.22f), vestRed);
-            CreatePart(PrimitiveType.Capsule, "Vest_FlapL", torsoObj.transform, new Vector3(-0.14f, 0f, 0.03f), new Vector3(0.07f, 0.22f, 0.16f), vestRed);
-            CreatePart(PrimitiveType.Capsule, "Vest_FlapR", torsoObj.transform, new Vector3(0.14f, 0f, 0.03f), new Vector3(0.07f, 0.22f, 0.16f), vestRed);
-            CreatePart(PrimitiveType.Capsule, "Vest_HemL", torsoObj.transform, new Vector3(-0.13f, -0.16f, 0.02f), new Vector3(0.08f, 0.12f, 0.14f), vestRed, Quaternion.Euler(10f, 0f, -12f));
-            CreatePart(PrimitiveType.Capsule, "Vest_HemR", torsoObj.transform, new Vector3(0.13f, -0.16f, 0.02f), new Vector3(0.08f, 0.12f, 0.14f), vestRed, Quaternion.Euler(10f, 0f, 12f));
-
-            // 5. Left Arm (Shoulder -> Upper Arm -> Elbow -> Forearm -> Wrist -> Hand Fist)
+            // 5. Left Arm with T-Shirt Sleeve, Skin, and Srikarsan's Wristwatch
             GameObject upperArmLObj = new GameObject("UpperArm_L");
             upperArmLObj.transform.SetParent(torsoObj.transform, false);
-            upperArmLObj.transform.localPosition = new Vector3(-0.20f, 0.10f, 0.02f);
+            upperArmLObj.transform.localPosition = new Vector3(-0.21f, 0.12f, 0.02f);
             upperArmLObj.transform.localRotation = defaultUpperArmLRot;
             upperArmL = upperArmLObj.transform;
 
-            CreatePart(PrimitiveType.Capsule, "Sleeve_L", upperArmLObj.transform, new Vector3(0f, -0.08f, 0f), new Vector3(0.11f, 0.14f, 0.11f), vestRed);
+            CreatePart(PrimitiveType.Capsule, "Shirt_Sleeve_L", upperArmLObj.transform, new Vector3(0f, -0.06f, 0f), new Vector3(0.125f, 0.14f, 0.125f), shirtMat, shirtCol);
+            CreatePart(PrimitiveType.Capsule, "BicepSkin_L", upperArmLObj.transform, new Vector3(0f, -0.13f, 0f), new Vector3(0.095f, 0.10f, 0.095f), skinMat, skinCol);
 
             GameObject forearmLObj = new GameObject("Forearm_L");
             forearmLObj.transform.SetParent(upperArmLObj.transform, false);
-            forearmLObj.transform.localPosition = new Vector3(0f, -0.18f, 0f);
+            forearmLObj.transform.localPosition = new Vector3(0f, -0.20f, 0f);
             forearmLObj.transform.localRotation = defaultForearmLRot;
             forearmL = forearmLObj.transform;
 
-            CreatePart(PrimitiveType.Capsule, "BareForearm_L", forearmLObj.transform, new Vector3(0f, -0.08f, 0f), new Vector3(0.08f, 0.16f, 0.08f), luffySkin);
+            CreatePart(PrimitiveType.Capsule, "ForearmSkin_L", forearmLObj.transform, new Vector3(0f, -0.09f, 0f), new Vector3(0.088f, 0.18f, 0.088f), skinMat, skinCol);
+
+            // Srikarsan's Wristwatch (Leather band + Silver Casing + White Dial)
+            CreatePart(PrimitiveType.Cylinder, "Watch_LeatherStrap", forearmLObj.transform, new Vector3(0f, -0.15f, 0f), new Vector3(0.095f, 0.035f, 0.095f), beltMat, beltCol);
+            CreatePart(PrimitiveType.Cylinder, "Watch_SilverCasing", forearmLObj.transform, new Vector3(-0.048f, -0.15f, 0f), new Vector3(0.025f, 0.015f, 0.025f), watchMat, silverCol, Quaternion.Euler(0f, 0f, 90f));
+            CreatePart(PrimitiveType.Cylinder, "Watch_Dial", forearmLObj.transform, new Vector3(-0.055f, -0.15f, 0f), new Vector3(0.020f, 0.005f, 0.020f), soleMat, soleCol, Quaternion.Euler(0f, 0f, 90f));
 
             GameObject handLObj = new GameObject("Hand_L");
             handLObj.transform.SetParent(forearmLObj.transform, false);
-            handLObj.transform.localPosition = new Vector3(0f, -0.16f, 0f);
+            handLObj.transform.localPosition = new Vector3(0f, -0.19f, 0f);
             handL = handLObj.transform;
+            CreatePart(PrimitiveType.Sphere, "HandSkin_L", handLObj.transform, Vector3.zero, new Vector3(0.085f, 0.09f, 0.085f), skinMat, skinCol);
 
-            CreatePart(PrimitiveType.Sphere, "Fist_L", handLObj.transform, Vector3.zero, new Vector3(0.085f, 0.085f, 0.085f), luffySkin);
-
-            // 6. Right Arm (Shoulder -> Upper Arm -> Elbow -> Forearm -> Wrist -> Hand holding Weapon)
+            // 6. Right Arm with T-Shirt Sleeve, Skin, Wristband, and Weapon
             GameObject upperArmRObj = new GameObject("UpperArm_R");
             upperArmRObj.transform.SetParent(torsoObj.transform, false);
-            upperArmRObj.transform.localPosition = new Vector3(0.20f, 0.10f, 0.02f);
+            upperArmRObj.transform.localPosition = new Vector3(0.21f, 0.12f, 0.02f);
             upperArmRObj.transform.localRotation = defaultUpperArmRRot;
             upperArmR = upperArmRObj.transform;
 
-            CreatePart(PrimitiveType.Capsule, "Sleeve_R", upperArmRObj.transform, new Vector3(0f, -0.08f, 0f), new Vector3(0.11f, 0.14f, 0.11f), vestRed);
+            CreatePart(PrimitiveType.Capsule, "Shirt_Sleeve_R", upperArmRObj.transform, new Vector3(0f, -0.06f, 0f), new Vector3(0.125f, 0.14f, 0.125f), shirtMat, shirtCol);
+            CreatePart(PrimitiveType.Capsule, "BicepSkin_R", upperArmRObj.transform, new Vector3(0f, -0.13f, 0f), new Vector3(0.095f, 0.10f, 0.095f), skinMat, skinCol);
 
             GameObject forearmRObj = new GameObject("Forearm_R");
             forearmRObj.transform.SetParent(upperArmRObj.transform, false);
-            forearmRObj.transform.localPosition = new Vector3(0f, -0.18f, 0f);
+            forearmRObj.transform.localPosition = new Vector3(0f, -0.20f, 0f);
             forearmRObj.transform.localRotation = defaultForearmRRot;
             forearmR = forearmRObj.transform;
 
-            CreatePart(PrimitiveType.Capsule, "BareForearm_R", forearmRObj.transform, new Vector3(0f, -0.08f, 0f), new Vector3(0.08f, 0.16f, 0.08f), luffySkin);
+            CreatePart(PrimitiveType.Capsule, "ForearmSkin_R", forearmRObj.transform, new Vector3(0f, -0.09f, 0f), new Vector3(0.088f, 0.18f, 0.088f), skinMat, skinCol);
+            CreatePart(PrimitiveType.Cylinder, "RightWrist_Band", forearmRObj.transform, new Vector3(0f, -0.15f, 0f), new Vector3(0.095f, 0.02f, 0.095f), null, bandRed);
 
             GameObject handRObj = new GameObject("Hand_R");
             handRObj.transform.SetParent(forearmRObj.transform, false);
-            handRObj.transform.localPosition = new Vector3(0f, -0.16f, 0f);
+            handRObj.transform.localPosition = new Vector3(0f, -0.19f, 0f);
             handRObj.transform.localRotation = defaultHandRRot;
             handR = handRObj.transform;
+            CreatePart(PrimitiveType.Sphere, "HandSkin_R", handRObj.transform, Vector3.zero, new Vector3(0.085f, 0.09f, 0.085f), skinMat, skinCol);
 
-            CreatePart(PrimitiveType.Sphere, "Fist_R", handRObj.transform, Vector3.zero, new Vector3(0.085f, 0.085f, 0.085f), luffySkin);
-
-            // 7. Third-Person Tactical Carbine parented directly to Right Hand
+            // 7. Tactical Rifle attached to Right Hand
             GameObject rifleObj = new GameObject("ThirdPersonRifle");
             rifleObj.transform.SetParent(handRObj.transform, false);
             rifleObj.transform.localPosition = new Vector3(0.03f, 0.02f, 0.12f);
@@ -308,48 +320,100 @@ namespace TacticalShooter.Systems.Combat
             thirdPersonRifle = rifleObj.transform;
 
             Color gunMetal = new Color(0.15f, 0.16f, 0.18f);
-            CreatePart(PrimitiveType.Capsule, "Rifle_Body", rifleObj.transform, Vector3.zero, new Vector3(0.05f, 0.16f, 0.06f), gunMetal, Quaternion.Euler(90f, 0f, 0f));
-            CreatePart(PrimitiveType.Cylinder, "Rifle_Barrel", rifleObj.transform, new Vector3(0f, 0.012f, 0.24f), new Vector3(0.02f, 0.11f, 0.02f), sandalStrap, Quaternion.Euler(90f, 0f, 0f));
-            CreatePart(PrimitiveType.Cube, "Rifle_Mag", rifleObj.transform, new Vector3(0f, -0.07f, 0.04f), new Vector3(0.035f, 0.10f, 0.06f), sandalStrap, Quaternion.Euler(15f, 0f, 0f));
+            Color gunDark  = new Color(0.09f, 0.09f, 0.10f);
+            CreatePart(PrimitiveType.Capsule, "Rifle_Body", rifleObj.transform, Vector3.zero, new Vector3(0.05f, 0.16f, 0.06f), null, gunMetal, Quaternion.Euler(90f, 0f, 0f));
+            CreatePart(PrimitiveType.Cylinder, "Rifle_Barrel", rifleObj.transform, new Vector3(0f, 0.012f, 0.24f), new Vector3(0.02f, 0.11f, 0.02f), null, gunDark, Quaternion.Euler(90f, 0f, 0f));
+            CreatePart(PrimitiveType.Cube, "Rifle_Mag", rifleObj.transform, new Vector3(0f, -0.07f, 0.04f), new Vector3(0.035f, 0.10f, 0.06f), null, gunDark, Quaternion.Euler(15f, 0f, 0f));
 
-            // Third-Person Muzzle Tip (where bullet tracers visually fire from)
             GameObject muzzleObj = new GameObject("ThirdPersonMuzzlePoint");
             muzzleObj.transform.SetParent(rifleObj.transform, false);
             muzzleObj.transform.localPosition = new Vector3(0f, 0.012f, 0.36f);
             thirdPersonMuzzle = muzzleObj.transform;
 
-            // 8. Head, Face, Organic Black Hair & Straw Hat (No blocky box eyes)
+            // 8. Head, Face & Stylish Pompadour Hair + Groomed Beard (Srikarsan)
             GameObject headObj = new GameObject("Head");
             headObj.transform.SetParent(torsoObj.transform, false);
-            headObj.transform.localPosition = new Vector3(0f, 0.34f, 0f);
+            headObj.transform.localPosition = new Vector3(0f, 0.36f, 0f);
 
-            CreatePart(PrimitiveType.Sphere, "Face", headObj.transform, Vector3.zero, new Vector3(0.24f, 0.25f, 0.23f), luffySkin);
+            // Neck
+            CreatePart(PrimitiveType.Cylinder, "Neck", headObj.transform, new Vector3(0f, -0.08f, 0f), new Vector3(0.09f, 0.08f, 0.09f), skinMat, skinCol);
 
-            // Smooth curved hair volume (seamlessly cupping the back of the head, NOT a block!)
-            CreatePart(PrimitiveType.Sphere, "HairCap", headObj.transform, new Vector3(0f, 0.03f, -0.02f), new Vector3(0.255f, 0.24f, 0.25f), hairBlack);
+            // Head skull base
+            CreatePart(PrimitiveType.Sphere, "Head_Skull", headObj.transform, Vector3.zero, new Vector3(0.22f, 0.24f, 0.22f), skinMat, skinCol);
 
-            // Anime Bangs & Spikes
-            CreatePart(PrimitiveType.Capsule, "Bang_L", headObj.transform, new Vector3(-0.06f, 0.07f, 0.11f), new Vector3(0.035f, 0.08f, 0.035f), hairBlack, Quaternion.Euler(30f, -15f, -25f));
-            CreatePart(PrimitiveType.Capsule, "Bang_C", headObj.transform, new Vector3(0f, 0.08f, 0.12f), new Vector3(0.04f, 0.09f, 0.04f), hairBlack, Quaternion.Euler(25f, 0f, 0f));
-            CreatePart(PrimitiveType.Capsule, "Bang_R", headObj.transform, new Vector3(0.06f, 0.07f, 0.11f), new Vector3(0.035f, 0.08f, 0.035f), hairBlack, Quaternion.Euler(30f, 15f, 25f));
+            // Eyes and Eyebrows
+            CreatePart(PrimitiveType.Sphere, "Eye_L", headObj.transform, new Vector3(-0.045f, 0.02f, 0.10f), new Vector3(0.026f, 0.026f, 0.018f), soleMat, Color.white);
+            CreatePart(PrimitiveType.Sphere, "Pupil_L", headObj.transform, new Vector3(-0.045f, 0.02f, 0.108f), new Vector3(0.014f, 0.014f, 0.01f), hairMat, hairCol);
+            CreatePart(PrimitiveType.Capsule, "Eyebrow_L", headObj.transform, new Vector3(-0.045f, 0.042f, 0.102f), new Vector3(0.040f, 0.010f, 0.012f), hairMat, hairCol, Quaternion.Euler(0f, 0f, 85f));
 
-            CreatePart(PrimitiveType.Capsule, "HairTuft_L", headObj.transform, new Vector3(-0.12f, 0.01f, 0.02f), new Vector3(0.035f, 0.10f, 0.035f), hairBlack, Quaternion.Euler(0f, 0f, 20f));
-            CreatePart(PrimitiveType.Capsule, "HairTuft_R", headObj.transform, new Vector3(0.12f, 0.01f, 0.02f), new Vector3(0.035f, 0.10f, 0.035f), hairBlack, Quaternion.Euler(0f, 0f, -20f));
+            CreatePart(PrimitiveType.Sphere, "Eye_R", headObj.transform, new Vector3(0.045f, 0.02f, 0.10f), new Vector3(0.026f, 0.026f, 0.018f), soleMat, Color.white);
+            CreatePart(PrimitiveType.Sphere, "Pupil_R", headObj.transform, new Vector3(0.045f, 0.02f, 0.108f), new Vector3(0.014f, 0.014f, 0.01f), hairMat, hairCol);
+            CreatePart(PrimitiveType.Capsule, "Eyebrow_R", headObj.transform, new Vector3(0.045f, 0.042f, 0.102f), new Vector3(0.040f, 0.010f, 0.012f), hairMat, hairCol, Quaternion.Euler(0f, 0f, -85f));
 
-            // Straw Hat (Mugiwara)
-            GameObject hatObj = new GameObject("StrawHat");
-            hatObj.transform.SetParent(headObj.transform, false);
-            hatObj.transform.localPosition = new Vector3(0f, 0.08f, -0.02f);
-            hatObj.transform.localRotation = Quaternion.Euler(-10f, 0f, 0f);
-            strawHatRoot = hatObj.transform;
+            // Nose
+            CreatePart(PrimitiveType.Capsule, "Nose_Bridge", headObj.transform, new Vector3(0f, 0.002f, 0.11f), new Vector3(0.022f, 0.045f, 0.022f), skinMat, skinCol);
 
-            CreatePart(PrimitiveType.Cylinder, "HatBrim", hatObj.transform, new Vector3(0f, 0.04f, 0f), new Vector3(0.48f, 0.012f, 0.50f), strawYellow);
-            CreatePart(PrimitiveType.Cylinder, "HatBand", hatObj.transform, new Vector3(0f, 0.075f, 0f), new Vector3(0.285f, 0.04f, 0.285f), ribbonRed);
-            CreatePart(PrimitiveType.Sphere, "HatCrown", hatObj.transform, new Vector3(0f, 0.095f, 0f), new Vector3(0.28f, 0.16f, 0.28f), strawYellow);
+            // Sculpted 3D Groomed Beard & Mustache along Jawline
+            CreatePart(PrimitiveType.Capsule, "Mustache_3D", headObj.transform, new Vector3(0f, -0.035f, 0.105f), new Vector3(0.075f, 0.016f, 0.020f), hairMat, hairCol, Quaternion.Euler(0f, 0f, 90f));
+            CreatePart(PrimitiveType.Sphere, "Beard_Chin", headObj.transform, new Vector3(0f, -0.075f, 0.075f), new Vector3(0.12f, 0.055f, 0.09f), hairMat, hairCol);
 
-            // Character body is active by default so player is visible immediately
+            // Srikarsan's Stylish Black Pompadour Hair
+            CreatePart(PrimitiveType.Sphere, "Hair_Back", headObj.transform, new Vector3(0f, 0.03f, -0.02f), new Vector3(0.23f, 0.22f, 0.23f), hairMat, hairCol);
+            CreatePart(PrimitiveType.Cube, "Hair_Pompadour_Top", headObj.transform, new Vector3(0f, 0.115f, 0.01f), new Vector3(0.17f, 0.05f, 0.17f), hairMat, hairCol);
+            CreatePart(PrimitiveType.Sphere, "Hair_Front_Quiff", headObj.transform, new Vector3(0f, 0.105f, 0.065f), new Vector3(0.14f, 0.045f, 0.065f), hairMat, hairCol);
+
+            // Ears
+            CreatePart(PrimitiveType.Sphere, "Ear_L", headObj.transform, new Vector3(-0.115f, -0.005f, 0f), new Vector3(0.025f, 0.045f, 0.025f), skinMat, skinCol);
+            CreatePart(PrimitiveType.Sphere, "Ear_R", headObj.transform, new Vector3(0.115f, -0.005f, 0f), new Vector3(0.025f, 0.045f, 0.025f), skinMat, skinCol);
+
             root.SetActive(true);
             return root;
+        }
+
+        private Material LoadMaterial(string path)
+        {
+#if UNITY_EDITOR
+            return UnityEditor.AssetDatabase.LoadAssetAtPath<Material>(path);
+#else
+            return null;
+#endif
+        }
+
+        private GameObject CreatePart(PrimitiveType type, string name, Transform parent, Vector3 localPos, Vector3 localScale, Material material, Color? color = null, Quaternion? localRot = null)
+        {
+            GameObject part = GameObject.CreatePrimitive(type);
+            part.name = name;
+            part.transform.SetParent(parent, false);
+            part.transform.localPosition = localPos;
+            part.transform.localScale = localScale;
+            if (localRot.HasValue) part.transform.localRotation = localRot.Value;
+
+            Collider col = part.GetComponent<Collider>();
+            if (col != null)
+            {
+                if (Application.isPlaying) Destroy(col);
+                else DestroyImmediate(col);
+            }
+
+            Renderer rend = part.GetComponent<Renderer>();
+            if (rend != null)
+            {
+                if (material != null)
+                {
+                    rend.sharedMaterial = material;
+                }
+                else
+                {
+                    Shader s = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
+                    Material m = new Material(s);
+                    Color c = color ?? Color.white;
+                    if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", c);
+                    m.color = c;
+                    rend.material = m;
+                }
+            }
+
+            return part;
         }
 
         private GameObject CreatePart(PrimitiveType type, string name, Transform parent, Vector3 localPos, Vector3 localScale, Color color, Quaternion? localRot = null)

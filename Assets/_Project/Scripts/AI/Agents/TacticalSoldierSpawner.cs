@@ -30,47 +30,109 @@ namespace TacticalShooter.AI.Agents
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void AutoBootstrapInScene()
         {
-            var existingGuard = FindFirstObjectByType<TacticalSoldierAgent>();
-            if (existingGuard == null)
-            {
-                var existingSpawner = FindFirstObjectByType<TacticalSoldierSpawner>();
-                if (existingSpawner == null)
-                {
-                    GameObject spawnerObj = new GameObject("TacticalSoldierSpawner_Auto");
-                    existingSpawner = spawnerObj.AddComponent<TacticalSoldierSpawner>();
-                }
-                existingSpawner.EnsureSoldierInScene();
-            }
+            EnsureAllSectorGuards();
         }
 
         private void Start()
         {
             if (autoSpawnOnStart)
             {
-                EnsureSoldierInScene();
+                EnsureAllSectorGuards();
             }
         }
 
         /// <summary>
-        /// Checks if a Tactical Soldier exists in the scene; if not, instantiates and configures one.
+        /// Ensures all tactical enemy guards exist across their designated sectors:
+        /// 1. Central Corridor Guard
+        /// 2. Laboratory Data Terminal Guard (circling the data collecting point)
+        /// 3. Staircase / Upstairs Approach Guard
         /// </summary>
-        public TacticalSoldierAgent EnsureSoldierInScene()
+        public static void EnsureAllSectorGuards()
         {
-            TacticalSoldierAgent existingSoldier = FindFirstObjectByType<TacticalSoldierAgent>();
-            if (existingSoldier != null)
+            GameObject aiRoot = GameObject.Find("AI_Agents");
+
+            // 1. Central Corridor Guard
+            if (GameObject.Find("TacticalSoldier_Guard") == null)
             {
-                return existingSoldier;
+                var guard = SpawnTacticalSoldier("TacticalSoldier_Guard", new Vector3(30f, 0.1f, 25f), new Vector3[]
+                {
+                    new Vector3(30f, 0.1f, 27.5f),
+                    new Vector3(34.5f, 0.1f, 27.5f),
+                    new Vector3(34.5f, 0.1f, 22.5f),
+                    new Vector3(30f, 0.1f, 22.5f)
+                }, 28f);
+                if (aiRoot != null && guard != null) guard.transform.SetParent(aiRoot.transform, true);
             }
 
-            return SpawnTacticalSoldier(guardPostPosition, patrolWaypoints, guardLeashRadius);
+            // 2. Laboratory Data Terminal Guard (circling the data collecting terminal)
+            if (GameObject.Find("TacticalSoldier_LabGuard") == null)
+            {
+                var labGuard = SpawnTacticalSoldier("TacticalSoldier_LabGuard", new Vector3(45f, 0.1f, 35f), new Vector3[]
+                {
+                    new Vector3(43f, 0.1f, 35f),
+                    new Vector3(47f, 0.1f, 35f),
+                    new Vector3(47f, 0.1f, 39.5f),
+                    new Vector3(43f, 0.1f, 39.5f)
+                }, 16f);
+                if (aiRoot != null && labGuard != null) labGuard.transform.SetParent(aiRoot.transform, true);
+            }
+
+            // 3. Staircase / Ground Approach Guard
+            if (GameObject.Find("TacticalSoldier_UpstairsGuard") == null)
+            {
+                var stairGuard = SpawnTacticalSoldier("TacticalSoldier_UpstairsGuard", new Vector3(30f, 0.1f, 26.5f), new Vector3[]
+                {
+                    new Vector3(28f, 0.1f, 26.5f),
+                    new Vector3(32f, 0.1f, 26.5f),
+                    new Vector3(30f, 0.1f, 28.5f)
+                }, 14f);
+                if (aiRoot != null && stairGuard != null) stairGuard.transform.SetParent(aiRoot.transform, true);
+            }
+
+            // 4. 2nd Floor Command Deck Guard (Guarding Upstairs Extraction Zone)
+            if (GameObject.Find("TacticalSoldier_2ndFloor_CommandGuard") == null)
+            {
+                var cmdGuard = SpawnTacticalSoldier("TacticalSoldier_2ndFloor_CommandGuard", new Vector3(30f, 3.2f, 46.5f), new Vector3[]
+                {
+                    new Vector3(26f, 3.2f, 46.5f),
+                    new Vector3(34f, 3.2f, 46.5f),
+                    new Vector3(34f, 3.2f, 48.5f),
+                    new Vector3(26f, 3.2f, 48.5f)
+                }, 18f);
+                if (aiRoot != null && cmdGuard != null) cmdGuard.transform.SetParent(aiRoot.transform, true);
+            }
+
+            // 5. 2nd Floor Mezzanine Guard (High Ground Overlooking Laboratory from 2nd Floor)
+            if (GameObject.Find("TacticalSoldier_2ndFloor_MezzanineGuard") == null)
+            {
+                var mezGuard = SpawnTacticalSoldier("TacticalSoldier_2ndFloor_MezzanineGuard", new Vector3(45f, 3.2f, 35f), new Vector3[]
+                {
+                    new Vector3(41f, 3.2f, 33f),
+                    new Vector3(48f, 3.2f, 33f),
+                    new Vector3(48f, 3.2f, 37f),
+                    new Vector3(41f, 3.2f, 37f)
+                }, 16f);
+                if (aiRoot != null && mezGuard != null) mezGuard.transform.SetParent(aiRoot.transform, true);
+            }
+        }
+
+        public TacticalSoldierAgent EnsureSoldierInScene()
+        {
+            EnsureAllSectorGuards();
+            return FindFirstObjectByType<TacticalSoldierAgent>();
+        }
+
+        public static TacticalSoldierAgent SpawnTacticalSoldier(Vector3 spawnPos, Vector3[] waypoints, float leashRadius)
+        {
+            return SpawnTacticalSoldier("TacticalSoldier_Guard", spawnPos, waypoints, leashRadius);
         }
 
         /// <summary>
         /// Procedurally instantiates a fully functional Tactical Soldier agent in the scene.
         /// </summary>
-        public static TacticalSoldierAgent SpawnTacticalSoldier(Vector3 spawnPos, Vector3[] waypoints, float leashRadius)
+        public static TacticalSoldierAgent SpawnTacticalSoldier(string soldierName, Vector3 spawnPos, Vector3[] waypoints, float leashRadius)
         {
-            GameObject soldierObj = new GameObject("TacticalSoldier_Guard");
+            GameObject soldierObj = new GameObject(soldierName);
             soldierObj.transform.position = spawnPos;
             soldierObj.transform.rotation = Quaternion.Euler(0f, 180f, 0f); // Face towards South Entrance
 
@@ -92,6 +154,10 @@ namespace TacticalShooter.AI.Agents
 
             // 5. Tactical Soldier Agent (Guard)
             TacticalSoldierAgent agent = soldierObj.AddComponent<TacticalSoldierAgent>();
+
+            // 6. 3D Character Visuals
+            RoyalGuardVisuals visuals = soldierObj.AddComponent<RoyalGuardVisuals>();
+            visuals.BuildVisualHierarchy();
 
             // Configure via reflection / serialized fields or helper init
             var postField = typeof(TacticalSoldierAgent).GetField("guardPostPosition", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);

@@ -33,8 +33,8 @@ namespace TacticalShooter.AI.Agents
         [SerializeField] private float attackRange = 22f;
         [SerializeField] private float fireRate = 0.15f; // Seconds per bullet in burst
         [SerializeField] private int burstCount = 3;
-        [SerializeField] private float burstCooldown = 1.2f;
-        [SerializeField] private float damagePerShot = 10f;
+        [SerializeField] private float burstCooldown = 2.2f;
+        [SerializeField] private float damagePerShot = 4f;
         [SerializeField] private float searchDuration = 6.0f;
 
         [Header("Agent Visuals & HUD")]

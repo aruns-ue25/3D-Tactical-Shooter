@@ -1,0 +1,393 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="25" result="Failed(Child)" total="25" passed="17" failed="8" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-10-15 06:43:28Z" end-time="2026-10-15 06:43:28Z" duration="0.3835377">
+  <test-suite type="TestSuite" id="1000" name="3D-Tactical-Shooter" fullname="3D-Tactical-Shooter" runstate="Runnable" testcasecount="25" result="Failed" site="Child" start-time="2026-10-15 06:43:28Z" end-time="2026-10-15 06:43:28Z" duration="0.383538" total="25" passed="17" failed="8" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="EditMode" />
+    </properties>
+    <failure>
+      <message><![CDATA[One or more child tests had errors]]></message>
+    </failure>
+    <test-suite type="Assembly" id="1029" name="Assembly-CSharp-Editor.dll" fullname="C:/Users/Admin/Desktop/Game/3D-Tactical-Shooter/Library/ScriptAssemblies/Assembly-CSharp-Editor.dll" runstate="Runnable" testcasecount="25" result="Failed" site="Child" start-time="2026-10-15 06:43:28Z" end-time="2026-10-15 06:43:28Z" duration="0.363439" total="25" passed="17" failed="8" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="10892" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="EditMode" />
+        <property name="EditorOnly" value="True" />
+      </properties>
+      <failure>
+        <message><![CDATA[One or more child tests had errors]]></message>
+      </failure>
+      <test-suite type="TestSuite" id="1030" name="TacticalShooter" fullname="TacticalShooter" runstate="Runnable" testcasecount="25" result="Failed" site="Child" start-time="2026-10-15 06:43:28Z" end-time="2026-10-15 06:43:28Z" duration="0.361503" total="25" passed="17" failed="8" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <failure>
+          <message><![CDATA[One or more child tests had errors]]></message>
+        </failure>
+        <test-suite type="TestSuite" id="1034" name="AI" fullname="TacticalShooter.AI" runstate="Runnable" testcasecount="16" result="Failed" site="Child" start-time="2026-10-15 06:43:28Z" end-time="2026-10-15 06:43:28Z" duration="0.256155" total="16" passed="13" failed="3" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <failure>
+            <message><![CDATA[One or more child tests had errors]]></message>
+          </failure>
+          <test-suite type="TestSuite" id="1035" name="Editor" fullname="TacticalShooter.AI.Editor" runstate="Runnable" testcasecount="16" result="Failed" site="Child" start-time="2026-10-15 06:43:28Z" end-time="2026-10-15 06:43:28Z" duration="0.255353" total="16" passed="13" failed="3" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <failure>
+              <message><![CDATA[One or more child tests had errors]]></message>
+            </failure>
+            <test-suite type="TestFixture" id="1011" name="FlankerAgentTests" fullname="TacticalShooter.AI.Editor.FlankerAgentTests" classname="TacticalShooter.AI.Editor.FlankerAgentTests" runstate="Runnable" testcasecount="5" result="Passed" start-time="2026-10-15 06:43:28Z" end-time="2026-10-15 06:43:28Z" duration="0.187319" total="5" passed="5" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1012" name="FlankerAgent_InitializesWithFlankerRoleAndComponents" fullname="TacticalShooter.AI.Editor.FlankerAgentTests.FlankerAgent_InitializesWithFlankerRoleAndComponents" methodname="FlankerAgent_InitializesWithFlankerRoleAndComponents" classname="TacticalShooter.AI.Editor.FlankerAgentTests" runstate="Runnable" seed="1285214061" result="Passed" start-time="2026-10-15 06:43:28Z" end-time="2026-10-15 06:43:28Z" duration="0.086405" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1016" name="FlankerAgent_InitiateFlankSelection_SelectsAdvantageousDestination" fullname="TacticalShooter.AI.Editor.FlankerAgentTests.FlankerAgent_InitiateFlankSelection_SelectsAdvantageousDestination" methodname="FlankerAgent_InitiateFlankSelection_SelectsAdvantageousDestination" classname="TacticalShooter.AI.Editor.FlankerAgentTests" runstate="Runnable" seed="18553664" result="Passed" start-time="2026-10-15 06:43:28Z" end-time="2026-10-15 06:43:28Z" duration="0.023355" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[Stealth / Flanker Agent] Selected Flank Destination at (0.00, 0.00, -3.00) (Score: 57.8, AngleScore: 35.0, LoS: 25.0)
+]]></output>
+              </test-case>
+              <test-case id="1015" name="FlankerAgent_TakesDamage_ReducesHealth_AndDefeats" fullname="TacticalShooter.AI.Editor.FlankerAgentTests.FlankerAgent_TakesDamage_ReducesHealth_AndDefeats" methodname="FlankerAgent_TakesDamage_ReducesHealth_AndDefeats" classname="TacticalShooter.AI.Editor.FlankerAgentTests" runstate="Runnable" seed="293152313" result="Passed" start-time="2026-10-15 06:43:28Z" end-time="2026-10-15 06:43:28Z" duration="0.009780" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <output><![CDATA[[Stealth / Flanker Agent] Selected Flank Destination at (0.00, 0.00, -18.00) (Score: 46.5, AngleScore: 35.0, LoS: 25.0)
+[Stealth / Flanker Agent] Defeated by PlayerMock!
+]]></output>
+              </test-case>
+              <test-case id="1013" name="FlankPositionEvaluator_GeneratesAndScoresCandidates" fullname="TacticalShooter.AI.Editor.FlankerAgentTests.FlankPositionEvaluator_GeneratesAndScoresCandidates" methodname="FlankPositionEvaluator_GeneratesAndScoresCandidates" classname="TacticalShooter.AI.Editor.FlankerAgentTests" runstate="Runnable" seed="398869958" result="Passed" start-time="2026-10-15 06:43:28Z" end-time="2026-10-15 06:43:28Z" duration="0.010165" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1014" name="FlankPositionEvaluator_RejectsBlockedGeometry" fullname="TacticalShooter.AI.Editor.FlankerAgentTests.FlankPositionEvaluator_RejectsBlockedGeometry" methodname="FlankPositionEvaluator_RejectsBlockedGeometry" classname="TacticalShooter.AI.Editor.FlankerAgentTests" runstate="Runnable" seed="746275182" result="Passed" start-time="2026-10-15 06:43:28Z" end-time="2026-10-15 06:43:28Z" duration="0.018958" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+            </test-suite>
+            <test-suite type="TestFixture" id="1017" name="TacticalSoldierTests" fullname="TacticalShooter.AI.Editor.TacticalSoldierTests" classname="TacticalShooter.AI.Editor.TacticalSoldierTests" runstate="Runnable" testcasecount="11" result="Failed" site="Child" start-time="2026-10-15 06:43:28Z" end-time="2026-10-15 06:43:28Z" duration="0.063833" total="11" passed="8" failed="3" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <failure>
+                <message><![CDATA[One or more child tests had errors]]></message>
+              </failure>
+              <test-case id="1022" name="AIPerception_DetectsNoiseAndRecordsLKP" fullname="TacticalShooter.AI.Editor.TacticalSoldierTests.AIPerception_DetectsNoiseAndRecordsLKP" methodname="AIPerception_DetectsNoiseAndRecordsLKP" classname="TacticalShooter.AI.Editor.TacticalSoldierTests" runstate="Runnable" seed="2100462293" result="Passed" start-time="2026-10-15 06:43:28Z" end-time="2026-10-15 06:43:28Z" duration="0.002458" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1024" name="AIPerception_ProximityDetection_DetectsCloseTargetEvenFromBehind" fullname="TacticalShooter.AI.Editor.TacticalSoldierTests.AIPerception_ProximityDetection_DetectsCloseTargetEvenFromBehind" methodname="AIPerception_ProximityDetection_DetectsCloseTargetEvenFromBehind" classname="TacticalShooter.AI.Editor.TacticalSoldierTests" runstate="Runnable" seed="1677740498" result="Failed" start-time="2026-10-15 06:43:28Z" end-time="2026-10-15 06:43:28Z" duration="0.026548" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <failure>
+                  <message><![CDATA[  Proximity detection must spot player standing 2 meters directly behind the agent!
+  Expected: True
+  But was:  False
+]]></message>
+                  <stack-trace><![CDATA[at TacticalShooter.AI.Editor.TacticalSoldierTests.AIPerception_ProximityDetection_DetectsCloseTargetEvenFromBehind () [0x0007e] in C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Assets\_Project\Scripts\AI\Editor\TacticalSoldierTests.cs:162
+]]></stack-trace>
+                </failure>
+              </test-case>
+              <test-case id="1023" name="Player_TakesDamage_ReducesHealth" fullname="TacticalShooter.AI.Editor.TacticalSoldierTests.Player_TakesDamage_ReducesHealth" methodname="Player_TakesDamage_ReducesHealth" classname="TacticalShooter.AI.Editor.TacticalSoldierTests" runstate="Runnable" seed="403483022" result="Passed" start-time="2026-10-15 06:43:28Z" end-time="2026-10-15 06:43:28Z" duration="0.001603" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1025" name="RoyalGuardVisuals_LeftArmRestsNaturallyAtSide_NoStomachProtrusion" fullname="TacticalShooter.AI.Editor.TacticalSoldierTests.RoyalGuardVisuals_LeftArmRestsNaturallyAtSide_NoStomachProtrusion" methodname="RoyalGuardVisuals_LeftArmRestsNaturallyAtSide_NoStomachProtrusion" classname="TacticalShooter.AI.Editor.TacticalSoldierTests" runstate="Runnable" seed="137466038" result="Failed" start-time="2026-10-15 06:43:28Z" end-time="2026-10-15 06:43:28Z" duration="0.005838" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <failure>
+                  <message><![CDATA[  Hand_L must exist in visual hierarchy!
+  Expected: not null
+  But was:  null
+]]></message>
+                  <stack-trace><![CDATA[at TacticalShooter.AI.Editor.TacticalSoldierTests.RoyalGuardVisuals_LeftArmRestsNaturallyAtSide_NoStomachProtrusion () [0x00021] in C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Assets\_Project\Scripts\AI\Editor\TacticalSoldierTests.cs:175
+]]></stack-trace>
+                </failure>
+              </test-case>
+              <test-case id="1020" name="TacticalPositionEvaluator_ConstrainedByGuardLeashRadius" fullname="TacticalShooter.AI.Editor.TacticalSoldierTests.TacticalPositionEvaluator_ConstrainedByGuardLeashRadius" methodname="TacticalPositionEvaluator_ConstrainedByGuardLeashRadius" classname="TacticalShooter.AI.Editor.TacticalSoldierTests" runstate="Runnable" seed="176174422" result="Passed" start-time="2026-10-15 06:43:28Z" end-time="2026-10-15 06:43:28Z" duration="0.005966" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1028" name="TacticalSoldier_ArbitraryObstacle_BlocksBulletsWithoutPenetration" fullname="TacticalShooter.AI.Editor.TacticalSoldierTests.TacticalSoldier_ArbitraryObstacle_BlocksBulletsWithoutPenetration" methodname="TacticalSoldier_ArbitraryObstacle_BlocksBulletsWithoutPenetration" classname="TacticalShooter.AI.Editor.TacticalSoldierTests" runstate="Runnable" seed="1457831109" result="Passed" start-time="2026-10-15 06:43:28Z" end-time="2026-10-15 06:43:28Z" duration="0.004582" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1026" name="TacticalSoldier_GetBestLineOfFire_ReturnsExposedPointWhenPlayerPeeks" fullname="TacticalShooter.AI.Editor.TacticalSoldierTests.TacticalSoldier_GetBestLineOfFire_ReturnsExposedPointWhenPlayerPeeks" methodname="TacticalSoldier_GetBestLineOfFire_ReturnsExposedPointWhenPlayerPeeks" classname="TacticalShooter.AI.Editor.TacticalSoldierTests" runstate="Runnable" seed="768617230" result="Failed" start-time="2026-10-15 06:43:28Z" end-time="2026-10-15 06:43:28Z" duration="0.004985" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+                <failure>
+                  <message><![CDATA[  Soldier must acquire Line of Fire on exposed part of player peeking from cover!
+  Expected: True
+  But was:  False
+]]></message>
+                  <stack-trace><![CDATA[at TacticalShooter.AI.Editor.TacticalSoldierTests.TacticalSoldier_GetBestLineOfFire_ReturnsExposedPointWhenPlayerPeeks () [0x00104] in C:\Users\Admin\Desktop\Game\3D-Tactical-Shooter\Assets\_Project\Scripts\AI\Editor\TacticalSoldierTests.cs:217
+]]></stack-trace>
+                </failure>
+              </test-case>
+              <test-case id="1018" name="TacticalSoldier_InitializesWithCorrectRoleAndComponents" fullname="TacticalShooter.AI.Editor.TacticalSoldierTests.TacticalSoldier_InitializesWithCorrectRoleAndComponents" methodname="TacticalSoldier_InitializesWithCorrectRoleAndComponents" classname="TacticalShooter.AI.Editor.TacticalSoldierTests" runstate="Runnable" seed="967029500" result="Passed" start-time="2026-10-15 06:43:28Z" end-time="2026-10-15 06:43:28Z" duration="0.001527" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1019" name="TacticalSoldier_StateTransition_FiresEvents" fullname="TacticalShooter.AI.Editor.TacticalSoldierTests.TacticalSoldier_StateTransition_FiresEvents" methodname="TacticalSoldier_StateTransition_FiresEvents" classname="TacticalShooter.AI.Editor.TacticalSoldierTests" runstate="Runnable" seed="2098215642" result="Passed" start-time="2026-10-15 06:43:28Z" end-time="2026-10-15 06:43:28Z" duration="0.000958" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1021" name="TacticalSoldier_TakesDamage_ReducesHealth_AndDefeats" fullname="TacticalShooter.AI.Editor.TacticalSoldierTests.TacticalSoldier_TakesDamage_ReducesHealth_AndDefeats" methodname="TacticalSoldier_TakesDamage_ReducesHealth_AndDefeats" classname="TacticalShooter.AI.Editor.TacticalSoldierTests" runstate="Runnable" seed="1307020857" result="Passed" start-time="2026-10-15 06:43:28Z" end-time="2026-10-15 06:43:28Z" duration="0.001291" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1027" name="TacticalSoldier_WallBlocksBullets_PlayerBehindWallTakesZeroDamage" fullname="TacticalShooter.AI.Editor.TacticalSoldierTests.TacticalSoldier_WallBlocksBullets_PlayerBehindWallTakesZeroDamage" methodname="TacticalSoldier_WallBlocksBullets_PlayerBehindWallTakesZeroDamage" classname="TacticalShooter.AI.Editor.TacticalSoldierTests" runstate="Runnable" seed="928992929" result="Passed" start-time="2026-10-15 06:43:28Z" end-time="2026-10-15 06:43:28Z" duration="0.001246" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+            </test-suite>
+          </test-suite>
+        </test-suite>
+        <test-suite type="TestSuite" id="1031" name="Systems" fullname="TacticalShooter.Systems" runstate="Runnable" testcasecount="9" result="Failed" site="Child" start-time="2026-10-15 06:43:28Z" end-time="2026-10-15 06:43:28Z" duration="0.104272" total="9" passed="4" failed="5" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <failure>
+            <message><![CDATA[One or more child tests had errors]]></message>
+          </failure>
+          <test-suite type="TestSuite" id="1032" name="Combat" fullname="TacticalShooter.Systems.Combat" runstate="Runnable" testcasecount="9" result="Failed" site="Child" start-time="2026-10-15 06:43:28Z" end-time="2026-10-15 06:43:28Z" duration="0.102850" total="9" passed="4" failed="5" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <failure>
+              <message><![CDATA[One or more child tests had errors]]></message>
+            </failure>
+            <test-suite type="TestSuite" id="1033" name="Editor" fullname="TacticalShooter.Systems.Combat.Editor" runstate="Runnable" testcasecount="9" result="Failed" site="Child" start-time="2026-10-15 06:43:28Z" end-time="2026-10-15 06:43:28Z" duration="0.102403" total="9" passed="4" failed="5" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <failure>
+                <message><![CDATA[One or more child tests had errors]]></message>
+              </failure>
+              <test-suite type="TestFixture" id="1001" name="CombatTests" fullname="TacticalShooter.Systems.Combat.Editor.CombatTests" classname="TacticalShooter.Systems.Combat.Editor.CombatTests" runstate="Runnable" testcasecount="9" result="Failed" site="Child" start-time="2026-10-15 06:43:28Z" end-time="2026-10-15 06:43:28Z" duration="0.101907" total="9" passed="4" failed="5" inconclusive="0" skipped="0" asserts="0">
+                <properties />
+                <failure>
+                  <message><![CDATA[One or more child tests had errors]]></message>
+                </failure>
+                <test-case id="1002" name="DamageInfo_InitializesCorrectly_AndClampsNegativeDamage" fullname="TacticalShooter.Systems.Combat.Editor.CombatTests.DamageInfo_InitializesCorrectly_AndClampsNegativeDamage" methodname="DamageInfo_InitializesCorrectly_AndClampsNegativeDamage" classname="TacticalShooter.Systems.Combat.Editor.CombatTests" runstate="Runnable" seed="1888285986" result="Passed" start-time="2026-10-15 06:43:28Z" end-time="2026-10-15 06:43:28Z" duration="0.001775" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+                <test-case id="1005" name="Health_ClampsToZero_AndMarksDefeated" fullname="TacticalShooter.Systems.Combat.Editor.CombatTests.Health_ClampsToZero_AndMarksDefeated" methodname="Health_ClampsToZero_AndMarksDefeated" classname="TacticalShooter.Systems.Combat.Editor.CombatTests" runstate="Runnable" seed="818813387" result="Passed" start-time="2026-10-15 06:43:28Z" end-time="2026-10-15 06:43:28Z" duration="0.000724" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+                <test-case id="1003" name="Health_InitializesAtMaxHealth_AndIsAlive" fullname="TacticalShooter.Systems.Combat.Editor.CombatTests.Health_InitializesAtMaxHealth_AndIsAlive" methodname="Health_InitializesAtMaxHealth_AndIsAlive" classname="TacticalShooter.Systems.Combat.Editor.CombatTests" runstate="Runnable" seed="727177341" result="Passed" start-time="2026-10-15 06:43:28Z" end-time="2026-10-15 06:43:28Z" duration="0.000394" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+                <test-case id="1004" name="Health_TakesDamage_ReducesHealth_AndFiresEvents" fullname="TacticalShooter.Systems.Combat.Editor.CombatTests.Health_TakesDamage_ReducesHealth_AndFiresEvents" methodname="Health_TakesDamage_ReducesHealth_AndFiresEvents" classname="TacticalShooter.Systems.Combat.Editor.CombatTests" runstate="Runnable" seed="1813468850" result="Passed" start-time="2026-10-15 06:43:28Z" end-time="2026-10-15 06:43:28Z" duration="0.001340" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                </test-case>
+                <test-case id="1006" name="HitscanWeapon_AppliesDamageThroughIDamageable_WithoutConcreteHealthDependency" fullname="TacticalShooter.Systems.Combat.Editor.CombatTests.HitscanWeapon_AppliesDamageThroughIDamageable_WithoutConcreteHealthDependency" methodname="HitscanWeapon_AppliesDamageThroughIDamageable_WithoutConcreteHealthDependency" classname="TacticalShooter.Systems.Combat.Editor.CombatTests" runstate="Runnable" seed="970753680" result="Failed" start-time="2026-10-15 06:43:28Z" end-time="2026-10-15 06:43:28Z" duration="0.072590" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                  <failure>
+                    <message><![CDATA[Unhandled log message: '[Error] Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.'. Use UnityEngine.TestTools.LogAssert.Expect]]></message>
+                    <stack-trace><![CDATA[UnityEngine.Object:Destroy (UnityEngine.Object,single)
+TacticalShooter.Systems.Combat.CombatEffects:PlayClipAtPoint (UnityEngine.AudioClip,UnityEngine.Vector3,single,single) (at Assets/_Project/Scripts/Systems/Combat/CombatEffects.cs:179)
+TacticalShooter.Systems.Combat.CombatEffects:PlayGunshot (UnityEngine.Vector3) (at Assets/_Project/Scripts/Systems/Combat/CombatEffects.cs:49)
+TacticalShooter.Systems.Combat.HitscanWeapon:ExecuteHitscanShot (UnityEngine.Vector3,UnityEngine.Vector3,UnityEngine.GameObject) (at Assets/_Project/Scripts/Systems/Combat/HitscanWeapon.cs:120)
+TacticalShooter.Systems.Combat.HitscanWeapon:TryFire (UnityEngine.Vector3,UnityEngine.Vector3,UnityEngine.GameObject) (at Assets/_Project/Scripts/Systems/Combat/HitscanWeapon.cs:56)
+TacticalShooter.Systems.Combat.Editor.CombatTests:HitscanWeapon_AppliesDamageThroughIDamageable_WithoutConcreteHealthDependency () (at Assets/_Project/Scripts/Systems/Combat/Editor/CombatTests.cs:126)
+System.Reflection.MethodBase:Invoke (object,object[])
+NUnit.Framework.Internal.Reflect:InvokeMethod (System.Reflection.MethodInfo,object,object[])
+NUnit.Framework.Internal.MethodWrapper:Invoke (object,object[])
+NUnit.Framework.Internal.Commands.TestMethodCommand:RunNonAsyncTestMethod (NUnit.Framework.Internal.ITestExecutionContext)
+NUnit.Framework.Internal.Commands.TestMethodCommand:RunTestMethod (NUnit.Framework.Internal.ITestExecutionContext)
+NUnit.Framework.Internal.Commands.TestMethodCommand:Execute (NUnit.Framework.Internal.ITestExecutionContext)
+UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
+[./Library/PackageCache/c
+
+]]></stack-trace>
+                  </failure>
+                  <output><![CDATA[Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+Instantiating material due to calling renderer.material during edit mode. This will leak materials into the scene. You most likely want to use renderer.sharedMaterial instead.
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+]]></output>
+                </test-case>
+                <test-case id="1010" name="HitscanWeapon_CanBeFiredByAI_WithoutPlayerInput" fullname="TacticalShooter.Systems.Combat.Editor.CombatTests.HitscanWeapon_CanBeFiredByAI_WithoutPlayerInput" methodname="HitscanWeapon_CanBeFiredByAI_WithoutPlayerInput" classname="TacticalShooter.Systems.Combat.Editor.CombatTests" runstate="Runnable" seed="1662152320" result="Failed" start-time="2026-10-15 06:43:28Z" end-time="2026-10-15 06:43:28Z" duration="0.004534" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                  <failure>
+                    <message><![CDATA[Unhandled log message: '[Error] Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.'. Use UnityEngine.TestTools.LogAssert.Expect]]></message>
+                    <stack-trace><![CDATA[UnityEngine.Object:Destroy (UnityEngine.Object,single)
+TacticalShooter.Systems.Combat.CombatEffects:PlayClipAtPoint (UnityEngine.AudioClip,UnityEngine.Vector3,single,single) (at Assets/_Project/Scripts/Systems/Combat/CombatEffects.cs:179)
+TacticalShooter.Systems.Combat.CombatEffects:PlayGunshot (UnityEngine.Vector3) (at Assets/_Project/Scripts/Systems/Combat/CombatEffects.cs:49)
+TacticalShooter.Systems.Combat.HitscanWeapon:ExecuteHitscanShot (UnityEngine.Vector3,UnityEngine.Vector3,UnityEngine.GameObject) (at Assets/_Project/Scripts/Systems/Combat/HitscanWeapon.cs:120)
+TacticalShooter.Systems.Combat.HitscanWeapon:TryFire (UnityEngine.Vector3,UnityEngine.Vector3,UnityEngine.GameObject) (at Assets/_Project/Scripts/Systems/Combat/HitscanWeapon.cs:56)
+TacticalShooter.Systems.Combat.Editor.CombatTests:HitscanWeapon_CanBeFiredByAI_WithoutPlayerInput () (at Assets/_Project/Scripts/Systems/Combat/Editor/CombatTests.cs:220)
+System.Reflection.MethodBase:Invoke (object,object[])
+NUnit.Framework.Internal.Reflect:InvokeMethod (System.Reflection.MethodInfo,object,object[])
+NUnit.Framework.Internal.MethodWrapper:Invoke (object,object[])
+NUnit.Framework.Internal.Commands.TestMethodCommand:RunNonAsyncTestMethod (NUnit.Framework.Internal.ITestExecutionContext)
+NUnit.Framework.Internal.Commands.TestMethodCommand:RunTestMethod (NUnit.Framework.Internal.ITestExecutionContext)
+NUnit.Framework.Internal.Commands.TestMethodCommand:Execute (NUnit.Framework.Internal.ITestExecutionContext)
+UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
+[./Library/PackageCache/com.unity.test-framework@bd7f94
+
+]]></stack-trace>
+                  </failure>
+                  <output><![CDATA[Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+Instantiating material due to calling renderer.material during edit mode. This will leak materials into the scene. You most likely want to use renderer.sharedMaterial instead.
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+]]></output>
+                </test-case>
+                <test-case id="1009" name="HitscanWeapon_IgnoresInstigatorColliders" fullname="TacticalShooter.Systems.Combat.Editor.CombatTests.HitscanWeapon_IgnoresInstigatorColliders" methodname="HitscanWeapon_IgnoresInstigatorColliders" classname="TacticalShooter.Systems.Combat.Editor.CombatTests" runstate="Runnable" seed="1797471106" result="Failed" start-time="2026-10-15 06:43:28Z" end-time="2026-10-15 06:43:28Z" duration="0.003519" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                  <failure>
+                    <message><![CDATA[Unhandled log message: '[Error] Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.'. Use UnityEngine.TestTools.LogAssert.Expect]]></message>
+                    <stack-trace><![CDATA[UnityEngine.Object:Destroy (UnityEngine.Object,single)
+TacticalShooter.Systems.Combat.CombatEffects:PlayClipAtPoint (UnityEngine.AudioClip,UnityEngine.Vector3,single,single) (at Assets/_Project/Scripts/Systems/Combat/CombatEffects.cs:179)
+TacticalShooter.Systems.Combat.CombatEffects:PlayGunshot (UnityEngine.Vector3) (at Assets/_Project/Scripts/Systems/Combat/CombatEffects.cs:49)
+TacticalShooter.Systems.Combat.HitscanWeapon:ExecuteHitscanShot (UnityEngine.Vector3,UnityEngine.Vector3,UnityEngine.GameObject) (at Assets/_Project/Scripts/Systems/Combat/HitscanWeapon.cs:120)
+TacticalShooter.Systems.Combat.HitscanWeapon:TryFire (UnityEngine.Vector3,UnityEngine.Vector3,UnityEngine.GameObject) (at Assets/_Project/Scripts/Systems/Combat/HitscanWeapon.cs:56)
+TacticalShooter.Systems.Combat.Editor.CombatTests:HitscanWeapon_IgnoresInstigatorColliders () (at Assets/_Project/Scripts/Systems/Combat/Editor/CombatTests.cs:196)
+System.Reflection.MethodBase:Invoke (object,object[])
+NUnit.Framework.Internal.Reflect:InvokeMethod (System.Reflection.MethodInfo,object,object[])
+NUnit.Framework.Internal.MethodWrapper:Invoke (object,object[])
+NUnit.Framework.Internal.Commands.TestMethodCommand:RunNonAsyncTestMethod (NUnit.Framework.Internal.ITestExecutionContext)
+NUnit.Framework.Internal.Commands.TestMethodCommand:RunTestMethod (NUnit.Framework.Internal.ITestExecutionContext)
+NUnit.Framework.Internal.Commands.TestMethodCommand:Execute (NUnit.Framework.Internal.ITestExecutionContext)
+UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
+[./Library/PackageCache/com.unity.test-framework@bd7f943e9647/
+
+]]></stack-trace>
+                  </failure>
+                  <output><![CDATA[Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+Instantiating material due to calling renderer.material during edit mode. This will leak materials into the scene. You most likely want to use renderer.sharedMaterial instead.
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+]]></output>
+                </test-case>
+                <test-case id="1007" name="HitscanWeapon_RespectsFiringCooldown" fullname="TacticalShooter.Systems.Combat.Editor.CombatTests.HitscanWeapon_RespectsFiringCooldown" methodname="HitscanWeapon_RespectsFiringCooldown" classname="TacticalShooter.Systems.Combat.Editor.CombatTests" runstate="Runnable" seed="1966085557" result="Failed" start-time="2026-10-15 06:43:28Z" end-time="2026-10-15 06:43:28Z" duration="0.007524" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                  <failure>
+                    <message><![CDATA[Unhandled log message: '[Error] Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.'. Use UnityEngine.TestTools.LogAssert.Expect]]></message>
+                    <stack-trace><![CDATA[UnityEngine.Object:Destroy (UnityEngine.Object,single)
+TacticalShooter.Systems.Combat.CombatEffects:PlayClipAtPoint (UnityEngine.AudioClip,UnityEngine.Vector3,single,single) (at Assets/_Project/Scripts/Systems/Combat/CombatEffects.cs:179)
+TacticalShooter.Systems.Combat.CombatEffects:PlayGunshot (UnityEngine.Vector3) (at Assets/_Project/Scripts/Systems/Combat/CombatEffects.cs:49)
+TacticalShooter.Systems.Combat.HitscanWeapon:ExecuteHitscanShot (UnityEngine.Vector3,UnityEngine.Vector3,UnityEngine.GameObject) (at Assets/_Project/Scripts/Systems/Combat/HitscanWeapon.cs:120)
+TacticalShooter.Systems.Combat.HitscanWeapon:TryFire (UnityEngine.Vector3,UnityEngine.Vector3,UnityEngine.GameObject) (at Assets/_Project/Scripts/Systems/Combat/HitscanWeapon.cs:56)
+TacticalShooter.Systems.Combat.Editor.CombatTests:HitscanWeapon_RespectsFiringCooldown () (at Assets/_Project/Scripts/Systems/Combat/Editor/CombatTests.cs:143)
+System.Reflection.MethodBase:Invoke (object,object[])
+NUnit.Framework.Internal.Reflect:InvokeMethod (System.Reflection.MethodInfo,object,object[])
+NUnit.Framework.Internal.MethodWrapper:Invoke (object,object[])
+NUnit.Framework.Internal.Commands.TestMethodCommand:RunNonAsyncTestMethod (NUnit.Framework.Internal.ITestExecutionContext)
+NUnit.Framework.Internal.Commands.TestMethodCommand:RunTestMethod (NUnit.Framework.Internal.ITestExecutionContext)
+NUnit.Framework.Internal.Commands.TestMethodCommand:Execute (NUnit.Framework.Internal.ITestExecutionContext)
+UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
+[./Library/PackageCache/com.unity.test-framework@bd7f943e9647/Unit
+
+]]></stack-trace>
+                  </failure>
+                  <output><![CDATA[Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+Instantiating material due to calling renderer.material during edit mode. This will leak materials into the scene. You most likely want to use renderer.sharedMaterial instead.
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+]]></output>
+                </test-case>
+                <test-case id="1008" name="HitscanWeapon_RespectsMaxRange" fullname="TacticalShooter.Systems.Combat.Editor.CombatTests.HitscanWeapon_RespectsMaxRange" methodname="HitscanWeapon_RespectsMaxRange" classname="TacticalShooter.Systems.Combat.Editor.CombatTests" runstate="Runnable" seed="1802452699" result="Failed" start-time="2026-10-15 06:43:28Z" end-time="2026-10-15 06:43:28Z" duration="0.006511" asserts="0">
+                  <properties>
+                    <property name="retryIteration" value="0" />
+                    <property name="repeatIteration" value="0" />
+                  </properties>
+                  <failure>
+                    <message><![CDATA[Unhandled log message: '[Error] Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.'. Use UnityEngine.TestTools.LogAssert.Expect]]></message>
+                    <stack-trace><![CDATA[UnityEngine.Object:Destroy (UnityEngine.Object,single)
+TacticalShooter.Systems.Combat.CombatEffects:PlayClipAtPoint (UnityEngine.AudioClip,UnityEngine.Vector3,single,single) (at Assets/_Project/Scripts/Systems/Combat/CombatEffects.cs:179)
+TacticalShooter.Systems.Combat.CombatEffects:PlayGunshot (UnityEngine.Vector3) (at Assets/_Project/Scripts/Systems/Combat/CombatEffects.cs:49)
+TacticalShooter.Systems.Combat.HitscanWeapon:ExecuteHitscanShot (UnityEngine.Vector3,UnityEngine.Vector3,UnityEngine.GameObject) (at Assets/_Project/Scripts/Systems/Combat/HitscanWeapon.cs:120)
+TacticalShooter.Systems.Combat.HitscanWeapon:TryFire (UnityEngine.Vector3,UnityEngine.Vector3,UnityEngine.GameObject) (at Assets/_Project/Scripts/Systems/Combat/HitscanWeapon.cs:56)
+TacticalShooter.Systems.Combat.Editor.CombatTests:HitscanWeapon_RespectsMaxRange () (at Assets/_Project/Scripts/Systems/Combat/Editor/CombatTests.cs:167)
+System.Reflection.MethodBase:Invoke (object,object[])
+NUnit.Framework.Internal.Reflect:InvokeMethod (System.Reflection.MethodInfo,object,object[])
+NUnit.Framework.Internal.MethodWrapper:Invoke (object,object[])
+NUnit.Framework.Internal.Commands.TestMethodCommand:RunNonAsyncTestMethod (NUnit.Framework.Internal.ITestExecutionContext)
+NUnit.Framework.Internal.Commands.TestMethodCommand:RunTestMethod (NUnit.Framework.Internal.ITestExecutionContext)
+NUnit.Framework.Internal.Commands.TestMethodCommand:Execute (NUnit.Framework.Internal.ITestExecutionContext)
+UnityEditor.EditorApplication:Internal_CallUpdateFunctions ()
+[./Library/PackageCache/com.unity.test-framework@bd7f943e9647/UnityEdito
+
+]]></stack-trace>
+                  </failure>
+                  <output><![CDATA[Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+Instantiating material due to calling renderer.material during edit mode. This will leak materials into the scene. You most likely want to use renderer.sharedMaterial instead.
+Destroy may not be called from edit mode! Use DestroyImmediate instead.
+Destroying an object in edit mode destroys it permanently.
+Saving results to: C:/Users/Admin/AppData/LocalLow/3D Tactical Shooter Team/3D-Tactical-Shooter\TestResults.xml
+]]></output>
+                </test-case>
+              </test-suite>
+            </test-suite>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>
