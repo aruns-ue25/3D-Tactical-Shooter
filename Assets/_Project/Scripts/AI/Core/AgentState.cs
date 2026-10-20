@@ -27,7 +27,10 @@ namespace TacticalShooter.AI.Core
         ReturnToPost,
 
         /// <summary>Incapacitated or defeated.</summary>
-        Defeated
+        Defeated,
+
+        /// <summary>Directly pursuing a target using fresh visual or acoustic evidence.</summary>
+        Pursue
     }
 
     /// <summary>

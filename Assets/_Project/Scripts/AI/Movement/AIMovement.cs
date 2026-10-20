@@ -7,11 +7,13 @@ using TacticalShooter.Systems.Interaction;
 namespace TacticalShooter.AI.Movement
 {
     /// <summary>
-    /// Shared navigation and locomotion controller for AI agents.
-    /// Provides hybrid navigation:
-    /// 1. Uses UnityEngine.AI.NavMeshAgent if NavMesh is baked and active.
-    /// 2. Provides autonomous kinematic raycast steering fallback if NavMesh is unbaked.
-    /// 3. Collaborates with GV door systems to automatically open doors in transit.
+    /// Shared navigation and locomotion controller for all AI agents (Guard, Hunter, Flanker).
+    /// Provides unified hybrid navigation:
+    /// 1. Uses UnityEngine.AI.NavMeshAgent for pathfinding & steering when NavMesh is active.
+    /// 2. Executes all physical motion exclusively through CharacterController.Move() to avoid transform fighting.
+    /// 3. Maintains simulation position synchronization and drift recovery (warp).
+    /// 4. Provides autonomous kinematic raycast steering fallback when NavMesh data is unavailable.
+    /// 5. Collaborates with door systems to automatically open doors in transit.
     /// </summary>
     [RequireComponent(typeof(CharacterController))]
     public class AIMovement : MonoBehaviour
@@ -21,6 +23,15 @@ namespace TacticalShooter.AI.Movement
         [SerializeField] private float jogSpeed = 3.8f;
         [SerializeField] private float rotationSpeed = 10f;
         [SerializeField] private float stoppingDistance = 1.0f;
+
+        [Header("Gravity & Grounding")]
+        [SerializeField] private float gravity = 9.81f;
+        [SerializeField] private float groundedGravity = 1.5f;
+        [SerializeField] private float terminalVelocity = 20.0f;
+
+        [Header("NavMesh Synchronization")]
+        [SerializeField] private float warpRecoveryThreshold = 1.25f;
+        [SerializeField] private float navMeshSamplingRadius = 2.5f;
 
         [Header("Obstacle Avoidance (Kinematic Fallback)")]
         [SerializeField] private float obstacleCheckDistance = 1.8f;
@@ -37,6 +48,7 @@ namespace TacticalShooter.AI.Movement
         private bool isMoving = false;
         private float currentMoveSpeed = 2.2f;
         private Vector3 currentVelocity = Vector3.zero;
+        private float verticalVelocity = 0f;
         private float doorCheckCooldown = 0f;
 
         // Anti-stuck tracking
@@ -61,12 +73,14 @@ namespace TacticalShooter.AI.Movement
         public float StoppingDistance => stoppingDistance;
         public float WalkSpeed => walkSpeed;
         public float JogSpeed => jogSpeed;
+        public NavMeshAgent Agent => navMeshAgent;
+        public bool IsOnNavMesh => navMeshAgent != null && navMeshAgent.enabled && navMeshAgent.isOnNavMesh;
 
         public float RemainingDistance
         {
             get
             {
-                if (navMeshAgent != null && navMeshAgent.enabled && navMeshAgent.isOnNavMesh)
+                if (IsOnNavMesh)
                 {
                     return navMeshAgent.remainingDistance;
                 }
@@ -79,9 +93,6 @@ namespace TacticalShooter.AI.Movement
         private void Awake()
         {
             characterController = GetComponent<CharacterController>();
-            navMeshAgent = GetComponent<NavMeshAgent>();
-
-            // Setup CharacterController sensible defaults if newly added
             if (characterController != null)
             {
                 characterController.height = 1.9f;
@@ -90,21 +101,58 @@ namespace TacticalShooter.AI.Movement
                 characterController.stepOffset = 0.4f;
             }
 
-            // Configure NavMeshAgent if present
-            if (navMeshAgent != null)
+            navMeshAgent = GetComponent<NavMeshAgent>();
+            if (navMeshAgent == null)
             {
-                navMeshAgent.stoppingDistance = stoppingDistance;
-                navMeshAgent.speed = walkSpeed;
-                navMeshAgent.angularSpeed = rotationSpeed * 30f;
-                navMeshAgent.acceleration = 12f;
+                navMeshAgent = gameObject.AddComponent<NavMeshAgent>();
             }
+            ConfigureNavMeshAgent();
 
             currentDestination = transform.position;
+            lastSampledPosition = transform.position;
+        }
+
+        /// <summary>
+        /// Applies consistent NavMeshAgent settings across all agents.
+        /// Disables automatic position and rotation driving to let CharacterController
+        /// be the single source of truth for motion and physics.
+        /// </summary>
+        public void ConfigureNavMeshAgent()
+        {
+            if (navMeshAgent == null) return;
+
+            float r = characterController != null ? characterController.radius : 0.38f;
+            float h = characterController != null ? characterController.height : 1.9f;
+
+            navMeshAgent.radius = r;
+            navMeshAgent.height = h;
+            navMeshAgent.baseOffset = 0f;
+            navMeshAgent.stoppingDistance = stoppingDistance;
+            navMeshAgent.speed = walkSpeed;
+            navMeshAgent.angularSpeed = rotationSpeed * 30f;
+            navMeshAgent.acceleration = 14f;
+            navMeshAgent.autoRepath = true;
+            navMeshAgent.obstacleAvoidanceType = ObstacleAvoidanceType.HighQualityObstacleAvoidance;
+
+            // CharacterController executes translation exclusively
+            navMeshAgent.updatePosition = false;
+            navMeshAgent.updateRotation = false;
+            navMeshAgent.updateUpAxis = false;
         }
 
         private void Update()
         {
-            // Continuous combat focus rotation
+            // 1. Vertical velocity tracking (ground-clamped to prevent unbounded accumulation)
+            if (characterController != null && characterController.isGrounded)
+            {
+                verticalVelocity = -groundedGravity;
+            }
+            else
+            {
+                verticalVelocity = Mathf.Max(verticalVelocity - gravity * Time.deltaTime, -terminalVelocity);
+            }
+
+            // 2. Dynamic combat look target (overrides movement facing during aiming)
             if (forcedLookTimer > 0f)
             {
                 forcedLookTimer -= Time.deltaTime;
@@ -120,20 +168,99 @@ namespace TacticalShooter.AI.Movement
                 }
             }
 
-            if (navMeshAgent != null && navMeshAgent.enabled && navMeshAgent.isOnNavMesh)
-            {
-                navMeshAgent.updateRotation = (forcedLookTimer <= 0f);
-            }
-
+            // 3. Proactive door opening while in transit
             if (autoOpenDoors && isMoving)
             {
                 CheckForDoorAhead();
             }
 
-            // Fallback kinematic locomotion if NavMesh is not handling it
-            if (isMoving && (navMeshAgent == null || !navMeshAgent.enabled || !navMeshAgent.isOnNavMesh))
+            // 4. Locomotion execution
+            if (isMoving)
             {
-                UpdateKinematicMovement();
+                if (IsOnNavMesh)
+                {
+                    UpdateNavMeshLocomotion();
+                }
+                else
+                {
+                    UpdateKinematicMovement();
+                }
+            }
+            else
+            {
+                // Apply gravity while stationary
+                if (characterController != null && !characterController.isGrounded)
+                {
+                    characterController.Move(Vector3.up * verticalVelocity * Time.deltaTime);
+                }
+                currentVelocity = Vector3.zero;
+            }
+        }
+
+        /// <summary>
+        /// Hybrid NavMesh locomotion: reads desiredVelocity from NavMeshAgent,
+        /// moves through CharacterController.Move, and synchronizes agent.nextPosition.
+        /// </summary>
+        private void UpdateNavMeshLocomotion()
+        {
+            if (navMeshAgent == null || !navMeshAgent.isOnNavMesh) return;
+
+            // Check if destination reached
+            if (!navMeshAgent.pathPending && navMeshAgent.remainingDistance <= stoppingDistance)
+            {
+                Stop();
+                return;
+            }
+
+            // Anti-stuck tracking in NavMesh mode
+            stuckSampleTimer += Time.deltaTime;
+            if (stuckSampleTimer >= 0.25f)
+            {
+                stuckSampleTimer = 0f;
+                Vector3 flatPos = new Vector3(transform.position.x, 0f, transform.position.z);
+                Vector3 flatLast = new Vector3(lastSampledPosition.x, 0f, lastSampledPosition.z);
+                float distMoved = Vector3.Distance(flatPos, flatLast);
+                lastSampledPosition = transform.position;
+
+                if (distMoved < 0.06f && navMeshAgent.desiredVelocity.sqrMagnitude > 0.1f)
+                {
+                    stuckTimer += 0.25f;
+                    if (stuckTimer >= 0.5f) isStuck = true;
+                }
+                else
+                {
+                    stuckTimer = Mathf.Max(0f, stuckTimer - 0.3f);
+                    if (stuckTimer <= 0.1f) isStuck = false;
+                }
+            }
+
+            Vector3 desired = navMeshAgent.desiredVelocity;
+            desired.y = 0f;
+
+            // Accelerate smoothly towards desired velocity
+            currentVelocity = Vector3.MoveTowards(currentVelocity, desired, 16f * Time.deltaTime);
+
+            // Execute translation through CharacterController
+            Vector3 motion = currentVelocity * Time.deltaTime;
+            motion.y = verticalVelocity * Time.deltaTime;
+            characterController.Move(motion);
+
+            // Smooth rotation towards movement direction when not locked on combat aim
+            if (forcedLookTimer <= 0f && currentVelocity.sqrMagnitude > 0.01f)
+            {
+                Quaternion targetRot = Quaternion.LookRotation(currentVelocity.normalized);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * rotationSpeed);
+            }
+
+            // Synchronize NavMeshAgent simulation position with CharacterController
+            float drift = Vector3.Distance(transform.position, navMeshAgent.nextPosition);
+            if (drift > warpRecoveryThreshold)
+            {
+                navMeshAgent.Warp(transform.position);
+            }
+            else
+            {
+                navMeshAgent.nextPosition = transform.position;
             }
         }
 
@@ -142,8 +269,12 @@ namespace TacticalShooter.AI.Movement
             currentDestination = targetPosition;
             currentMoveSpeed = speed;
             isMoving = true;
+            stuckTimer = 0f;
+            isStuck = false;
 
-            if (navMeshAgent != null && navMeshAgent.enabled && navMeshAgent.isOnNavMesh)
+            EnsureAgentOnNavMesh();
+
+            if (IsOnNavMesh)
             {
                 navMeshAgent.isStopped = false;
                 navMeshAgent.speed = speed;
@@ -151,12 +282,85 @@ namespace TacticalShooter.AI.Movement
             }
         }
 
+        /// <summary>
+        /// Validates reachability and begins movement if a valid destination is found.
+        /// Returns true if a path is established, or false if unreachable.
+        /// </summary>
+        public bool TryMoveTo(Vector3 targetPosition, float speed)
+        {
+            if (IsDestinationReachable(targetPosition, out Vector3 reachablePoint))
+            {
+                MoveTo(reachablePoint, speed);
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Mode-aware path reachability check:
+        /// On NavMesh: requires a complete, valid route (status == PathComplete).
+        /// Off NavMesh: validates straight line clearance via kinematic probe.
+        /// </summary>
+        public bool IsDestinationReachable(Vector3 targetPosition, out Vector3 reachablePoint)
+        {
+            reachablePoint = targetPosition;
+            EnsureAgentOnNavMesh();
+
+            if (IsOnNavMesh)
+            {
+                if (!NavMesh.SamplePosition(targetPosition, out NavMeshHit hit, 3.0f, navMeshAgent.areaMask))
+                {
+                    return false;
+                }
+
+                Vector3 startPos = transform.position;
+                if (NavMesh.SamplePosition(startPos, out NavMeshHit startHit, 3.0f, navMeshAgent.areaMask))
+                {
+                    startPos = startHit.position;
+                }
+
+                NavMeshPath path = new NavMeshPath();
+                if (!NavMesh.CalculatePath(startPos, hit.position, navMeshAgent.areaMask, path))
+                {
+                    return false;
+                }
+
+                if (path.status != NavMeshPathStatus.PathComplete || path.corners == null || path.corners.Length == 0)
+                {
+                    if (path.corners != null && path.corners.Length > 0)
+                    {
+                        reachablePoint = path.corners[path.corners.Length - 1];
+                    }
+                    return false;
+                }
+
+                reachablePoint = hit.position;
+                return true;
+            }
+
+            // Kinematic fallback mode: test straight-line clearance against static obstacles
+            Vector3 toTarget = targetPosition - transform.position;
+            toTarget.y = 0f;
+            float dist = toTarget.magnitude;
+            if (dist < 0.1f) return true;
+            Vector3 dir = toTarget / dist;
+            if (Physics.SphereCast(transform.position + Vector3.up * 0.65f, 0.35f, dir, out RaycastHit hitInfo, dist, obstacleLayerMask, QueryTriggerInteraction.Ignore))
+            {
+                if (hitInfo.collider != null && !hitInfo.collider.isTrigger && hitInfo.collider.transform.root != transform.root)
+                {
+                    reachablePoint = hitInfo.point - dir * 0.5f;
+                    return false;
+                }
+            }
+            return true;
+        }
+
         public void Stop()
         {
             isMoving = false;
             currentVelocity = Vector3.zero;
 
-            if (navMeshAgent != null && navMeshAgent.enabled && navMeshAgent.isOnNavMesh)
+            if (IsOnNavMesh)
             {
                 navMeshAgent.isStopped = true;
                 navMeshAgent.ResetPath();
@@ -167,7 +371,7 @@ namespace TacticalShooter.AI.Movement
         {
             if (!isMoving) return true;
 
-            // If physically stuck against a corner or obstacle for > 0.8s, consider destination reached / unstick
+            // If physically stuck for > 0.8s, consider destination reached to enable state recovery
             if (isStuck && stuckTimer > 0.8f)
             {
                 isMoving = false;
@@ -178,7 +382,7 @@ namespace TacticalShooter.AI.Movement
 
             float tolerance = threshold > 0f ? threshold : stoppingDistance;
 
-            if (navMeshAgent != null && navMeshAgent.enabled && navMeshAgent.isOnNavMesh)
+            if (IsOnNavMesh)
             {
                 if (!navMeshAgent.pathPending && navMeshAgent.remainingDistance <= tolerance)
                 {
@@ -206,6 +410,21 @@ namespace TacticalShooter.AI.Movement
                 Quaternion targetRot = Quaternion.LookRotation(dir);
                 transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * rotationSpeed * turnSpeedMultiplier);
             }
+        }
+
+        /// <summary>
+        /// Warps the NavMeshAgent onto the nearest active NavMesh surface if currently unplaced.
+        /// </summary>
+        public bool EnsureAgentOnNavMesh(float searchRadius = 2.5f)
+        {
+            if (navMeshAgent == null || !navMeshAgent.enabled) return false;
+            if (navMeshAgent.isOnNavMesh) return true;
+
+            if (NavMesh.SamplePosition(transform.position, out NavMeshHit hit, searchRadius, NavMesh.AllAreas))
+            {
+                return navMeshAgent.Warp(hit.position);
+            }
+            return false;
         }
 
         private void UpdateKinematicMovement()
@@ -253,10 +472,9 @@ namespace TacticalShooter.AI.Movement
 
             Vector3 moveDir = toDest.normalized;
 
-            // 2. Proactive Obstacle Check (checks ahead for crates, barriers, and walls)
+            // 2. Obstacle checking & steering
             if (CheckObstacleInDirection(moveDir, obstacleCheckDistance, out RaycastHit centerHit))
             {
-                // Test left whisker (-35 deg) and right whisker (+35 deg)
                 Vector3 leftDir = Quaternion.Euler(0f, -35f, 0f) * moveDir;
                 Vector3 rightDir = Quaternion.Euler(0f, 35f, 0f) * moveDir;
 
@@ -267,8 +485,6 @@ namespace TacticalShooter.AI.Movement
                 float rightClearance = rightBlocked ? rightHit.distance : (obstacleCheckDistance * 1.5f);
 
                 Vector3 steerDir = (leftClearance >= rightClearance) ? leftDir : rightDir;
-
-                // Also calculate surface deflection from obstacle normal
                 Vector3 normalTangent = Vector3.ProjectOnPlane(moveDir, centerHit.normal).normalized;
                 if (normalTangent.sqrMagnitude < 0.1f)
                 {
@@ -279,28 +495,27 @@ namespace TacticalShooter.AI.Movement
                 moveDir = Vector3.Slerp(moveDir, Vector3.Slerp(steerDir, normalTangent, 0.5f).normalized, Mathf.Lerp(0.5f, 0.85f, steerWeight)).normalized;
             }
 
-            // 3. Unstick routine if blocked against corner
+            // 3. Unstick routine
             if (isStuck && stuckTimer > 0.5f)
             {
                 moveDir = (-transform.forward * 0.4f + transform.right * unstickSideSign * 0.7f).normalized;
             }
 
-            // Ensure motion is strictly horizontal
             moveDir = new Vector3(moveDir.x, 0f, moveDir.z).normalized;
 
-            // 4. Smooth rotation towards movement direction (only when not locked on combat focus target)
+            // 4. Smooth rotation
             if (forcedLookTimer <= 0f && moveDir.sqrMagnitude > 0.01f)
             {
                 Quaternion targetRot = Quaternion.LookRotation(moveDir);
                 transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * rotationSpeed);
             }
 
-            // 5. Apply smooth accelerated movement through CharacterController
+            // 5. Apply smooth movement with grounded vertical velocity
             Vector3 targetVelocity = moveDir * currentMoveSpeed;
             currentVelocity = Vector3.MoveTowards(currentVelocity, targetVelocity, 14f * Time.deltaTime);
 
             Vector3 motion = currentVelocity * Time.deltaTime;
-            motion.y = -9.81f * Time.deltaTime; // keep grounded
+            motion.y = verticalVelocity * Time.deltaTime;
             characterController.Move(motion);
         }
 
@@ -308,7 +523,6 @@ namespace TacticalShooter.AI.Movement
         {
             hitInfo = default;
             float capsuleRadius = characterController != null ? characterController.radius : 0.38f;
-            // Probe origin starts outside self capsule at mid-height (0.65m) to clear floor while detecting 1m crates and walls
             Vector3 probeOrigin = transform.position + Vector3.up * 0.65f + dir * (capsuleRadius + 0.12f);
 
             RaycastHit[] hits = Physics.SphereCastAll(probeOrigin, 0.22f, dir, distance, obstacleLayerMask, QueryTriggerInteraction.Ignore);
@@ -321,13 +535,9 @@ namespace TacticalShooter.AI.Movement
             {
                 RaycastHit h = hits[i];
                 if (h.collider == null) continue;
-                // Ignore self
                 if (h.collider == characterController || h.collider.transform.root == transform.root) continue;
-                // Ignore triggers
                 if (h.collider.isTrigger) continue;
-                // Ignore Player
                 if (h.collider.CompareTag("Player") || h.collider.name == "Player") continue;
-                // Ignore ground/floor (horizontal surfaces)
                 if (h.normal.y > 0.65f) continue;
 
                 if (h.distance < nearestDist)
@@ -356,7 +566,6 @@ namespace TacticalShooter.AI.Movement
             Vector3 rayOrigin = transform.position + Vector3.up * 1.0f;
             if (Physics.Raycast(rayOrigin, transform.forward, out RaycastHit hit, doorCheckDistance, ~0, QueryTriggerInteraction.Collide))
             {
-                // Check for DoorController
                 DoorController doorController = hit.collider.GetComponentInParent<DoorController>();
                 if (doorController != null && !doorController.IsOpen)
                 {
@@ -365,7 +574,6 @@ namespace TacticalShooter.AI.Movement
                     return;
                 }
 
-                // Check for DoorInteractable
                 DoorInteractable doorInteractable = hit.collider.GetComponentInParent<DoorInteractable>();
                 if (doorInteractable != null && !doorInteractable.IsOpen)
                 {
