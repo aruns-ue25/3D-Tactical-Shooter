@@ -43,19 +43,19 @@ namespace TacticalShooter.AI.Agents
 
         [Header("Flanking Evaluation")]
         [SerializeField] private float minFlankDistance = 8.0f;
-        [SerializeField] private float maxFlankDistance = 18.0f;
+        [SerializeField] private float maxFlankDistance = 22.0f;
         [SerializeField] private int candidateAngleSamples = 12; // 30-degree increments
         [SerializeField] private float replanInterval = 1.8f;     // Avoid per-frame re-pathing
         [SerializeField] private float replanMovementThreshold = 3.5f; // Player must move > 3.5m to force replan
         [SerializeField] private float scoreHysteresis = 8.0f;    // Minimum score improvement to switch flank sides
         [SerializeField] private LayerMask obstacleMask = ~0;
 
-        [Header("Combat & Engagement")]
-        [SerializeField] private float attackRange = 25f;
-        [SerializeField] private float fireRate = 0.14f; // Seconds per bullet in burst
-        [SerializeField] private int burstCount = 3;
-        [SerializeField] private float burstCooldown = 2.0f;
-        [SerializeField] private float damagePerShot = 4f;
+        [Header("Combat & Engagement (Sniper / Marksman)")]
+        [SerializeField] private float attackRange = 32f;
+        [SerializeField] private float fireRate = 0.2f;
+        [SerializeField] private int burstCount = 1;
+        [SerializeField] private float burstCooldown = 2.4f;
+        [SerializeField] private float damagePerShot = 28f;
         [SerializeField] private float searchDuration = 5.5f;
 
         [Header("Movement Speeds")]
@@ -264,27 +264,53 @@ namespace TacticalShooter.AI.Agents
                 preferLeftOrRight: sideBias
             );
 
-            if (candidates == null || candidates.Count == 0)
+            bool foundReachableCandidate = false;
+            FlankPositionEvaluator.FlankCandidateResult selectedCandidate = default;
+            Vector3 targetReachablePos = Vector3.zero;
+
+            if (candidates != null && candidates.Count > 0)
             {
-                // Fallback: If no candidate passed strict geometry, take a lateral step
+                // Iterate through multi-angle candidates ordered by tactical score and select the highest ranked reachable point
+                for (int i = 0; i < candidates.Count; i++)
+                {
+                    FlankPositionEvaluator.FlankCandidateResult cand = candidates[i];
+                    if (movement != null && movement.IsDestinationReachable(cand.Position, out Vector3 reachablePoint))
+                    {
+                        selectedCandidate = cand;
+                        targetReachablePos = reachablePoint;
+                        foundReachableCandidate = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!foundReachableCandidate)
+            {
+                // Fallback: If no candidate has a complete route, test lateral deflection or LKP
                 Vector3 toTarget = (targetCenter - transform.position).normalized;
                 Vector3 lateral = Vector3.Cross(toTarget, Vector3.up).normalized * (sideBias >= 0 ? 1f : -1f);
-                selectedFlankDestination = transform.position + lateral * 6f;
-                Debug.LogWarning($"[{DisplayName}] No filtered flank candidates found; using lateral fallback {selectedFlankDestination}");
+                Vector3 fallbackDest = transform.position + lateral * 5f;
+                if (movement != null && movement.IsDestinationReachable(fallbackDest, out Vector3 reachableFallback))
+                {
+                    selectedFlankDestination = reachableFallback;
+                }
+                else
+                {
+                    selectedFlankDestination = targetCenter;
+                }
+                currentPlanScore = float.MinValue;
             }
             else
             {
-                FlankPositionEvaluator.FlankCandidateResult best = candidates[0];
-
                 // Check hysteresis: Only switch if the new score exceeds current plan by threshold
-                if (!forceReplan && currentPlanScore > float.MinValue && (best.TotalScore - currentPlanScore) < scoreHysteresis)
+                if (!forceReplan && currentPlanScore > float.MinValue && (selectedCandidate.TotalScore - currentPlanScore) < scoreHysteresis)
                 {
                     // Existing route remains satisfactory; keep pursuing current destination
                     return false;
                 }
 
-                selectedFlankDestination = best.Position;
-                currentPlanScore = best.TotalScore;
+                selectedFlankDestination = targetReachablePos;
+                currentPlanScore = selectedCandidate.TotalScore;
 
                 // Update side bias (-1 or +1) based on candidate direction relative to target approach
                 Vector3 toCand = (selectedFlankDestination - transform.position).normalized;
@@ -292,17 +318,23 @@ namespace TacticalShooter.AI.Agents
                 Vector3 lat = Vector3.Cross(toTarg, Vector3.up);
                 sideBias = Vector3.Dot(toCand, lat) >= 0 ? 1f : -1f;
 
-                Debug.Log($"[{DisplayName}] Selected Flank Destination at {selectedFlankDestination} (Score: {best.TotalScore:F1}, AngleScore: {best.AngleScore:F1}, LoS: {best.LineOfSightScore:F1})");
+                Debug.Log($"[{DisplayName}] Selected Reachable Flank Destination at {selectedFlankDestination} (Score: {selectedCandidate.TotalScore:F1}, AngleScore: {selectedCandidate.AngleScore:F1}, LoS: {selectedCandidate.LineOfSightScore:F1})");
             }
 
             lastReplanTime = Time.time;
             targetPosAtLastPlan = targetCenter;
 
+            ChangeAlertness(AlertLevel.Combat);
             ChangeState(AgentState.Reposition);
             currentPhase = FlankerPhase.MovingToFlank;
             if (movement != null)
             {
-                movement.MoveTo(selectedFlankDestination, flankSpeed);
+                if (!movement.TryMoveTo(selectedFlankDestination, flankSpeed))
+                {
+                    // Destination rejected by path check, investigate LKP directly
+                    StartInvestigatingLKP();
+                    return false;
+                }
             }
             return true;
         }
@@ -348,9 +380,12 @@ namespace TacticalShooter.AI.Agents
             }
 
             // Periodic replan check if stuck or making no progress
-            if (movement.IsStuck)
+            if (movement != null && movement.IsStuck)
             {
-                InitiateFlankSelection(perception.LastKnownPosition, GetTargetForward(), forceReplan: true);
+                if (!InitiateFlankSelection(perception != null ? perception.LastKnownPosition : targetPosAtLastPlan, GetTargetForward(), forceReplan: true))
+                {
+                    StartInvestigatingLKP();
+                }
             }
         }
 
@@ -411,13 +446,16 @@ namespace TacticalShooter.AI.Agents
         {
             isBurstFiring = true;
 
+            // Aim acquisition / steadying breath before trigger pull
+            yield return new WaitForSeconds(0.35f);
+
             for (int i = 0; i < burstCount; i++)
             {
                 if (!IsAlive || currentState != AgentState.Engage) break;
                 if (!HasLineOfFireToTarget(out _, out _)) break;
 
                 ExecuteSingleShot();
-                yield return new WaitForSeconds(fireRate);
+                if (burstCount > 1) yield return new WaitForSeconds(fireRate);
             }
 
             nextBurstTime = Time.time + burstCooldown;
@@ -434,15 +472,17 @@ namespace TacticalShooter.AI.Agents
                 return;
             }
 
-            Vector3 spread = UnityEngine.Random.insideUnitSphere * 0.03f;
+            // Sniper rifle precision: minimal spread
+            Vector3 spread = UnityEngine.Random.insideUnitSphere * 0.012f;
             Vector3 shootDir = ((targetPoint + spread) - origin).normalized;
-            float shootDist = 50f;
+            float shootDist = 65f;
 
             if (audioSource != null)
             {
-                audioSource.pitch = UnityEngine.Random.Range(0.95f, 1.15f);
+                audioSource.pitch = UnityEngine.Random.Range(0.82f, 0.90f); // Heavy sniper report
                 audioSource.Play();
             }
+            CombatEffects.PlayGunshot(origin);
 
             Vector3 hitPoint = origin + shootDir * shootDist;
             Vector3 castOrigin = origin + shootDir * 0.05f;
@@ -472,6 +512,7 @@ namespace TacticalShooter.AI.Agents
             {
                 StartCoroutine(ShowTracerRoutine(origin, hitPoint));
             }
+            CombatEffects.SpawnTracer(origin, hitPoint, this);
         }
 
         private IEnumerator ShowTracerRoutine(Vector3 start, Vector3 end)
@@ -546,13 +587,22 @@ namespace TacticalShooter.AI.Agents
 
         private void StartInvestigatingLKP()
         {
+            ChangeAlertness(AlertLevel.Suspicious);
             ChangeState(AgentState.Investigate);
             currentPhase = FlankerPhase.SearchingLKP;
-            currentSearchPoint = perception != null ? perception.LastKnownPosition : targetPosAtLastPlan;
+            currentSearchPoint = perception != null && perception.LastKnownPosition != Vector3.zero ? perception.LastKnownPosition : targetPosAtLastPlan;
             searchTimer = 0f;
             isSearchingAtPoint = false;
 
-            movement.MoveTo(currentSearchPoint, flankSpeed);
+            if (movement != null)
+            {
+                if (!movement.TryMoveTo(currentSearchPoint, flankSpeed))
+                {
+                    // LKP unreachable via complete NavMesh route; initiate 360 search immediately from current position
+                    isSearchingAtPoint = true;
+                    movement.Stop();
+                }
+            }
             Debug.Log($"[{DisplayName}] Lost contact; moving to investigate LKP at {currentSearchPoint}");
         }
 
@@ -570,7 +620,7 @@ namespace TacticalShooter.AI.Agents
 
             if (!isSearchingAtPoint)
             {
-                if (movement.HasReachedDestination(1.5f))
+                if (movement.HasReachedDestination(1.5f) || movement.IsStuck)
                 {
                     isSearchingAtPoint = true;
                     searchTimer = 0f;
@@ -589,9 +639,16 @@ namespace TacticalShooter.AI.Agents
                 if (searchTimer >= searchDuration)
                 {
                     // Investigation concluded without contact: return to home base / patrol
+                    ChangeAlertness(AlertLevel.Unaware);
                     ChangeState(AgentState.ReturnToPost);
                     currentPhase = FlankerPhase.ReturningHome;
-                    movement.MoveTo(homeBasePosition, patrolSpeed);
+                    if (!movement.TryMoveTo(homeBasePosition, patrolSpeed))
+                    {
+                        if (movement.IsDestinationReachable(homeBasePosition, out Vector3 reachableHome))
+                        {
+                            movement.MoveTo(reachableHome, patrolSpeed);
+                        }
+                    }
                     Debug.Log($"[{DisplayName}] Search concluded. Returning to post at {homeBasePosition}");
                 }
             }
@@ -608,15 +665,15 @@ namespace TacticalShooter.AI.Agents
                 return;
             }
 
-            if (movement.HasReachedDestination(1.5f))
+            if (movement != null && (movement.HasReachedDestination(1.5f) || (movement.IsStuck && Vector3.Distance(transform.position, homeBasePosition) < 3.0f)))
             {
                 ChangeAlertness(AlertLevel.Unaware);
                 ChangeState(AgentState.Patrol);
                 currentPhase = FlankerPhase.Patrol;
-                if (patrolWaypoints.Length > 0)
+                if (patrolWaypoints != null && patrolWaypoints.Length > 0)
                 {
                     currentWaypointIndex = 0;
-                    movement.MoveTo(patrolWaypoints[0], patrolSpeed);
+                    movement.TryMoveTo(patrolWaypoints[0], patrolSpeed);
                 }
             }
         }
