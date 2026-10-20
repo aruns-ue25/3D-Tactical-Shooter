@@ -1,4 +1,6 @@
 using UnityEngine;
+using UnityEngine.AI;
+using UnityEngine.SceneManagement;
 using TacticalShooter.AI.Agents;
 using TacticalShooter.AI.Core;
 using TacticalShooter.AI.Movement;
@@ -30,11 +32,13 @@ namespace TacticalShooter.AI.Agents
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void AutoBootstrapInScene()
         {
+            if (SceneManager.GetActiveScene().name != "Main") return;
             EnsureAllSectorGuards();
         }
 
         private void Start()
         {
+            if (SceneManager.GetActiveScene().name != "Main") return;
             if (autoSpawnOnStart)
             {
                 EnsureAllSectorGuards();
@@ -114,6 +118,58 @@ namespace TacticalShooter.AI.Agents
                 }, 16f);
                 if (aiRoot != null && mezGuard != null) mezGuard.transform.SetParent(aiRoot.transform, true);
             }
+
+            // 6. Mid-West Storage Room Guard (Defending Storage Room Choke Points & Crates)
+            if (GameObject.Find("TacticalSoldier_StorageGuard") == null)
+            {
+                var storageGuard = SpawnTacticalSoldier("TacticalSoldier_StorageGuard", new Vector3(15f, 0.1f, 22.5f), new Vector3[]
+                {
+                    new Vector3(12f, 0.1f, 20f),
+                    new Vector3(18f, 0.1f, 20f),
+                    new Vector3(18f, 0.1f, 25f),
+                    new Vector3(12f, 0.1f, 25f)
+                }, 15f);
+                if (aiRoot != null && storageGuard != null) storageGuard.transform.SetParent(aiRoot.transform, true);
+            }
+
+            // 7. North-West Security & Control Room Guard (Defending Security Terminal & West Passage)
+            if (GameObject.Find("TacticalSoldier_SecurityGuard") == null)
+            {
+                var secGuard = SpawnTacticalSoldier("TacticalSoldier_SecurityGuard", new Vector3(15f, 0.1f, 37.5f), new Vector3[]
+                {
+                    new Vector3(11f, 0.1f, 35f),
+                    new Vector3(19f, 0.1f, 35f),
+                    new Vector3(19f, 0.1f, 40f),
+                    new Vector3(11f, 0.1f, 40f)
+                }, 16f);
+                if (aiRoot != null && secGuard != null) secGuard.transform.SetParent(aiRoot.transform, true);
+            }
+
+            // 8. South-East Tech Office Guard (Defending East Wing Access Doorway)
+            if (GameObject.Find("TacticalSoldier_SideRoom2Guard") == null)
+            {
+                var side2Guard = SpawnTacticalSoldier("TacticalSoldier_SideRoom2Guard", new Vector3(45f, 0.1f, 12.5f), new Vector3[]
+                {
+                    new Vector3(42f, 0.1f, 10f),
+                    new Vector3(48f, 0.1f, 10f),
+                    new Vector3(48f, 0.1f, 15f),
+                    new Vector3(42f, 0.1f, 15f)
+                }, 14f);
+                if (aiRoot != null && side2Guard != null) side2Guard.transform.SetParent(aiRoot.transform, true);
+            }
+
+            // 9. South Main Entrance Checkpoint Guard (Outer Perimeter Foyer Defense)
+            if (GameObject.Find("TacticalSoldier_SouthEntranceGuard") == null)
+            {
+                var southGuard = SpawnTacticalSoldier("TacticalSoldier_SouthEntranceGuard", new Vector3(30f, 0.1f, 14.0f), new Vector3[]
+                {
+                    new Vector3(27f, 0.1f, 12f),
+                    new Vector3(33f, 0.1f, 12f),
+                    new Vector3(33f, 0.1f, 16f),
+                    new Vector3(27f, 0.1f, 16f)
+                }, 16f);
+                if (aiRoot != null && southGuard != null) southGuard.transform.SetParent(aiRoot.transform, true);
+            }
         }
 
         public TacticalSoldierAgent EnsureSoldierInScene()
@@ -132,6 +188,17 @@ namespace TacticalShooter.AI.Agents
         /// </summary>
         public static TacticalSoldierAgent SpawnTacticalSoldier(string soldierName, Vector3 spawnPos, Vector3[] waypoints, float leashRadius)
         {
+            GameObject existing = GameObject.Find(soldierName);
+            if (existing != null)
+            {
+                return existing.GetComponent<TacticalSoldierAgent>();
+            }
+
+            if (NavMesh.SamplePosition(spawnPos, out NavMeshHit hit, 3.0f, NavMesh.AllAreas))
+            {
+                spawnPos = hit.position;
+            }
+
             GameObject soldierObj = new GameObject(soldierName);
             soldierObj.transform.position = spawnPos;
             soldierObj.transform.rotation = Quaternion.Euler(0f, 180f, 0f); // Face towards South Entrance
@@ -170,7 +237,7 @@ namespace TacticalShooter.AI.Agents
             if (waypointsField != null) waypointsField.SetValue(agent, waypoints);
 
             var attackRangeField = typeof(TacticalSoldierAgent).GetField("attackRange", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            if (attackRangeField != null) attackRangeField.SetValue(agent, 22f);
+            if (attackRangeField != null) attackRangeField.SetValue(agent, 16.5f);
 
             var viewDistField = typeof(AIPerception).GetField("viewDistance", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
             if (viewDistField != null) viewDistField.SetValue(perception, 35f);

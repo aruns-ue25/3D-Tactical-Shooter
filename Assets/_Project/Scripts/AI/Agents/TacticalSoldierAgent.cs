@@ -30,7 +30,7 @@ namespace TacticalShooter.AI.Agents
         [SerializeField] private float waypointWaitTime = 1.0f;
 
         [Header("Combat & Engagement")]
-        [SerializeField] private float attackRange = 22f;
+        [SerializeField] private float attackRange = 16.5f;
         [SerializeField] private float fireRate = 0.15f; // Seconds per bullet in burst
         [SerializeField] private int burstCount = 3;
         [SerializeField] private float burstCooldown = 2.2f;
@@ -221,7 +221,15 @@ namespace TacticalShooter.AI.Agents
                     attackRange * 0.75f,
                     LayerMask.GetMask("Default", "Environment")
                 );
-                movement.MoveTo(repositionTarget, 3.5f);
+
+                if (!movement.TryMoveTo(repositionTarget, 3.5f))
+                {
+                    // If calculated cover is unreachable, fallback to holding post or moving to guard post
+                    if (!movement.TryMoveTo(guardPostPosition, 3.0f))
+                    {
+                        movement.Stop();
+                    }
+                }
             }
         }
 
@@ -276,7 +284,10 @@ namespace TacticalShooter.AI.Agents
                 {
                     flankTimer = 0f;
                     Vector3 flankPos = FindFlankingPosition(transform.position, target.position, guardPostPosition, guardLeashRadius);
-                    movement.MoveTo(flankPos, 3.4f);
+                    if (!movement.TryMoveTo(flankPos, 3.4f))
+                    {
+                        movement.Stop();
+                    }
                 }
             }
             else
@@ -284,12 +295,12 @@ namespace TacticalShooter.AI.Agents
                 // Clear shot available at exposed player!
                 flankTimer = 0f;
 
-                if (distToTarget > 13f)
+                if (distToTarget > 10.5f)
                 {
                     // Advance toward player smoothly while maintaining aim
                     movement.MoveTo(target.position, 2.4f);
                 }
-                else if (distToTarget < 3.2f)
+                else if (distToTarget < 3.0f)
                 {
                     // Back up slightly if player is too close
                     Vector3 backStep = transform.position - transform.forward * 2.5f;
@@ -488,7 +499,14 @@ namespace TacticalShooter.AI.Agents
             searchTimer = 0f;
             searchTransitTimer = 0f;
             isSearchingAtPoint = false;
-            movement.MoveTo(targetSearchPoint, 3.2f);
+
+            if (!movement.TryMoveTo(targetSearchPoint, 3.2f))
+            {
+                // LKP unreachable; initiate 360 search from current position
+                isSearchingAtPoint = true;
+                movement.Stop();
+                searchScanAngle = transform.eulerAngles.y;
+            }
         }
 
         private void HandleInvestigateDecision()
@@ -504,7 +522,7 @@ namespace TacticalShooter.AI.Agents
 
             if (!isSearchingAtPoint)
             {
-                if (movement.HasReachedDestination(1.6f) || searchTransitTimer > 6.0f)
+                if (movement.HasReachedDestination(1.6f) || searchTransitTimer > 6.0f || movement.IsStuck)
                 {
                     isSearchingAtPoint = true;
                     movement.Stop();
@@ -526,7 +544,13 @@ namespace TacticalShooter.AI.Agents
                 {
                     ChangeAlertness(AlertLevel.Unaware);
                     ChangeState(AgentState.ReturnToPost);
-                    movement.MoveTo(guardPostPosition, 2.4f);
+                    if (!movement.TryMoveTo(guardPostPosition, 2.4f))
+                    {
+                        if (movement.IsDestinationReachable(guardPostPosition, out Vector3 reachablePost))
+                        {
+                            movement.MoveTo(reachablePost, 2.4f);
+                        }
+                    }
                 }
             }
         }
@@ -542,11 +566,18 @@ namespace TacticalShooter.AI.Agents
                 return;
             }
 
-            if (movement.HasReachedDestination(1.2f))
+            if (movement.HasReachedDestination(1.2f) || (movement.IsStuck && Vector3.Distance(transform.position, guardPostPosition) < 2.5f))
             {
                 ChangeAlertness(AlertLevel.Unaware);
                 ChangeState(AgentState.Patrol);
-                movement.MoveTo(patrolWaypoints[currentWaypointIndex], 2.2f);
+                if (patrolWaypoints != null && patrolWaypoints.Length > 0)
+                {
+                    movement.TryMoveTo(patrolWaypoints[currentWaypointIndex], 2.2f);
+                }
+                else
+                {
+                    movement.Stop();
+                }
             }
         }
 
