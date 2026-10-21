@@ -61,3 +61,7 @@ sysinfo.txt
 [Oo]utput/
 _Recovery/
 _Recovery.meta
+
+# Root and Build Logs
+*.log
+
