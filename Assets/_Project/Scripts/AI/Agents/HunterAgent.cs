@@ -36,7 +36,7 @@ namespace TacticalShooter.AI.Agents
         [Header("Tracking")]
         [SerializeField] private float pursuitSpeed = 4.1f;
         [SerializeField] private float searchSpeed = 3.0f;
-        [SerializeField] private float maximumPursuitRadius = 55f;
+        [SerializeField] private float maximumPursuitRadius = 90f;
         [SerializeField] private float searchDuration = 10f;
         [SerializeField] private float searchPointRadius = 3.5f;
         [SerializeField] private float pursuitRepathInterval = 0.65f;
@@ -44,13 +44,13 @@ namespace TacticalShooter.AI.Agents
         [SerializeField] private float lostSightPursuitTimeout = 7.0f;
 
         [Header("Combat")]
-        [SerializeField] private float attackRange = 22f;
-        [SerializeField] private float preferredCombatDistance = 11f;
-        [SerializeField] private float fireRate = 0.18f;
+        [SerializeField] private float attackRange = 13.0f; // Short ranged shooting
+        [SerializeField] private float preferredCombatDistance = 7.0f;
+        [SerializeField] private float fireRate = 0.16f;
         [SerializeField] private int shotsPerBurst = 3;
-        [SerializeField] private float burstCooldown = 1.8f;
-        [SerializeField] private float damagePerShot = 4f;
-        [SerializeField] private float weaponRange = 50f;
+        [SerializeField] private float burstCooldown = 1.6f;
+        [SerializeField] private float damagePerShot = 5f;
+        [SerializeField] private float weaponRange = 35f;
 
         [Header("Presentation")]
         [SerializeField] private bool showHunterHUD = true;
@@ -721,7 +721,7 @@ namespace TacticalShooter.AI.Agents
                 fontStyle = FontStyle.Bold
             };
             label.normal.textColor = hunterAccent;
-            GUI.Label(new Rect(x - 16f, y - 18f, width + 32f, 17f), $"HUNTER | {stateText}", label);
+            GUI.Label(new Rect(x - 24f, y - 18f, width + 48f, 17f), $"HUNTER [STALKER] | {stateText}", label);
             GUI.color = Color.white;
         }
 

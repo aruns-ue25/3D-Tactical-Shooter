@@ -3,11 +3,13 @@ using UnityEngine.AI;
 using UnityEngine.SceneManagement;
 using TacticalShooter.AI.Movement;
 using TacticalShooter.AI.Perception;
+using TacticalShooter.AI.Core;
 using TacticalShooter.Systems.Combat;
+using TacticalShooter.Environment.Config;
 
 namespace TacticalShooter.AI.Agents
 {
-    /// <summary>Creates the Main-scene Hunters (Tracker and East Prowler), while keeping test and sample scenes untouched.</summary>
+    /// <summary>Creates the Main-scene Hunters while keeping test and sample scenes untouched.</summary>
     public static class HunterSpawner
     {
         private const string MainSceneName = "Main";
@@ -17,28 +19,23 @@ namespace TacticalShooter.AI.Agents
         {
             if (SceneManager.GetActiveScene().name != MainSceneName) return;
 
-            // 1. South Entrance Hunter (Tracker)
-            if (GameObject.Find("HunterAgent_Tracker") == null)
-            {
-                SpawnHunter("HunterAgent_Tracker", new Vector3(30f, 0.1f, 8f), new Vector3[]
-                {
-                    new Vector3(27.5f, 0.1f, 8f),
-                    new Vector3(27.5f, 0.1f, 11f),
-                    new Vector3(32.5f, 0.1f, 11f),
-                    new Vector3(32.5f, 0.1f, 8f)
-                });
-            }
+            CampusLayoutConfig cfg = null;
+#if UNITY_EDITOR
+            cfg = UnityEditor.AssetDatabase.LoadAssetAtPath<CampusLayoutConfig>("Assets/_Project/Data/CampusLayoutConfig.asset");
+#endif
 
-            // 2. East Wing / Cargo Dock Hunter (East Prowler)
-            if (GameObject.Find("HunterAgent_EastProwler") == null)
+            if (cfg != null && cfg.coreAIDeployments != null)
             {
-                SpawnHunter("HunterAgent_EastProwler", new Vector3(46f, 0.1f, 22f), new Vector3[]
+                foreach (var profile in cfg.coreAIDeployments)
                 {
-                    new Vector3(44f, 0.1f, 18f),
-                    new Vector3(44f, 0.1f, 26f),
-                    new Vector3(48f, 0.1f, 26f),
-                    new Vector3(48f, 0.1f, 18f)
-                });
+                    if (profile.role == AgentRole.Hunter)
+                    {
+                        if (GameObject.Find(profile.agentName) == null)
+                        {
+                            SpawnHunter(profile.agentName, profile.spawnPosition, profile.patrolWaypoints);
+                        }
+                    }
+                }
             }
         }
 

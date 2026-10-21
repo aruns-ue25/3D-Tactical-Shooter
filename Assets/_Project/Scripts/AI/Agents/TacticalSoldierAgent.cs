@@ -25,16 +25,16 @@ namespace TacticalShooter.AI.Agents
     {
         [Header("Guard Area & Perimeter")]
         [SerializeField] private Vector3 guardPostPosition;
-        [SerializeField] private float guardLeashRadius = 28f;
+        [SerializeField] private float guardLeashRadius = 35.0f; // Can move past initial post across their floor
         [SerializeField] private Vector3[] patrolWaypoints;
         [SerializeField] private float waypointWaitTime = 1.0f;
 
         [Header("Combat & Engagement")]
-        [SerializeField] private float attackRange = 16.5f;
+        [SerializeField] private float attackRange = 13.0f; // Short range shooting
         [SerializeField] private float fireRate = 0.15f; // Seconds per bullet in burst
         [SerializeField] private int burstCount = 3;
-        [SerializeField] private float burstCooldown = 2.2f;
-        [SerializeField] private float damagePerShot = 4f;
+        [SerializeField] private float burstCooldown = 2.0f;
+        [SerializeField] private float damagePerShot = 5f;
         [SerializeField] private float searchDuration = 6.0f;
 
         [Header("Agent Visuals & HUD")]
@@ -121,6 +121,16 @@ namespace TacticalShooter.AI.Agents
             movement.MoveTo(patrolWaypoints[currentWaypointIndex], 2.2f);
         }
 
+        public void ConfigureDeployment(Vector3 post, float leash, Vector3[] waypoints)
+        {
+            guardPostPosition = post;
+            guardLeashRadius = leash;
+            if (waypoints != null && waypoints.Length > 0)
+            {
+                patrolWaypoints = waypoints;
+            }
+        }
+
         protected override void UpdateDecision()
         {
             switch (currentState)
@@ -189,6 +199,18 @@ namespace TacticalShooter.AI.Agents
         {
             float distToTarget = perception.DistanceToTarget;
             float distToAnchor = Vector3.Distance(transform.position, guardPostPosition);
+
+            // Vertical floor check: Guard stays on its assigned floor and does not follow upstairs or downstairs
+            Transform target = TargetTransform;
+            float verticalDiff = target != null ? Mathf.Abs(target.position.y - guardPostPosition.y) : (perception != null ? Mathf.Abs(perception.LastKnownPosition.y - guardPostPosition.y) : 0f);
+            if (verticalDiff > 2.0f)
+            {
+                ChangeAlertness(AlertLevel.Alert);
+                ChangeState(AgentState.Reposition);
+                repositionTarget = guardPostPosition;
+                movement.MoveTo(repositionTarget, 2.5f);
+                return;
+            }
 
             // Perimeter leash check: Guard defends ground; does not chase across entire map
             if (distToAnchor > guardLeashRadius)
@@ -297,8 +319,15 @@ namespace TacticalShooter.AI.Agents
 
                 if (distToTarget > 10.5f)
                 {
-                    // Advance toward player smoothly while maintaining aim
-                    movement.MoveTo(target.position, 2.4f);
+                    // Advance toward player smoothly while maintaining aim only if on the same floor
+                    if (Mathf.Abs(target.position.y - guardPostPosition.y) <= 2.0f)
+                    {
+                        movement.MoveTo(target.position, 2.4f);
+                    }
+                    else
+                    {
+                        movement.Stop();
+                    }
                 }
                 else if (distToTarget < 3.0f)
                 {
@@ -495,6 +524,17 @@ namespace TacticalShooter.AI.Agents
 
             // Move directly to where player was actually standing
             targetSearchPoint = perception.LastKnownPosition;
+
+            // Restrict search to Guard's assigned floor and leash
+            float verticalDiff = Mathf.Abs(targetSearchPoint.y - guardPostPosition.y);
+            float distFromPost = Vector3.Distance(targetSearchPoint, guardPostPosition);
+            if (verticalDiff > 2.0f || distFromPost > guardLeashRadius)
+            {
+                // Target is on another floor or outside leash! Stay on assigned floor and scan post
+                isSearchingAtPoint = true;
+                movement.MoveTo(guardPostPosition, 2.5f);
+                return;
+            }
 
             searchTimer = 0f;
             searchTransitTimer = 0f;
@@ -708,6 +748,17 @@ namespace TacticalShooter.AI.Agents
             StopAllCoroutines();
             if (tracerLine != null) tracerLine.enabled = false;
 
+            if (movement != null)
+            {
+                movement.Stop();
+                movement.enabled = false;
+            }
+
+            if (perception != null)
+            {
+                perception.enabled = false;
+            }
+
             // Disable character collision to allow walking over
             CharacterController cc = GetComponent<CharacterController>();
             if (cc != null) cc.enabled = false;
@@ -883,14 +934,14 @@ namespace TacticalShooter.AI.Agents
             // State title & color
             string stateLabel = currentState switch
             {
-                AgentState.Patrol => "[GUARD] PATROL",
-                AgentState.Idle => "[GUARD] STANDING",
-                AgentState.Engage => "[!] ENGAGING",
-                AgentState.Reposition => "[<>] REPOSITIONING",
-                AgentState.Investigate => "[?] SEARCHING LKP",
-                AgentState.ReturnToPost => "[<-] RETURNING",
-                AgentState.Defeated => "[X] DOWNED",
-                _ => "[GUARD]"
+                AgentState.Patrol => "[GUARD: SENTINEL] PATROL",
+                AgentState.Idle => "[GUARD: SENTINEL] READY",
+                AgentState.Engage => "[!] GUARD ENGAGING",
+                AgentState.Reposition => "[<>] GUARD REPOSITION",
+                AgentState.Investigate => "[?] GUARD SEARCHING",
+                AgentState.ReturnToPost => "[<-] GUARD RETURNING",
+                AgentState.Defeated => "[X] GUARD DOWN",
+                _ => "[GUARD: SENTINEL]"
             };
 
             Color stateColor = currentState switch

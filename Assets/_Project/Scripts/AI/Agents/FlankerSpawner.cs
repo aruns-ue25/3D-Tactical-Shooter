@@ -6,6 +6,7 @@ using TacticalShooter.AI.Core;
 using TacticalShooter.AI.Movement;
 using TacticalShooter.AI.Perception;
 using TacticalShooter.Systems.Combat;
+using TacticalShooter.Environment.Config;
 
 namespace TacticalShooter.AI.Agents
 {
@@ -17,15 +18,15 @@ namespace TacticalShooter.AI.Agents
     {
         [Header("Spawn Settings")]
         [SerializeField] private bool autoSpawnOnStart = true;
-        [SerializeField] private Vector3 spawnPosition = new Vector3(38f, 0.1f, 32f); // Tactical junction near East Wing
+        [SerializeField] private Vector3 spawnPosition = new Vector3(35f, 3.6f, 26f); // Level 2 Upper Corridor
 
         [Header("Patrol Perimeter")]
         [SerializeField] private Vector3[] patrolWaypoints = new Vector3[]
         {
-            new Vector3(38f, 0.1f, 32f),
-            new Vector3(44f, 0.1f, 32f),
-            new Vector3(44f, 0.1f, 26f),
-            new Vector3(38f, 0.1f, 26f)
+            new Vector3(30f, 3.6f, 22f),
+            new Vector3(40f, 3.6f, 22f),
+            new Vector3(40f, 3.6f, 32f),
+            new Vector3(30f, 3.6f, 32f)
         };
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -45,34 +46,29 @@ namespace TacticalShooter.AI.Agents
         }
 
         /// <summary>
-        /// Ensures all Flanker agents exist in the scene (Stealth East Flanker and West Sniper Flanker).
+        /// Ensures all Flanker agents exist in the scene.
         /// </summary>
         public static void EnsureAllFlankersInMainScene()
         {
             if (SceneManager.GetActiveScene().name != "Main") return;
 
-            // 1. East Flanker (Stealth Tactical Junction)
-            if (GameObject.Find("FlankerAgent_Stealth") == null)
-            {
-                SpawnFlanker("FlankerAgent_Stealth", new Vector3(38f, 0.1f, 32f), new Vector3[]
-                {
-                    new Vector3(38f, 0.1f, 32f),
-                    new Vector3(44f, 0.1f, 32f),
-                    new Vector3(44f, 0.1f, 26f),
-                    new Vector3(38f, 0.1f, 26f)
-                });
-            }
+            CampusLayoutConfig cfg = null;
+#if UNITY_EDITOR
+            cfg = UnityEditor.AssetDatabase.LoadAssetAtPath<CampusLayoutConfig>("Assets/_Project/Data/CampusLayoutConfig.asset");
+#endif
 
-            // 2. West Flanker (West Sniper Overwatch)
-            if (GameObject.Find("FlankerAgent_WestSniper") == null)
+            if (cfg != null && cfg.coreAIDeployments != null)
             {
-                SpawnFlanker("FlankerAgent_WestSniper", new Vector3(22f, 0.1f, 28f), new Vector3[]
+                foreach (var profile in cfg.coreAIDeployments)
                 {
-                    new Vector3(22f, 0.1f, 28f),
-                    new Vector3(18f, 0.1f, 24f),
-                    new Vector3(18f, 0.1f, 33f),
-                    new Vector3(22f, 0.1f, 33f)
-                });
+                    if (profile.role == AgentRole.Flanker)
+                    {
+                        if (GameObject.Find(profile.agentName) == null)
+                        {
+                            SpawnFlanker(profile.agentName, profile.spawnPosition, profile.patrolWaypoints);
+                        }
+                    }
+                }
             }
         }
 

@@ -43,7 +43,7 @@ namespace TacticalShooter.AI.Agents
 
         [Header("Flanking Evaluation")]
         [SerializeField] private float minFlankDistance = 8.0f;
-        [SerializeField] private float maxFlankDistance = 22.0f;
+        [SerializeField] private float maxFlankDistance = 35.0f; // Can move past assigned locations to flank anywhere on floor
         [SerializeField] private int candidateAngleSamples = 12; // 30-degree increments
         [SerializeField] private float replanInterval = 1.8f;     // Avoid per-frame re-pathing
         [SerializeField] private float replanMovementThreshold = 3.5f; // Player must move > 3.5m to force replan
@@ -51,11 +51,11 @@ namespace TacticalShooter.AI.Agents
         [SerializeField] private LayerMask obstacleMask = ~0;
 
         [Header("Combat & Engagement (Sniper / Marksman)")]
-        [SerializeField] private float attackRange = 32f;
+        [SerializeField] private float attackRange = 42.0f; // Long ranged shooting
         [SerializeField] private float fireRate = 0.2f;
-        [SerializeField] private int burstCount = 1;
-        [SerializeField] private float burstCooldown = 2.4f;
-        [SerializeField] private float damagePerShot = 28f;
+        [SerializeField] private int burstCount = 1; // Strictly single-shot sniper rifle
+        [SerializeField] private float burstCooldown = 3.2f; // Deliberate bolt-action cooldown, strictly NO rapid fire
+        [SerializeField] private float damagePerShot = 45.0f; // High damage sniper DMR (45 HP per shot)
         [SerializeField] private float searchDuration = 5.5f;
 
         [Header("Movement Speeds")]
@@ -124,14 +124,20 @@ namespace TacticalShooter.AI.Agents
         protected override void Awake()
         {
             agentRole = AgentRole.Flanker;
-            agentDisplayName = "Stealth / Flanker Agent";
+            agentDisplayName = "Flanker (Ghost Marksman)";
+            damagePerShot = 45.0f;
+            burstCount = 1;
+            burstCooldown = 3.2f;
             base.Awake();
         }
 
         protected override void InitializeAgent()
         {
             agentRole = AgentRole.Flanker;
-            agentDisplayName = "Stealth / Flanker Agent";
+            agentDisplayName = "Flanker (Ghost Marksman)";
+            damagePerShot = 45.0f;
+            burstCount = 1;
+            burstCooldown = 3.2f;
 
             if (homeBasePosition == Vector3.zero)
             {
@@ -252,6 +258,15 @@ namespace TacticalShooter.AI.Agents
                 return false;
             }
 
+            // Floor tether check: Flanker operates strictly on its assigned floor level
+            float verticalTargetDiff = Mathf.Abs(targetCenter.y - homeBasePosition.y);
+            if (verticalTargetDiff > 1.8f)
+            {
+                selectedFlankDestination = homeBasePosition;
+                if (movement != null) movement.MoveTo(homeBasePosition, patrolSpeed);
+                return false;
+            }
+
             List<FlankPositionEvaluator.FlankCandidateResult> candidates = FlankPositionEvaluator.EvaluateFlankCandidates(
                 transform.position,
                 targetCenter,
@@ -274,6 +289,8 @@ namespace TacticalShooter.AI.Agents
                 for (int i = 0; i < candidates.Count; i++)
                 {
                     FlankPositionEvaluator.FlankCandidateResult cand = candidates[i];
+                    // Restrict flank candidates strictly to the Flanker's assigned floor level
+                    if (Mathf.Abs(cand.Position.y - homeBasePosition.y) > 1.8f) continue;
                     if (movement != null && movement.IsDestinationReachable(cand.Position, out Vector3 reachablePoint))
                     {
                         selectedCandidate = cand;
@@ -591,6 +608,14 @@ namespace TacticalShooter.AI.Agents
             ChangeState(AgentState.Investigate);
             currentPhase = FlankerPhase.SearchingLKP;
             currentSearchPoint = perception != null && perception.LastKnownPosition != Vector3.zero ? perception.LastKnownPosition : targetPosAtLastPlan;
+
+            // Restrict LKP investigation to the Flanker's assigned floor level
+            float verticalDiff = Mathf.Abs(currentSearchPoint.y - homeBasePosition.y);
+            if (verticalDiff > 1.8f)
+            {
+                currentSearchPoint = homeBasePosition;
+            }
+
             searchTimer = 0f;
             isSearchingAtPoint = false;
 
@@ -858,7 +883,7 @@ namespace TacticalShooter.AI.Agents
                 fontStyle = FontStyle.Bold
             };
             labelStyle.normal.textColor = Color.cyan;
-            GUI.Label(new Rect(x - 20f, screenY - 18f, barWidth + 40f, 16f), $"FLANKER [{currentPhase}]", labelStyle);
+            GUI.Label(new Rect(x - 30f, screenY - 18f, barWidth + 60f, 16f), $"FLANKER [MARKSMAN] | {currentPhase}", labelStyle);
         }
 
         #endregion

@@ -47,8 +47,11 @@ namespace TacticalShooter.AI.Core
         /// <summary>Flanking and encirclement combat agent.</summary>
         Flanker,
 
-        /// <summary>Tactical assistance and reinforcement agent.</summary>
-        Support
+        /// <summary>Tactical assistance, heavy reinforcement, and sector boss agent.</summary>
+        Support,
+
+        /// <summary>Alias for Boss agent archetype.</summary>
+        Boss = Support
     }
 
     /// <summary>
