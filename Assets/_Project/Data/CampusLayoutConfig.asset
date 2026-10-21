@@ -1,0 +1,616 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b40694c523ef0004dbdeb2757564b96d, type: 3}
+  m_Name: CampusLayoutConfig
+  m_EditorClassIdentifier: Assembly-CSharp::TacticalShooter.Environment.Config.CampusLayoutConfig
+  campusBounds:
+    serializedVersion: 2
+    x: -35
+    y: -35
+    width: 130
+    height: 120
+  buildingBounds:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 70
+    height: 60
+  groundY: 0
+  level2Y: 3.6
+  level3Y: 7.2
+  mainRoofParapetY: 10.8
+  wallHeight: 3.5
+  wallThickness: 0.35
+  playerStart: {x: 35, y: 0, z: -25}
+  objectiveTerminalAnchor: {x: 58, y: 3.6, z: 48}
+  terminal1_StoresAnchor: {x: 13, y: 0, z: 15}
+  terminal2_RecordsAnchor: {x: 13, y: 3.6, z: 44}
+  terminal3_ArchiveAnchor: {x: 58, y: 3.6, z: 48}
+  extractionHelipadAnchor: {x: 57, y: 7.2, z: 48}
+  stairShaftBounds:
+    serializedVersion: 2
+    x: 28
+    y: 44
+    width: 8
+    height: 12
+  stairHalfLandingZ: 53
+  stairRunLength: 7
+  stairFlightRise: 1.8
+  stairFlightAngle: 14.42
+  stairFlightWidth: 4
+  rooms:
+  - roomName: Entry_Vestibule
+    minX: 26
+    maxX: 44
+    minZ: 0
+    maxZ: 12
+    floorElevation: 0
+    ceilingElevation: 3.6
+    floorType: Tile
+  - roomName: Security_Checkpoint
+    minX: 26
+    maxX: 44
+    minZ: 12
+    maxZ: 22
+    floorElevation: 0
+    ceilingElevation: 3.6
+    floorType: Tile
+  - roomName: Central_Service_Spine
+    minX: 26
+    maxX: 44
+    minZ: 22
+    maxZ: 60
+    floorElevation: 0
+    ceilingElevation: 3.6
+    floorType: Tile
+  - roomName: Ground_Stair_Core
+    minX: 28
+    maxX: 36
+    minZ: 44
+    maxZ: 56
+    floorElevation: 0
+    ceilingElevation: 3.6
+    floorType: Tile
+  - roomName: Stores_Equipment_Room
+    minX: 0
+    maxX: 26
+    minZ: 0
+    maxZ: 30
+    floorElevation: 0
+    ceilingElevation: 3.6
+    floorType: Tile
+  - roomName: Workshop_Maintenance
+    minX: 0
+    maxX: 26
+    minZ: 30
+    maxZ: 60
+    floorElevation: 0
+    ceilingElevation: 3.6
+    floorType: Tile
+  - roomName: Research_Laboratory
+    minX: 44
+    maxX: 70
+    minZ: 0
+    maxZ: 36
+    floorElevation: 0
+    ceilingElevation: 3.6
+    floorType: LabEpoxy
+  - roomName: Ground_Logistics_Bay
+    minX: 44
+    maxX: 70
+    minZ: 36
+    maxZ: 60
+    floorElevation: 0
+    ceilingElevation: 3.6
+    floorType: Tile
+  - roomName: Level2_Stair_Landing
+    minX: 28
+    maxX: 36
+    minZ: 44
+    maxZ: 56
+    floorElevation: 3.6
+    ceilingElevation: 7.2
+    floorType: Tile
+  - roomName: Level2_Central_Corridor
+    minX: 26
+    maxX: 44
+    minZ: 18
+    maxZ: 44
+    floorElevation: 3.6
+    ceilingElevation: 7.2
+    floorType: Tile
+  - roomName: Level2_Secure_Archive
+    minX: 44
+    maxX: 70
+    minZ: 28
+    maxZ: 60
+    floorElevation: 3.6
+    ceilingElevation: 7.2
+    floorType: ServerTile
+  - roomName: Level2_Data_Analysis_Hub
+    minX: 44
+    maxX: 70
+    minZ: 0
+    maxZ: 28
+    floorElevation: 3.6
+    ceilingElevation: 7.2
+    floorType: LabEpoxy
+  - roomName: Level2_Classified_Records
+    minX: 0
+    maxX: 26
+    minZ: 28
+    maxZ: 60
+    floorElevation: 3.6
+    ceilingElevation: 7.2
+    floorType: Tile
+  - roomName: Level2_Armoury_Prep
+    minX: 0
+    maxX: 26
+    minZ: 0
+    maxZ: 28
+    floorElevation: 3.6
+    ceilingElevation: 7.2
+    floorType: Tile
+  - roomName: Level3_Stair_Landing
+    minX: 28
+    maxX: 36
+    minZ: 44
+    maxZ: 56
+    floorElevation: 7.2
+    ceilingElevation: 10.8
+    floorType: Tile
+  - roomName: Level3_Command_Corridor
+    minX: 26
+    maxX: 44
+    minZ: 18
+    maxZ: 44
+    floorElevation: 7.2
+    ceilingElevation: 10.8
+    floorType: Tile
+  - roomName: Level3_Mechanical_Penthouse
+    minX: 26
+    maxX: 44
+    minZ: 10
+    maxZ: 18
+    floorElevation: 7.2
+    ceilingElevation: 10.8
+    floorType: Tile
+  - roomName: Level3_Command_Deck
+    minX: 0
+    maxX: 26
+    minZ: 32
+    maxZ: 60
+    floorElevation: 7.2
+    ceilingElevation: 10.8
+    floorType: Tile
+  - roomName: Level3_Briefing_WarRoom
+    minX: 0
+    maxX: 26
+    minZ: 14
+    maxZ: 32
+    floorElevation: 7.2
+    ceilingElevation: 10.8
+    floorType: Tile
+  - roomName: Level3_Helipad_Terrace
+    minX: 44
+    maxX: 70
+    minZ: 36
+    maxZ: 60
+    floorElevation: 7.2
+    ceilingElevation: 8.4
+    floorType: Helipad
+  - roomName: Outdoor_Vehicle_Yard
+    minX: -35
+    maxX: 95
+    minZ: -35
+    maxZ: 0
+    floorElevation: 0
+    ceilingElevation: 0
+    floorType: Tarmac
+  - roomName: Outdoor_Loading_Yard
+    minX: 70
+    maxX: 95
+    minZ: 0
+    maxZ: 60
+    floorElevation: 0
+    ceilingElevation: 0
+    floorType: Tarmac
+  - roomName: Outdoor_Generator_Yard
+    minX: -35
+    maxX: 0
+    minZ: 0
+    maxZ: 60
+    floorElevation: 0
+    ceilingElevation: 0
+    floorType: Tarmac
+  - roomName: Outdoor_Service_Yard
+    minX: -35
+    maxX: 95
+    minZ: 60
+    maxZ: 85
+    floorElevation: 0
+    ceilingElevation: 0
+    floorType: Tarmac
+  portals:
+  - portalId: G1_Main_Entrance
+    fromRoom: Outdoor_Vehicle_Yard
+    toRoom: Entry_Vestibule
+    orientation: 0
+    wallCoord: 0
+    openingMin: 32
+    openingMax: 38
+    floorElevation: 0
+    portalHeight: 3.2
+  - portalId: G2_Vestibule_Security
+    fromRoom: Entry_Vestibule
+    toRoom: Security_Checkpoint
+    orientation: 0
+    wallCoord: 12
+    openingMin: 29
+    openingMax: 33
+    floorElevation: 0
+    portalHeight: 3
+  - portalId: G3_Security_Spine
+    fromRoom: Security_Checkpoint
+    toRoom: Central_Service_Spine
+    orientation: 0
+    wallCoord: 22
+    openingMin: 37
+    openingMax: 41
+    floorElevation: 0
+    portalHeight: 3
+  - portalId: G4_Spine_Stores
+    fromRoom: Central_Service_Spine
+    toRoom: Stores_Equipment_Room
+    orientation: 1
+    wallCoord: 26
+    openingMin: 24
+    openingMax: 28
+    floorElevation: 0
+    portalHeight: 3
+  - portalId: G5_Stores_Workshop
+    fromRoom: Stores_Equipment_Room
+    toRoom: Workshop_Maintenance
+    orientation: 0
+    wallCoord: 30
+    openingMin: 10
+    openingMax: 14
+    floorElevation: 0
+    portalHeight: 3
+  - portalId: G6_Spine_ResearchLab
+    fromRoom: Central_Service_Spine
+    toRoom: Research_Laboratory
+    orientation: 1
+    wallCoord: 44
+    openingMin: 18
+    openingMax: 22
+    floorElevation: 0
+    portalHeight: 3
+  - portalId: G7_Spine_StairCore
+    fromRoom: Central_Service_Spine
+    toRoom: Ground_Stair_Core
+    orientation: 0
+    wallCoord: 44
+    openingMin: 30
+    openingMax: 34
+    floorElevation: 0
+    portalHeight: 3
+  - portalId: G8_Logistics_LoadingYard
+    fromRoom: Ground_Logistics_Bay
+    toRoom: Outdoor_Loading_Yard
+    orientation: 1
+    wallCoord: 70
+    openingMin: 46
+    openingMax: 50
+    floorElevation: 0
+    portalHeight: 3.2
+  - portalId: L2_1_Stair_Corridor
+    fromRoom: Level2_Stair_Landing
+    toRoom: Level2_Central_Corridor
+    orientation: 0
+    wallCoord: 44
+    openingMin: 30
+    openingMax: 34
+    floorElevation: 3.6
+    portalHeight: 3
+  - portalId: L2_2_Corridor_Archive
+    fromRoom: Level2_Central_Corridor
+    toRoom: Level2_Secure_Archive
+    orientation: 1
+    wallCoord: 44
+    openingMin: 38
+    openingMax: 42
+    floorElevation: 3.6
+    portalHeight: 3
+  - portalId: L2_3_Corridor_Analysis
+    fromRoom: Level2_Central_Corridor
+    toRoom: Level2_Data_Analysis_Hub
+    orientation: 1
+    wallCoord: 44
+    openingMin: 20
+    openingMax: 24
+    floorElevation: 3.6
+    portalHeight: 3
+  - portalId: L2_4_Corridor_Records
+    fromRoom: Level2_Central_Corridor
+    toRoom: Level2_Classified_Records
+    orientation: 1
+    wallCoord: 26
+    openingMin: 34
+    openingMax: 38
+    floorElevation: 3.6
+    portalHeight: 3
+  - portalId: L2_5_Corridor_Armoury
+    fromRoom: Level2_Central_Corridor
+    toRoom: Level2_Armoury_Prep
+    orientation: 1
+    wallCoord: 26
+    openingMin: 18
+    openingMax: 22
+    floorElevation: 3.6
+    portalHeight: 3
+  - portalId: L3_1_Stair_Corridor
+    fromRoom: Level3_Stair_Landing
+    toRoom: Level3_Command_Corridor
+    orientation: 0
+    wallCoord: 44
+    openingMin: 30
+    openingMax: 34
+    floorElevation: 7.2
+    portalHeight: 3
+  - portalId: L3_2_Corridor_Command
+    fromRoom: Level3_Command_Corridor
+    toRoom: Level3_Command_Deck
+    orientation: 1
+    wallCoord: 26
+    openingMin: 38
+    openingMax: 42
+    floorElevation: 7.2
+    portalHeight: 3
+  - portalId: L3_3_Corridor_Briefing
+    fromRoom: Level3_Command_Corridor
+    toRoom: Level3_Briefing_WarRoom
+    orientation: 1
+    wallCoord: 26
+    openingMin: 20
+    openingMax: 24
+    floorElevation: 7.2
+    portalHeight: 3
+  - portalId: L3_4_Corridor_Mech
+    fromRoom: Level3_Command_Corridor
+    toRoom: Level3_Mechanical_Penthouse
+    orientation: 0
+    wallCoord: 18
+    openingMin: 33
+    openingMax: 37
+    floorElevation: 7.2
+    portalHeight: 3
+  - portalId: L3_5_Corridor_Helipad
+    fromRoom: Level3_Command_Corridor
+    toRoom: Level3_Helipad_Terrace
+    orientation: 1
+    wallCoord: 44
+    openingMin: 38
+    openingMax: 42
+    floorElevation: 7.2
+    portalHeight: 3
+  - portalId: Gate_Vehicle_Entrance
+    fromRoom: Exterior
+    toRoom: Outdoor_Vehicle_Yard
+    orientation: 0
+    wallCoord: -35
+    openingMin: 29
+    openingMax: 41
+    floorElevation: 0
+    portalHeight: 4.5
+  securityDoors:
+  - doorName: Door_G_Stores
+    portalId: G4_Spine_Stores
+    position: {x: 26, y: 0, z: 26}
+    rotation: {x: 0, y: 0.70710677, z: 0, w: 0.70710677}
+    scale: {x: 2.6666667, y: 0.85714287, z: 1}
+  - doorName: Door_L2_Records
+    portalId: L2_4_Corridor_Records
+    position: {x: 26, y: 3.6, z: 36}
+    rotation: {x: 0, y: 0.70710677, z: 0, w: 0.70710677}
+    scale: {x: 2.6666667, y: 0.85714287, z: 1}
+  - doorName: Door_L2_Archive
+    portalId: L2_2_Corridor_Archive
+    position: {x: 44, y: 3.6, z: 40}
+    rotation: {x: 0, y: 0.70710677, z: 0, w: 0.70710677}
+    scale: {x: 2.6666667, y: 0.85714287, z: 1}
+  supplyPickups:
+  - pickupId: Pickup_Ammo_Workshop
+    type: 0
+    roomName: Workshop_Maintenance
+    position: {x: 13, y: 0.35, z: 50}
+    amount: 30
+  - pickupId: Pickup_Medkit_Workshop
+    type: 1
+    roomName: Workshop_Maintenance
+    position: {x: 8, y: 0.35, z: 44}
+    amount: 100
+  - pickupId: Pickup_Medkit_ResearchLab
+    type: 1
+    roomName: Research_Laboratory
+    position: {x: 57, y: 0.35, z: 24}
+    amount: 100
+  - pickupId: Pickup_Ammo_Logistics
+    type: 0
+    roomName: Ground_Logistics_Bay
+    position: {x: 54, y: 0.35, z: 48}
+    amount: 30
+  - pickupId: Pickup_Medkit_Logistics
+    type: 1
+    roomName: Ground_Logistics_Bay
+    position: {x: 62, y: 0.35, z: 52}
+    amount: 100
+  - pickupId: Pickup_Ammo_Armoury_1
+    type: 0
+    roomName: Level2_Armoury_Prep
+    position: {x: 10, y: 3.9499998, z: 10}
+    amount: 30
+  - pickupId: Pickup_Ammo_Armoury_2
+    type: 0
+    roomName: Level2_Armoury_Prep
+    position: {x: 18, y: 3.9499998, z: 20}
+    amount: 30
+  - pickupId: Pickup_Medkit_Armoury
+    type: 1
+    roomName: Level2_Armoury_Prep
+    position: {x: 14, y: 3.9499998, z: 15}
+    amount: 100
+  - pickupId: Pickup_Medkit_AnalysisHub
+    type: 1
+    roomName: Level2_Data_Analysis_Hub
+    position: {x: 57, y: 3.9499998, z: 20}
+    amount: 100
+  - pickupId: Pickup_Ammo_WarRoom
+    type: 0
+    roomName: Level3_Briefing_WarRoom
+    position: {x: 13, y: 7.5499997, z: 22}
+    amount: 30
+  - pickupId: Pickup_Medkit_CommandDeck
+    type: 1
+    roomName: Level3_Command_Deck
+    position: {x: 13, y: 7.5499997, z: 46}
+    amount: 100
+  coreAIDeployments:
+  - agentName: HunterAgent_GroundSpine
+    role: 1
+    spawnPosition: {x: 38, y: 0, z: 32}
+    leashRadius: 35
+    patrolWaypoints:
+    - {x: 34, y: 0, z: 25}
+    - {x: 41, y: 0, z: 25}
+    - {x: 41, y: 0, z: 40}
+    - {x: 34, y: 0, z: 40}
+  - agentName: FlankerAgent_Stores
+    role: 2
+    spawnPosition: {x: 13, y: 0, z: 20}
+    leashRadius: 25
+    patrolWaypoints:
+    - {x: 8, y: 0, z: 12}
+    - {x: 18, y: 0, z: 12}
+    - {x: 18, y: 0, z: 22}
+    - {x: 8, y: 0, z: 22}
+  - agentName: TacticalSoldier_Workshop
+    role: 0
+    spawnPosition: {x: 13, y: 0, z: 45}
+    leashRadius: 30
+    patrolWaypoints:
+    - {x: 8, y: 0, z: 38}
+    - {x: 18, y: 0, z: 38}
+    - {x: 18, y: 0, z: 52}
+    - {x: 8, y: 0, z: 52}
+  - agentName: TacticalSoldier_ResearchLab
+    role: 0
+    spawnPosition: {x: 57, y: 0, z: 18}
+    leashRadius: 30
+    patrolWaypoints:
+    - {x: 50, y: 0, z: 10}
+    - {x: 64, y: 0, z: 10}
+    - {x: 64, y: 0, z: 26}
+    - {x: 50, y: 0, z: 26}
+  - agentName: BossAgent_Records
+    role: 3
+    spawnPosition: {x: 17.2, y: 3.6, z: 44}
+    leashRadius: 7.5
+    patrolWaypoints:
+    - {x: 17.2, y: 3.6, z: 44}
+    - {x: 16, y: 3.6, z: 47}
+    - {x: 13, y: 3.6, z: 48.2}
+    - {x: 10, y: 3.6, z: 47}
+    - {x: 8.8, y: 3.6, z: 44}
+    - {x: 10, y: 3.6, z: 41}
+    - {x: 13, y: 3.6, z: 39.8}
+    - {x: 16, y: 3.6, z: 41}
+  - agentName: BossAgent_ArchiveGuardian
+    role: 3
+    spawnPosition: {x: 62.2, y: 3.6, z: 48}
+    leashRadius: 7.5
+    patrolWaypoints:
+    - {x: 62.2, y: 3.6, z: 48}
+    - {x: 61, y: 3.6, z: 51}
+    - {x: 58, y: 3.6, z: 52.2}
+    - {x: 55, y: 3.6, z: 51}
+    - {x: 53.8, y: 3.6, z: 48}
+    - {x: 55, y: 3.6, z: 45}
+    - {x: 58, y: 3.6, z: 43.8}
+    - {x: 61, y: 3.6, z: 45}
+  - agentName: HunterAgent_L2Prowler
+    role: 1
+    spawnPosition: {x: 35, y: 3.6, z: 25}
+    leashRadius: 35
+    patrolWaypoints:
+    - {x: 30, y: 3.6, z: 20}
+    - {x: 40, y: 3.6, z: 20}
+    - {x: 40, y: 3.6, z: 40}
+    - {x: 30, y: 3.6, z: 40}
+  - agentName: FlankerAgent_Armoury
+    role: 2
+    spawnPosition: {x: 13, y: 3.6, z: 15}
+    leashRadius: 25
+    patrolWaypoints:
+    - {x: 8, y: 3.6, z: 8}
+    - {x: 18, y: 3.6, z: 8}
+    - {x: 18, y: 3.6, z: 22}
+    - {x: 8, y: 3.6, z: 22}
+  - agentName: TacticalSoldier_AnalysisHub
+    role: 0
+    spawnPosition: {x: 57, y: 3.6, z: 15}
+    leashRadius: 30
+    patrolWaypoints:
+    - {x: 50, y: 3.6, z: 8}
+    - {x: 64, y: 3.6, z: 8}
+    - {x: 64, y: 3.6, z: 22}
+    - {x: 50, y: 3.6, z: 22}
+  - agentName: BossAgent_HelipadExtraction
+    role: 3
+    spawnPosition: {x: 62.5, y: 7.2, z: 48}
+    leashRadius: 8
+    patrolWaypoints:
+    - {x: 62.5, y: 7.2, z: 48}
+    - {x: 60.9, y: 7.2, z: 51.9}
+    - {x: 57, y: 7.2, z: 53.5}
+    - {x: 53.1, y: 7.2, z: 51.9}
+    - {x: 51.5, y: 7.2, z: 48}
+    - {x: 53.1, y: 7.2, z: 44.1}
+    - {x: 57, y: 7.2, z: 42.5}
+    - {x: 60.9, y: 7.2, z: 44.1}
+  - agentName: HunterAgent_L3Apex
+    role: 1
+    spawnPosition: {x: 35, y: 7.2, z: 32}
+    leashRadius: 35
+    patrolWaypoints:
+    - {x: 30, y: 7.2, z: 22}
+    - {x: 40, y: 7.2, z: 22}
+    - {x: 40, y: 7.2, z: 40}
+    - {x: 30, y: 7.2, z: 40}
+  - agentName: FlankerAgent_HelipadTerrace
+    role: 2
+    spawnPosition: {x: 64, y: 7.2, z: 42}
+    leashRadius: 25
+    patrolWaypoints:
+    - {x: 58, y: 7.2, z: 38}
+    - {x: 66, y: 7.2, z: 38}
+    - {x: 66, y: 7.2, z: 50}
+    - {x: 58, y: 7.2, z: 50}
+  - agentName: TacticalSoldier_CommandDeck
+    role: 0
+    spawnPosition: {x: 13, y: 7.2, z: 46}
+    leashRadius: 25
+    patrolWaypoints:
+    - {x: 8, y: 7.2, z: 38}
+    - {x: 18, y: 7.2, z: 38}
+    - {x: 18, y: 7.2, z: 54}
+    - {x: 8, y: 7.2, z: 54}
