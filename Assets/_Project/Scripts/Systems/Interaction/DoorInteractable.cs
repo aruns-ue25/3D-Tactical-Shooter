@@ -9,68 +9,189 @@ namespace TacticalShooter.Systems.Interaction
         [Header("Door Configuration")]
         [SerializeField] private Transform doorLeaf;
         [SerializeField] private float openAngle = 90f;
-        [SerializeField] private float duration = 0.8f;
+        [SerializeField] private float duration = 0.55f;
 
         [Header("Interaction Prompts")]
         [SerializeField] private string openPrompt = "Press E to open door";
         [SerializeField] private string closePrompt = "Press E to close door";
 
-        [Header("Destructible Door Settings")]
-        [Tooltip("If true, the door can be broken by shooting it multiple times.")]
-        [SerializeField] private bool isDestructible = true;
-        [Tooltip("Health of the door. 70 HP means 2-3 shots with carbine (35 dmg) breaks it!")]
-        [SerializeField] private float maxHealth = 70f;
-        [SerializeField] private float currentHealth;
+        [Header("Security Door Settings")]
+        [Tooltip("Security doors are solid structural obstacles that cannot be broken by gunfire.")]
+        [SerializeField] private bool isDestructible = false;
+        [SerializeField] private float maxHealth = 9999f;
+        [SerializeField] private float currentHealth = 9999f;
         [SerializeField] private bool isDestroyed = false;
 
         private bool isOpen = false;
         private bool isAnimating = false;
         private Quaternion closedRotation;
         private Quaternion openRotation;
+        private Transform playerTransform;
+        private bool isPlayerNearby = false;
+        private Coroutine activeAnimRoutine;
+        private float lastInteractTime = -1f;
 
-        public bool IsAlive => !isDestroyed && currentHealth > 0f;
-        public bool CanTakeDamage => isDestructible && IsAlive;
+        public bool IsAlive => true;
+        public bool CanTakeDamage => false; // Indestructible security door
         public bool IsOpen => isOpen;
-        public string PromptText => isDestroyed ? "" : (isOpen ? closePrompt : openPrompt);
+        public string PromptText => isOpen ? closePrompt : openPrompt;
 
         private void Awake()
         {
+            isDestructible = false;
             currentHealth = maxHealth;
             isDestroyed = false;
 
+            doorLeaf = transform.Find("HingePivot");
             if (doorLeaf == null)
             {
-                doorLeaf = transform.Find("HingePivot") ?? transform;
+                doorLeaf = transform;
             }
 
-            closedRotation = doorLeaf.localRotation;
+            closedRotation = Quaternion.identity;
             openRotation = closedRotation * Quaternion.Euler(0f, openAngle, 0f);
+        }
+
+        private void Start()
+        {
+            FindPlayer();
+            doorLeaf = transform.Find("HingePivot") ?? transform;
+            if (!isOpen)
+            {
+                doorLeaf.localRotation = Quaternion.identity;
+            }
+        }
+
+        private void FindPlayer()
+        {
+            if (playerTransform != null) return;
+            GameObject p = GameObject.Find("Player") ?? GameObject.FindWithTag("Player");
+            if (p != null) playerTransform = p.transform;
+            else
+            {
+                var pc = FindFirstObjectByType<PlayerController>();
+                if (pc != null) playerTransform = pc.transform;
+            }
+        }
+
+        private void Update()
+        {
+            FindPlayer();
+            if (playerTransform != null)
+            {
+                // Measure both direct horizontal XZ distance and vertical elevation relative to door portal floor
+                Vector3 doorwayCenter = transform.position;
+                float distXZ = Vector2.Distance(new Vector2(doorwayCenter.x, doorwayCenter.z), new Vector2(playerTransform.position.x, playerTransform.position.z));
+                float distY = Mathf.Abs(playerTransform.position.y - doorwayCenter.y);
+
+                float minDistToColliders = float.MaxValue;
+                var colliders = GetComponentsInChildren<Collider>();
+                if (colliders != null && colliders.Length > 0)
+                {
+                    foreach (var c in colliders)
+                    {
+                        if (c != null && c.enabled)
+                        {
+                            float d = Vector3.Distance(c.bounds.ClosestPoint(playerTransform.position), playerTransform.position);
+                            if (d < minDistToColliders) minDistToColliders = d;
+                        }
+                    }
+                }
+
+                // Generous detection: operator on either side of the 4m doorway can always interact
+                isPlayerNearby = (distXZ <= 6.0f && distY <= 2.5f) || (minDistToColliders <= 4.5f);
+            }
+            else
+            {
+                isPlayerNearby = false;
+            }
+
+            // Watchdog auto-timeout if animation ever got stuck
+            if (isAnimating && Time.time - lastInteractTime > 2.0f)
+            {
+                isAnimating = false;
+            }
+
+            if (isPlayerNearby && !isAnimating)
+            {
+                bool ePressed = (UnityEngine.InputSystem.Keyboard.current != null && UnityEngine.InputSystem.Keyboard.current.eKey.wasPressedThisFrame) ||
+                                Input.GetKeyDown(KeyCode.E);
+                if (ePressed)
+                {
+                    Interact(playerTransform != null ? playerTransform.gameObject : gameObject);
+                }
+            }
         }
 
         public void Interact(GameObject interactor)
         {
-            if (isDestroyed || isAnimating) return;
+            // Input debouncing to prevent multiple callers in the same frame from double-toggling
+            if (Time.time - lastInteractTime < 0.25f) return;
+            lastInteractTime = Time.time;
+
+            if (isAnimating) return;
+
+            doorLeaf = transform.Find("HingePivot") ?? transform;
 
             isOpen = !isOpen;
-            StartCoroutine(AnimateDoor(isOpen ? openRotation : closedRotation));
+
+            if (isOpen)
+            {
+                CombatEffects.PlayDoorOpenSound(transform.position);
+            }
+            else
+            {
+                CombatEffects.PlayDoorCloseSound(transform.position);
+            }
+
+            // Swing outward based on player position relative to door
+            float swingDirection = 1f;
+            if (interactor != null)
+            {
+                Vector3 toPlayer = (interactor.transform.position - transform.position).normalized;
+                if (Vector3.Dot(transform.forward, toPlayer) < 0f)
+                {
+                    swingDirection = -1f;
+                }
+            }
+
+            Quaternion targetRotation = isOpen ? Quaternion.Euler(0f, openAngle * swingDirection, 0f) : Quaternion.identity;
+            if (activeAnimRoutine != null) StopCoroutine(activeAnimRoutine);
+            activeAnimRoutine = StartCoroutine(AnimateDoor(targetRotation));
+        }
+
+        private void OnGUI()
+        {
+            if (!isPlayerNearby) return;
+
+            GUIStyle style = new GUIStyle(GUI.skin.label);
+            style.fontSize = 18;
+            style.fontStyle = FontStyle.Bold;
+            style.alignment = TextAnchor.MiddleCenter;
+            style.normal.textColor = Color.white;
+
+            string actionText = isOpen ? "[E] CLOSE SECURITY DOOR" : "[E] OPEN SECURITY DOOR";
+            float boxWidth = 260f;
+            float boxHeight = 40f;
+            float posX = (Screen.width - boxWidth) * 0.5f;
+            float posY = Screen.height * 0.70f;
+
+            Color prev = GUI.color;
+            GUI.color = new Color(0.04f, 0.08f, 0.12f, 0.88f);
+            GUI.DrawTexture(new Rect(posX, posY, boxWidth, boxHeight), Texture2D.whiteTexture);
+            GUI.color = new Color(0.2f, 0.75f, 1f, 0.9f);
+            GUI.DrawTexture(new Rect(posX, posY, boxWidth, 2f), Texture2D.whiteTexture);
+            GUI.color = Color.white;
+
+            GUI.Label(new Rect(posX, posY, boxWidth, boxHeight), actionText, style);
+            GUI.color = prev;
         }
 
         public void TakeDamage(DamageInfo damageInfo)
         {
-            if (!CanTakeDamage) return;
-
-            currentHealth = Mathf.Max(0f, currentHealth - damageInfo.Amount);
-
-            // Audiovisual impact
+            // Indestructible reinforced security door: absorb impact with sparks and jolt, never break
             CombatEffects.PlayHitImpact(damageInfo.HitPoint);
             StartCoroutine(HitJoltRoutine(damageInfo.HitDirection));
-
-            Debug.Log($"[DoorInteractable] Door hit for {damageInfo.Amount} dmg! Remaining HP: {currentHealth}/{maxHealth}");
-
-            if (currentHealth <= 0f && !isDestroyed)
-            {
-                BreakDoor(damageInfo);
-            }
         }
 
         private IEnumerator HitJoltRoutine(Vector3 bulletDir)
@@ -172,20 +293,27 @@ namespace TacticalShooter.Systems.Interaction
         private IEnumerator AnimateDoor(Quaternion targetRotation)
         {
             isAnimating = true;
-            Quaternion startRotation = doorLeaf.localRotation;
-            float elapsedTime = 0f;
-
-            while (elapsedTime < duration)
+            try
             {
-                elapsedTime += Time.deltaTime;
-                float t = Mathf.Clamp01(elapsedTime / duration);
-                float smoothT = Mathf.SmoothStep(0f, 1f, t);
-                doorLeaf.localRotation = Quaternion.Slerp(startRotation, targetRotation, smoothT);
-                yield return null;
-            }
+                if (doorLeaf == null) doorLeaf = transform.Find("HingePivot") ?? transform;
+                Quaternion startRotation = doorLeaf.localRotation;
+                float elapsedTime = 0f;
 
-            doorLeaf.localRotation = targetRotation;
-            isAnimating = false;
+                while (elapsedTime < duration)
+                {
+                    elapsedTime += Time.deltaTime;
+                    float t = Mathf.Clamp01(elapsedTime / duration);
+                    float smoothT = Mathf.SmoothStep(0f, 1f, t);
+                    doorLeaf.localRotation = Quaternion.Slerp(startRotation, targetRotation, smoothT);
+                    yield return null;
+                }
+
+                doorLeaf.localRotation = targetRotation;
+            }
+            finally
+            {
+                isAnimating = false;
+            }
         }
     }
 }

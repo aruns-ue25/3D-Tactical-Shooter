@@ -7,7 +7,7 @@ namespace TacticalShooter.Systems.Interaction
     {
         [Header("Raycast & Detection")]
         [SerializeField] private Transform playerCamera;
-        [SerializeField] private float interactionDistance = 3.0f;
+        [SerializeField] private float interactionDistance = 5.5f;
         [SerializeField] private LayerMask interactableLayer = ~0;
 
         [Header("UI Prompt Reference")]
@@ -79,7 +79,7 @@ namespace TacticalShooter.Systems.Interaction
 
             // Use RaycastAll with generous range so 3rd person camera ray passes cleanly through player model
             Ray ray = new Ray(playerCamera.position, playerCamera.forward);
-            float maxRayDist = Mathf.Max(interactionDistance + 3.0f, 6.5f);
+            float maxRayDist = Mathf.Max(interactionDistance + 4.5f, 10.0f);
             RaycastHit[] hits = Physics.RaycastAll(ray, maxRayDist, interactableLayer);
             System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
 
@@ -123,7 +123,9 @@ namespace TacticalShooter.Systems.Interaction
         {
             if (currentInteractable == null) return;
 
-            if (Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame)
+            bool ePressed = (Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame) ||
+                            Input.GetKeyDown(KeyCode.E);
+            if (ePressed)
             {
                 currentInteractable.Interact(gameObject);
             }
