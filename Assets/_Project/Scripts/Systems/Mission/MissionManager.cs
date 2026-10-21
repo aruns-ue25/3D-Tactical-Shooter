@@ -43,6 +43,7 @@ namespace TacticalShooter.Systems.Mission
             }
 
             Instance = this;
+            Time.timeScale = 1f; // Always ensure unpaused on fresh scene load or restart
             CurrentState = MissionState.ObjectivePending;
             securedTerminalsCount = 0;
             startTime = Time.time;
@@ -116,7 +117,17 @@ namespace TacticalShooter.Systems.Mission
             CurrentState = MissionState.MissionCompleted;
             completionTime = Time.time - startTime;
 
-            // Unlock mouse cursor so player can click victory buttons
+            // 1. Freeze game physics, animations, and time-scale routines completely
+            Time.timeScale = 0f;
+
+            // 2. Disable all AI agents in the scene so no shooting, movement, or sounds occur in the background
+            GameObject aiRoot = GameObject.Find("AI_Agents");
+            if (aiRoot != null)
+            {
+                aiRoot.SetActive(false);
+            }
+
+            // 3. Unlock mouse cursor so player can click victory buttons
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
 

@@ -97,6 +97,13 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
+        // Freeze all player controls completely once mission is completed
+        if (TacticalShooter.Systems.Mission.MissionManager.Instance != null &&
+            TacticalShooter.Systems.Mission.MissionManager.Instance.CurrentState == TacticalShooter.Systems.Mission.MissionState.MissionCompleted)
+        {
+            return;
+        }
+
         if (playerHealth == null)
         {
             playerHealth = GetComponent<TacticalShooter.Systems.Combat.Health>();
