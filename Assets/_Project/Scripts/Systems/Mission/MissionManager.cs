@@ -18,6 +18,13 @@ namespace TacticalShooter.Systems.Mission
 
         public MissionState CurrentState { get; private set; } = MissionState.ObjectivePending;
 
+        [Header("Multi-Terminal Objective Config")]
+        [SerializeField] private int requiredTerminals = 3;
+        private int securedTerminalsCount = 0;
+
+        public int SecuredTerminalsCount => securedTerminalsCount;
+        public int RequiredTerminals => requiredTerminals;
+
         private float startTime;
         private float completionTime;
 
@@ -37,13 +44,14 @@ namespace TacticalShooter.Systems.Mission
 
             Instance = this;
             CurrentState = MissionState.ObjectivePending;
+            securedTerminalsCount = 0;
             startTime = Time.time;
         }
 
         private void Start()
         {
             // Initial mission objective subtitle
-            ShowSubtitle("MISSION: Secure the Laboratory Data Terminal (Check Radar)", 6.5f, new Color(1.0f, 0.88f, 0.35f));
+            ShowSubtitle($"MISSION: Infiltrate facility and secure all {requiredTerminals} Data Terminals [ 0 / {requiredTerminals} ] (Check Radar)", 7.0f, new Color(1.0f, 0.88f, 0.35f));
         }
 
         public void ShowSubtitle(string text, float duration = 5.5f, Color? color = null)
@@ -70,13 +78,34 @@ namespace TacticalShooter.Systems.Mission
             }
         }
 
+        public void OnTerminalSecured(ObjectiveInteractable terminal)
+        {
+            if (CurrentState != MissionState.ObjectivePending) return;
+
+            securedTerminalsCount++;
+            string tName = terminal != null ? terminal.DisplayName : "Data Terminal";
+            Debug.Log($"[MissionManager] ★ TERMINAL SECURED ({tName})! Progress: {securedTerminalsCount} / {requiredTerminals} ★");
+
+            if (securedTerminalsCount < requiredTerminals)
+            {
+                ShowSubtitle($"MISSION UPDATE: {tName} Secured! [ {securedTerminalsCount} / {requiredTerminals} ] — Locate remaining terminals", 5.5f, new Color(1.0f, 0.88f, 0.35f));
+            }
+            else
+            {
+                CurrentState = MissionState.ExtractionAvailable;
+                ShowSubtitle($"▶ ALL DATA TERMINALS SECURED [ {securedTerminalsCount} / {requiredTerminals} ] — EXTRACTION ZONE UNLOCKED ON HELIPAD (LEVEL 3)!", 7.5f, new Color(0.35f, 1.0f, 0.55f));
+                Debug.Log("[MissionManager] ★ ALL TERMINALS COMPLETE! STAGE 2 UNLOCKED: Helipad Extraction is now AVAILABLE. ★");
+            }
+        }
+
         public void CompleteObjective()
         {
             if (CurrentState != MissionState.ObjectivePending) return;
 
-            // Transition from Stage 1 -> Stage 2
+            // Fallback transition
+            securedTerminalsCount = requiredTerminals;
             CurrentState = MissionState.ExtractionAvailable;
-            ShowSubtitle("MISSION UPDATE: Laboratory secured! Proceed to Extraction Zone (Check Radar)", 6.5f, new Color(0.35f, 1.0f, 0.55f));
+            ShowSubtitle("MISSION UPDATE: All Terminals secured! Proceed to Extraction Zone (Level 3 Helipad)", 6.5f, new Color(0.35f, 1.0f, 0.55f));
             Debug.Log("[MissionManager] ★ STAGE 1 COMPLETE! STAGE 2 UNLOCKED: Extraction is now AVAILABLE. ★");
         }
 
@@ -208,7 +237,7 @@ namespace TacticalShooter.Systems.Mission
                 fontSize = 13
             };
             descStyle.normal.textColor = Color.white;
-            GUI.Label(new Rect(boxX, boxY + 98, boxW, 22), "Stage 1 (Lab Terminal) & Stage 2 (Extraction) fully completed!", descStyle);
+            GUI.Label(new Rect(boxX, boxY + 98, boxW, 22), "All 3 Data Terminals & Helipad Extraction fully completed!", descStyle);
 
             // Time Stat
             int minutes = (int)(completionTime / 60f);

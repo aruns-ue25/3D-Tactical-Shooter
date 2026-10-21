@@ -27,6 +27,7 @@ namespace TacticalShooter.Systems.Combat
         private Health dummyHealth;
         private Transform goalTransform;
         private Transform objectiveTransform;
+        private ObjectiveInteractable[] cachedTerminals;
         private Texture2D radarBgTex;
         private Texture2D dotTex;
 
@@ -63,6 +64,11 @@ namespace TacticalShooter.Systems.Combat
             {
                 GameObject goal = GameObject.Find("ExtractionZone") ?? GameObject.Find("ExtractionPoint");
                 if (goal != null) goalTransform = goal.transform;
+            }
+
+            if (cachedTerminals == null || cachedTerminals.Length == 0)
+            {
+                cachedTerminals = FindObjectsByType<ObjectiveInteractable>(FindObjectsSortMode.None);
             }
 
             if (objectiveTransform == null)
@@ -113,6 +119,18 @@ namespace TacticalShooter.Systems.Combat
             }
         }
 
+        public static int GetCurrentFloor(float y)
+        {
+            // Floor 1 (Ground): 0.0m
+            // Mid-stair landing between Floor 1 and Floor 2: 1.8m
+            // Floor 2 (Level 2): 3.6m
+            // Mid-stair landing between Floor 2 and Floor 3: 5.4m
+            // Floor 3 (Level 3): 7.2m
+            if (y < 1.8f) return 1;
+            if (y < 5.4f) return 2;
+            return 3;
+        }
+
         private void DrawRadarMinimap()
         {
             float rx = radarScreenOffset.x;
@@ -122,6 +140,7 @@ namespace TacticalShooter.Systems.Combat
             Vector2 radarCenter = new Vector2(rx + halfSize, ry + halfSize);
 
             Color prevColor = GUI.color;
+            int playerFloor = GetCurrentFloor(playerTransform.position.y);
 
             // 1. Radar Background Frame
             GUI.color = new Color(0.04f, 0.08f, 0.12f, 0.9f);
@@ -139,7 +158,7 @@ namespace TacticalShooter.Systems.Combat
             DrawCrosshairRings(radarCenter, halfSize * 0.4f);
             DrawCrosshairRings(radarCenter, halfSize * 0.8f);
 
-            // 4. Radar Header
+            // 4. Radar Header with Dynamic Current Floor Indicator
             GUI.color = Color.white;
             GUIStyle titleStyle = new GUIStyle(GUI.skin.label)
             {
@@ -147,37 +166,46 @@ namespace TacticalShooter.Systems.Combat
                 fontStyle = FontStyle.Bold
             };
             titleStyle.normal.textColor = new Color(0.4f, 0.9f, 1f);
-            GUI.Label(new Rect(rx + 8, ry + 4, size, 16), "TACTICAL RADAR (35m)", titleStyle);
+            string floorTag = playerFloor switch
+            {
+                1 => "L1: GROUND",
+                2 => "L2: ARCHIVE",
+                _ => "L3: HELIPAD"
+            };
+            GUI.Label(new Rect(rx + 8, ry + 4, size, 16), $"RADAR (35m) [{floorTag}]", titleStyle);
 
-            // 5. Target Dummy Marker on Radar (Only when alive)
+            // 5. Target Dummy Marker on Radar (Only when alive and on the same floor plane)
             if (dummyTransform != null && IsTargetAlive())
             {
-                Vector3 delta = dummyTransform.position - playerTransform.position;
-                float dist = delta.magnitude;
-
-                float mapScale = (halfSize - 12f) / radarRadiusMeters;
-                float dx = delta.x * mapScale;
-                float dy = -delta.z * mapScale;
-
-                float clampedX = Mathf.Clamp(dx, -halfSize + 10f, halfSize - 10f);
-                float clampedY = Mathf.Clamp(dy, -halfSize + 22f, halfSize - 10f);
-                Vector2 dummyRadarPos = radarCenter + new Vector2(clampedX, clampedY);
-
-                float blink = Mathf.PingPong(Time.time * 3f, 1f);
-                GUI.color = new Color(1f, 0.2f * blink, 0.2f * blink, 1f);
-                GUI.DrawTexture(new Rect(dummyRadarPos.x - 5, dummyRadarPos.y - 5, 10, 10), dotTex);
-
-                GUI.color = Color.white;
-                GUIStyle dummyLabelStyle = new GUIStyle(GUI.skin.label)
+                int dummyFloor = GetCurrentFloor(dummyTransform.position.y);
+                if (dummyFloor == playerFloor)
                 {
-                    fontSize = 9,
-                    fontStyle = FontStyle.Bold
-                };
-                dummyLabelStyle.normal.textColor = new Color(1f, 0.3f, 0.3f);
-                GUI.Label(new Rect(dummyRadarPos.x + 7, dummyRadarPos.y - 8, 80, 16), $"TARGET {dist:0.0}m", dummyLabelStyle);
+                    Vector3 delta = dummyTransform.position - playerTransform.position;
+                    float dist = delta.magnitude;
+                    if (dist <= radarRadiusMeters)
+                    {
+                        float mapScale = (halfSize - 12f) / radarRadiusMeters;
+                        float dx = delta.x * mapScale;
+                        float dy = -delta.z * mapScale;
+                        Vector2 dummyRadarPos = radarCenter + new Vector2(dx, dy);
+
+                        float blink = Mathf.PingPong(Time.time * 3f, 1f);
+                        GUI.color = new Color(1f, 0.2f * blink, 0.2f * blink, 1f);
+                        GUI.DrawTexture(new Rect(dummyRadarPos.x - 5, dummyRadarPos.y - 5, 10, 10), dotTex);
+
+                        GUI.color = Color.white;
+                        GUIStyle dummyLabelStyle = new GUIStyle(GUI.skin.label)
+                        {
+                            fontSize = 9,
+                            fontStyle = FontStyle.Bold
+                        };
+                        dummyLabelStyle.normal.textColor = new Color(1f, 0.3f, 0.3f);
+                        GUI.Label(new Rect(dummyRadarPos.x + 7, dummyRadarPos.y - 8, 80, 16), $"TARGET {dist:0.0}m", dummyLabelStyle);
+                    }
+                }
             }
 
-            // 5b. Hostile AI Agents on Radar (Tactical Soldier / Guard)
+            // 5b. Hostile AI Agents on Radar (Filtered strictly to player's current floor plane)
             AIAgentBase[] activeAgents = FindObjectsByType<AIAgentBase>(FindObjectsSortMode.None);
             if (activeAgents != null)
             {
@@ -186,81 +214,154 @@ namespace TacticalShooter.Systems.Combat
                     AIAgentBase agent = activeAgents[i];
                     if (agent != null && agent.IsAlive)
                     {
+                        int agentFloor = GetCurrentFloor(agent.transform.position.y);
+                        // Only show enemies on the player's current active floor plane
+                        if (agentFloor != playerFloor) continue;
+
                         Vector3 delta = agent.transform.position - playerTransform.position;
                         float dist = delta.magnitude;
+                        // Do not draw off-radar enemies clamped to the border
+                        if (dist > radarRadiusMeters) continue;
+
                         float mapScale = (halfSize - 12f) / radarRadiusMeters;
                         float dx = delta.x * mapScale;
                         float dy = -delta.z * mapScale;
+                        Vector2 agentRadarPos = radarCenter + new Vector2(dx, dy);
 
-                        float clampedX = Mathf.Clamp(dx, -halfSize + 10f, halfSize - 10f);
-                        float clampedY = Mathf.Clamp(dy, -halfSize + 22f, halfSize - 10f);
-                        Vector2 agentRadarPos = radarCenter + new Vector2(clampedX, clampedY);
+                        string roleTag = "[GUARD]";
+                        Color dotCol = new Color(1f, 0.25f, 0.25f);
+                        if (agent.Role == AgentRole.Support)
+                        {
+                            roleTag = "★BOSS★";
+                            dotCol = new Color(1f, 0.08f, 0.18f);
+                        }
+                        else if (agent.Role == AgentRole.Hunter)
+                        {
+                            roleTag = "[HUNT]";
+                            dotCol = new Color(1f, 0.60f, 0.10f);
+                        }
+                        else if (agent.Role == AgentRole.Flanker)
+                        {
+                            roleTag = "[SNIPER]";
+                            dotCol = new Color(0.15f, 0.85f, 1f);
+                        }
 
-                        float blink = Mathf.PingPong(Time.time * 4f, 1f);
-                        GUI.color = new Color(1f, 0.15f * blink, 0.15f * blink, 1f);
-                        GUI.DrawTexture(new Rect(agentRadarPos.x - 5, agentRadarPos.y - 5, 10, 10), dotTex);
+                        GUI.color = dotCol;
+                        GUI.DrawTexture(new Rect(agentRadarPos.x - 4, agentRadarPos.y - 4, 8, 8), dotTex);
 
                         GUI.color = Color.white;
                         GUIStyle agentLabelStyle = new GUIStyle(GUI.skin.label)
                         {
-                            fontSize = 9,
+                            fontSize = 8,
                             fontStyle = FontStyle.Bold
                         };
-                        agentLabelStyle.normal.textColor = new Color(1f, 0.25f, 0.25f);
-                        GUI.Label(new Rect(agentRadarPos.x + 7, agentRadarPos.y - 8, 85, 16), $"[GUARD] {dist:0.0}m", agentLabelStyle);
+                        agentLabelStyle.normal.textColor = dotCol;
+                        GUI.Label(new Rect(agentRadarPos.x + 6, agentRadarPos.y - 7, 75, 14), $"{roleTag} {dist:0.0}m", agentLabelStyle);
                     }
                 }
             }
 
-            // 5c. Stage Mission Objectives on Radar
+            // 5c. Stage Mission Objectives on Radar (Filtered strictly to objective's floor plane)
             bool isStage1 = MissionManager.Instance == null || MissionManager.Instance.CurrentState == MissionState.ObjectivePending;
 
-            if (isStage1 && objectiveTransform != null)
+            if (isStage1)
             {
-                // Stage 1: Amber Dot for Laboratory Terminal
-                Vector3 delta = objectiveTransform.position - playerTransform.position;
-                float dist = delta.magnitude;
-                float mapScale = (halfSize - 12f) / radarRadiusMeters;
-                float dx = delta.x * mapScale;
-                float dy = -delta.z * mapScale;
-                float clampedX = Mathf.Clamp(dx, -halfSize + 10f, halfSize - 10f);
-                float clampedY = Mathf.Clamp(dy, -halfSize + 22f, halfSize - 10f);
-                Vector2 objRadarPos = radarCenter + new Vector2(clampedX, clampedY);
-
-                GUI.color = new Color(1.0f, 0.78f, 0.15f, 1f);
-                GUI.DrawTexture(new Rect(objRadarPos.x - 5, objRadarPos.y - 5, 10, 10), dotTex);
-
-                GUIStyle objStyle = new GUIStyle(GUI.skin.label)
+                if (cachedTerminals == null || cachedTerminals.Length == 0)
                 {
-                    fontSize = 9,
-                    fontStyle = FontStyle.Bold
-                };
-                objStyle.normal.textColor = new Color(1.0f, 0.85f, 0.2f);
-                GUI.Label(new Rect(objRadarPos.x + 7, objRadarPos.y - 8, 85, 16), $"LAB {dist:0.0}m", objStyle);
+                    cachedTerminals = FindObjectsByType<ObjectiveInteractable>(FindObjectsSortMode.None);
+                }
+
+                if (cachedTerminals != null && cachedTerminals.Length > 0)
+                {
+                    float mapScale = (halfSize - 12f) / radarRadiusMeters;
+                    foreach (var terminal in cachedTerminals)
+                    {
+                        if (terminal == null) continue;
+                        int objFloor = GetCurrentFloor(terminal.transform.position.y);
+                        if (objFloor != playerFloor) continue;
+
+                        Vector3 delta = terminal.transform.position - playerTransform.position;
+                        float dist = delta.magnitude;
+                        if (dist <= radarRadiusMeters)
+                        {
+                            float dx = delta.x * mapScale;
+                            float dy = -delta.z * mapScale;
+                            Vector2 objRadarPos = radarCenter + new Vector2(dx, dy);
+
+                            Color dotCol = terminal.IsCompleted
+                                ? new Color(0.2f, 0.95f, 0.4f, 1f) // Green for secured
+                                : (Mathf.Sin(Time.time * 6f) > 0f ? new Color(1.0f, 0.85f, 0.2f, 1f) : new Color(0.75f, 0.55f, 0.05f, 0.9f)); // Pulsing amber for pending
+
+                            GUI.color = dotCol;
+                            GUI.DrawTexture(new Rect(objRadarPos.x - 5, objRadarPos.y - 5, 10, 10), dotTex);
+
+                            GUIStyle objStyle = new GUIStyle(GUI.skin.label)
+                            {
+                                fontSize = 9,
+                                fontStyle = FontStyle.Bold
+                            };
+                            objStyle.normal.textColor = dotCol;
+                            string tag = terminal.IsCompleted ? "[SECURED]" : $"[OBJ {dist:0.0}m]";
+                            GUI.Label(new Rect(objRadarPos.x + 7, objRadarPos.y - 8, 95, 16), tag, objStyle);
+                        }
+                    }
+                }
+                else if (objectiveTransform != null)
+                {
+                    int objFloor = GetCurrentFloor(objectiveTransform.position.y);
+                    if (objFloor == playerFloor)
+                    {
+                        Vector3 delta = objectiveTransform.position - playerTransform.position;
+                        float dist = delta.magnitude;
+                        if (dist <= radarRadiusMeters)
+                        {
+                            float mapScale = (halfSize - 12f) / radarRadiusMeters;
+                            float dx = delta.x * mapScale;
+                            float dy = -delta.z * mapScale;
+                            Vector2 objRadarPos = radarCenter + new Vector2(dx, dy);
+
+                            GUI.color = new Color(1.0f, 0.78f, 0.15f, 1f);
+                            GUI.DrawTexture(new Rect(objRadarPos.x - 5, objRadarPos.y - 5, 10, 10), dotTex);
+
+                            GUIStyle objStyle = new GUIStyle(GUI.skin.label)
+                            {
+                                fontSize = 9,
+                                fontStyle = FontStyle.Bold
+                            };
+                            objStyle.normal.textColor = new Color(1.0f, 0.85f, 0.2f);
+                            GUI.Label(new Rect(objRadarPos.x + 7, objRadarPos.y - 8, 85, 16), $"LAB {dist:0.0}m", objStyle);
+                        }
+                    }
+                }
             }
-            else if (!isStage1 && goalTransform != null)
+            else if (goalTransform != null)
             {
-                // Stage 2: Pulsing Emerald Green Dot for Extraction Zone
-                Vector3 delta = goalTransform.position - playerTransform.position;
-                float dist = delta.magnitude;
-                float mapScale = (halfSize - 12f) / radarRadiusMeters;
-                float dx = delta.x * mapScale;
-                float dy = -delta.z * mapScale;
-                float clampedX = Mathf.Clamp(dx, -halfSize + 10f, halfSize - 10f);
-                float clampedY = Mathf.Clamp(dy, -halfSize + 22f, halfSize - 10f);
-                Vector2 goalRadarPos = radarCenter + new Vector2(clampedX, clampedY);
-
-                float pulse = 0.85f + 0.15f * Mathf.Sin(Time.time * 4f);
-                GUI.color = new Color(0.2f * pulse, 1f * pulse, 0.45f * pulse, 1f);
-                GUI.DrawTexture(new Rect(goalRadarPos.x - 5, goalRadarPos.y - 5, 10, 10), dotTex);
-
-                GUIStyle goalStyle = new GUIStyle(GUI.skin.label)
+                int goalFloor = GetCurrentFloor(goalTransform.position.y);
+                if (goalFloor == playerFloor)
                 {
-                    fontSize = 9,
-                    fontStyle = FontStyle.Bold
-                };
-                goalStyle.normal.textColor = new Color(0.3f, 1f, 0.5f);
-                GUI.Label(new Rect(goalRadarPos.x + 7, goalRadarPos.y - 8, 85, 16), $"EXTRACT {dist:0.0}m", goalStyle);
+                    // Stage 2: Pulsing Emerald Green Dot for Extraction Zone on Level 3
+                    Vector3 delta = goalTransform.position - playerTransform.position;
+                    float dist = delta.magnitude;
+                    if (dist <= radarRadiusMeters)
+                    {
+                        float mapScale = (halfSize - 12f) / radarRadiusMeters;
+                        float dx = delta.x * mapScale;
+                        float dy = -delta.z * mapScale;
+                        Vector2 goalRadarPos = radarCenter + new Vector2(dx, dy);
+
+                        float pulse = 0.85f + 0.15f * Mathf.Sin(Time.time * 4f);
+                        GUI.color = new Color(0.2f * pulse, 1f * pulse, 0.45f * pulse, 1f);
+                        GUI.DrawTexture(new Rect(goalRadarPos.x - 5, goalRadarPos.y - 5, 10, 10), dotTex);
+
+                        GUIStyle goalStyle = new GUIStyle(GUI.skin.label)
+                        {
+                            fontSize = 9,
+                            fontStyle = FontStyle.Bold
+                        };
+                        goalStyle.normal.textColor = new Color(0.3f, 1f, 0.5f);
+                        GUI.Label(new Rect(goalRadarPos.x + 7, goalRadarPos.y - 8, 85, 16), $"EXTRACT {dist:0.0}m", goalStyle);
+                    }
+                }
             }
 
             // 6. Player Marker (Center Green Arrow)
@@ -285,15 +386,19 @@ namespace TacticalShooter.Systems.Combat
                 fontSize = 9,
                 fontStyle = FontStyle.Bold
             };
+
+            int securedCount = MissionManager.Instance != null ? MissionManager.Instance.SecuredTerminalsCount : 0;
+            int totalTerminals = MissionManager.Instance != null ? MissionManager.Instance.RequiredTerminals : 3;
+
             if (isStage1)
             {
                 objBriefStyle.normal.textColor = new Color(1.0f, 0.82f, 0.2f);
-                GUI.Label(new Rect(rx, ry + size + 3, size + 20, 16), "▶ STAGE 1: LAB TERMINAL", objBriefStyle);
+                GUI.Label(new Rect(rx, ry + size + 3, size + 40, 16), $"▶ TERMINALS: {securedCount} / {totalTerminals}", objBriefStyle);
             }
             else
             {
                 objBriefStyle.normal.textColor = new Color(0.25f, 1.0f, 0.45f);
-                GUI.Label(new Rect(rx, ry + size + 3, size + 20, 16), "▶ STAGE 2: EXTRACTION", objBriefStyle);
+                GUI.Label(new Rect(rx, ry + size + 3, size + 40, 16), "▶ EXTRACTION: HELIPAD (L3)", objBriefStyle);
             }
 
             GUI.color = prevColor;

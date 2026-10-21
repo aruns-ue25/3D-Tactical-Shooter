@@ -120,7 +120,7 @@ namespace TacticalShooter.Systems.Mission
                             CombatEffects.PlayHitImpact(transform.position);
                             if (MissionManager.Instance != null)
                             {
-                                MissionManager.Instance.ShowSubtitle("NOTICE: Extraction Locked. Secure the Laboratory Terminal first!", 3.5f, new Color(1.0f, 0.4f, 0.3f));
+                                MissionManager.Instance.ShowSubtitle($"NOTICE: Extraction Locked. Secure all {MissionManager.Instance.RequiredTerminals} Data Terminals first! [{MissionManager.Instance.SecuredTerminalsCount}/{MissionManager.Instance.RequiredTerminals}]", 3.5f, new Color(1.0f, 0.4f, 0.3f));
                             }
                         }
                     }

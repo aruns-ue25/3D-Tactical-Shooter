@@ -8,6 +8,10 @@ namespace TacticalShooter.Systems.Mission
     public class ObjectiveInteractable : MonoBehaviour, IInteractable
     {
         [Header("Objective Terminal Config")]
+        [Tooltip("Identifier for this terminal.")]
+        [SerializeField] private string terminalId = "TERM_1";
+        [Tooltip("Display name shown on radar, HUD, and download progress bar.")]
+        [SerializeField] private string terminalDisplayName = "Data Terminal";
         [Tooltip("Distance in meters within which the terminal prompt and interaction activates.")]
         [SerializeField] private float interactionRadius = 2.8f;
         [Tooltip("How many seconds the player must hold 'E' to complete the data download.")]
@@ -23,6 +27,10 @@ namespace TacticalShooter.Systems.Mission
         private float downloadProgress = 0f;
         private float lastAudioTickTime = 0f;
         private Texture2D whiteTex;
+
+        public string TerminalId { get => terminalId; set => terminalId = value; }
+        public string DisplayName { get => terminalDisplayName; set => terminalDisplayName = value; }
+        public bool IsCompleted => isCompleted;
 
         // Prompt text is empty so PlayerInteractor doesn't draw duplicate single-click UI
         public string PromptText => "";
@@ -127,14 +135,14 @@ namespace TacticalShooter.Systems.Mission
             // Play celebratory audio chime
             CombatEffects.PlayObjectiveSecuredSound(transform.position);
 
-            // Advance Mission to Stage 2
+            // Advance Mission to Stage 2 / Notify Multi-terminal progress
             if (MissionManager.Instance != null)
             {
-                MissionManager.Instance.CompleteObjective();
+                MissionManager.Instance.OnTerminalSecured(this);
             }
 
             ApplyColor(completedColor);
-            Debug.Log("[ObjectiveInteractable] ★ DATA DOWNLOAD COMPLETED (100%) - STAGE 2 UNLOCKED! ★");
+            Debug.Log($"[ObjectiveInteractable] ★ DATA DOWNLOAD COMPLETED: {terminalDisplayName} (100%)! ★");
         }
 
         public void Interact(GameObject interactor)
@@ -191,7 +199,7 @@ namespace TacticalShooter.Systems.Mission
                     fontStyle = FontStyle.Bold
                 };
                 promptStyle.normal.textColor = new Color(1.0f, 0.88f, 0.25f);
-                GUI.Label(new Rect(boxX, boxY, boxW, boxH), "[ HOLD 'E' TO DOWNLOAD DATA ]", promptStyle);
+                GUI.Label(new Rect(boxX, boxY, boxW, boxH), $"[ HOLD 'E' TO HACK {terminalDisplayName.ToUpper()} ]", promptStyle);
             }
             else
             {
@@ -220,7 +228,7 @@ namespace TacticalShooter.Systems.Mission
                     fontStyle = FontStyle.Bold
                 };
                 titleStyle.normal.textColor = new Color(0.4f, 0.9f, 1f);
-                GUI.Label(new Rect(boxX + 20f, boxY + 8f, 280f, 22f), "💾 DOWNLOADING LAB DATA...", titleStyle);
+                GUI.Label(new Rect(boxX + 20f, boxY + 8f, 280f, 22f), $"💾 DOWNLOADING {terminalDisplayName.ToUpper()}...", titleStyle);
 
                 GUIStyle percentStyle = new GUIStyle(GUI.skin.label)
                 {
