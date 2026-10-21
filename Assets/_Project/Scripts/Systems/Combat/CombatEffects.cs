@@ -18,8 +18,12 @@ namespace TacticalShooter.Systems.Combat
         private static AudioClip footstepClip;
         private static AudioClip victoryClip;
         private static AudioClip doorBreakClip;
+        private static AudioClip doorMoveClip;
         private static AudioClip objectiveSecuredClip;
         private static AudioClip downloadTickClip;
+        private static AudioClip reloadClip;
+        private static AudioClip dryFireClip;
+        private static AudioClip medkitClip;
         private static Material tracerMaterial;
 
         public static void InitializeAudio()
@@ -30,8 +34,12 @@ namespace TacticalShooter.Systems.Combat
             if (footstepClip == null) footstepClip = GenerateFootstepSound();
             if (victoryClip == null) victoryClip = GenerateVictorySound();
             if (doorBreakClip == null) doorBreakClip = GenerateDoorBreakSound();
+            if (doorMoveClip == null) doorMoveClip = GenerateDoorMoveSound();
             if (objectiveSecuredClip == null) objectiveSecuredClip = GenerateObjectiveSecuredSound();
             if (downloadTickClip == null) downloadTickClip = GenerateDownloadTickSound();
+            if (reloadClip == null) reloadClip = GenerateReloadSound();
+            if (dryFireClip == null) dryFireClip = GenerateDryFireSound();
+            if (medkitClip == null) medkitClip = GenerateMedkitSound();
             if (tracerMaterial == null) tracerMaterial = CreateTracerMaterial();
         }
 
@@ -73,10 +81,46 @@ namespace TacticalShooter.Systems.Combat
             PlayClipAtPoint(doorBreakClip, position, 1.0f, 0.95f);
         }
 
+        public static void PlayDoorOpenSound(Vector3 position)
+        {
+            InitializeAudio();
+            PlayClipAtPoint(doorMoveClip, position, 0.85f, 1.05f);
+        }
+
+        public static void PlayDoorCloseSound(Vector3 position)
+        {
+            InitializeAudio();
+            PlayClipAtPoint(doorMoveClip, position, 0.85f, 0.88f);
+        }
+
         public static void PlayObjectiveSecuredSound(Vector3 position)
         {
             InitializeAudio();
             PlayClipAtPoint(objectiveSecuredClip, position, 1.0f, 1.0f);
+        }
+
+        public static void PlayReloadSound(Vector3 position)
+        {
+            InitializeAudio();
+            PlayClipAtPoint(reloadClip, position, 0.85f, 1.0f);
+        }
+
+        public static void PlayDryFireClick(Vector3 position)
+        {
+            InitializeAudio();
+            PlayClipAtPoint(dryFireClip, position, 0.75f, 1.0f);
+        }
+
+        public static void PlayAmmoPickupSound(Vector3 position)
+        {
+            InitializeAudio();
+            PlayClipAtPoint(reloadClip, position, 0.95f, 1.25f);
+        }
+
+        public static void PlayMedkitPickupSound(Vector3 position)
+        {
+            InitializeAudio();
+            PlayClipAtPoint(medkitClip, position, 1.0f, 1.0f);
         }
 
         public static void PlayDownloadTick(Vector3 position, float progress)
@@ -365,6 +409,94 @@ namespace TacticalShooter.Systems.Combat
                 data[i] = tone * decay * 0.65f;
             }
             AudioClip clip = AudioClip.Create("SynthesizedDownloadTick", length, 1, sampleRate, false);
+            clip.SetData(data, 0);
+            return clip;
+        }
+
+        private static AudioClip GenerateReloadSound()
+        {
+            int sampleRate = 44100;
+            float duration = 0.28f;
+            int length = (int)(sampleRate * duration);
+            float[] data = new float[length];
+            for (int i = 0; i < length; i++)
+            {
+                float t = (float)i / sampleRate;
+                float sample = 0f;
+                // Click 1 (mag drop at t=0.03)
+                if (t >= 0.02f && t < 0.08f)
+                {
+                    float dt = t - 0.02f;
+                    sample += Mathf.Sin(2f * Mathf.PI * 1800f * dt) * Mathf.Exp(-dt * 90f) * 0.8f;
+                }
+                // Click 2 (mag lock at t=0.16)
+                if (t >= 0.15f && t < 0.25f)
+                {
+                    float dt = t - 0.15f;
+                    sample += (Mathf.Sin(2f * Mathf.PI * 950f * dt) + Mathf.Sin(2f * Mathf.PI * 2400f * dt) * 0.5f) * Mathf.Exp(-dt * 65f) * 0.9f;
+                }
+                data[i] = Mathf.Clamp(sample, -1f, 1f);
+            }
+            AudioClip clip = AudioClip.Create("SynthesizedReload", length, 1, sampleRate, false);
+            clip.SetData(data, 0);
+            return clip;
+        }
+
+        private static AudioClip GenerateDryFireSound()
+        {
+            int sampleRate = 44100;
+            float duration = 0.08f;
+            int length = (int)(sampleRate * duration);
+            float[] data = new float[length];
+            for (int i = 0; i < length; i++)
+            {
+                float t = (float)i / sampleRate;
+                float decay = Mathf.Exp(-t * 90f);
+                float tone = Mathf.Sin(2f * Mathf.PI * 2200f * t) * 0.7f + Mathf.Sin(2f * Mathf.PI * 3400f * t) * 0.3f;
+                data[i] = tone * decay * 0.8f;
+            }
+            AudioClip clip = AudioClip.Create("SynthesizedDryFire", length, 1, sampleRate, false);
+            clip.SetData(data, 0);
+            return clip;
+        }
+
+        private static AudioClip GenerateMedkitSound()
+        {
+            int sampleRate = 44100;
+            float duration = 0.36f;
+            int length = (int)(sampleRate * duration);
+            float[] data = new float[length];
+            for (int i = 0; i < length; i++)
+            {
+                float t = (float)i / sampleRate;
+                // Stim pneumatic hiss + healing chime
+                float hiss = (UnityEngine.Random.value * 2f - 1f) * Mathf.Exp(-t * 18f) * 0.35f;
+                float chime = Mathf.Sin(2f * Mathf.PI * 523.25f * t) * Mathf.Exp(-t * 7f) * 0.5f + // C5
+                              Mathf.Sin(2f * Mathf.PI * 659.25f * t) * Mathf.Exp(-t * 6f) * 0.4f + // E5
+                              Mathf.Sin(2f * Mathf.PI * 783.99f * t) * Mathf.Exp(-t * 5f) * 0.3f;   // G5
+                data[i] = Mathf.Clamp(hiss + chime, -1f, 1f);
+            }
+            AudioClip clip = AudioClip.Create("SynthesizedMedkit", length, 1, sampleRate, false);
+            clip.SetData(data, 0);
+            return clip;
+        }
+
+        private static AudioClip GenerateDoorMoveSound()
+        {
+            int sampleRate = 44100;
+            float duration = 0.45f;
+            int length = (int)(sampleRate * duration);
+            float[] data = new float[length];
+            for (int i = 0; i < length; i++)
+            {
+                float t = (float)i / sampleRate;
+                // Heavy metallic servo hum + latch click
+                float hum = Mathf.Sin(2f * Mathf.PI * (120f + 60f * t) * t) * 0.45f;
+                float latch = (t < 0.08f) ? Mathf.Sin(2f * Mathf.PI * 1800f * t) * Mathf.Exp(-t * 40f) * 0.6f : 0f;
+                float friction = (UnityEngine.Random.value * 2f - 1f) * 0.12f * Mathf.Sin(Mathf.PI * (t / duration));
+                data[i] = Mathf.Clamp(hum + latch + friction, -1f, 1f);
+            }
+            AudioClip clip = AudioClip.Create("SynthesizedDoorMove", length, 1, sampleRate, false);
             clip.SetData(data, 0);
             return clip;
         }

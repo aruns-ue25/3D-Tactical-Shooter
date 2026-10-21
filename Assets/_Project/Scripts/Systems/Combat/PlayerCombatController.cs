@@ -2,6 +2,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using TacticalShooter.Systems.Interaction;
+using TacticalShooter.Systems.Mission;
 
 namespace TacticalShooter.Systems.Combat
 {
@@ -29,6 +30,14 @@ namespace TacticalShooter.Systems.Combat
         private bool isThirdPerson = true;
         private Vector3 targetCamLocalPos;
 
+        [Header("Tactical Ammo System")]
+        [Tooltip("Magazine capacity of tactical carbine.")]
+        [SerializeField] private int magazineCapacity = 30;
+        [Tooltip("Current rounds chambered and loaded in magazine.")]
+        [SerializeField] private int currentMagazine = 30;
+        [Tooltip("Reserve rounds carried in operator's tactical pouches.")]
+        [SerializeField] private int reserveAmmo = 70; // 30 loaded + 70 reserve = 100 starting ammo
+
         [Header("Visual Feedback")]
         [SerializeField] private bool showCrosshair = true;
 
@@ -44,6 +53,11 @@ namespace TacticalShooter.Systems.Combat
         public HitscanWeapon CurrentWeapon => weapon;
         public bool IsThirdPerson => isThirdPerson;
         public Health PlayerHealth => playerHealth;
+        public int CurrentMagazine => currentMagazine;
+        public int ReserveAmmo => reserveAmmo;
+        public int TotalAmmo => currentMagazine + reserveAmmo;
+        public int MagazineCapacity => magazineCapacity;
+        public bool CanReload => currentMagazine < magazineCapacity && reserveAmmo > 0;
 
         private void Awake()
         {
@@ -53,7 +67,7 @@ namespace TacticalShooter.Systems.Combat
             {
                 playerHealth = gameObject.AddComponent<Health>();
             }
-            playerHealth.SetMaxHealth(250f);
+            playerHealth.SetMaxHealth(300f);
             playerHealth.OnDamaged += HandlePlayerDamaged;
 
             // Ensure Player has a real CapsuleCollider for incoming bullet raycasts and spherecasts
@@ -296,14 +310,68 @@ namespace TacticalShooter.Systems.Combat
             }
         }
 
+        public void Reload()
+        {
+            if (!CanReload || (playerHealth != null && !playerHealth.IsAlive)) return;
+
+            int needed = magazineCapacity - currentMagazine;
+            int amount = Mathf.Min(needed, reserveAmmo);
+            currentMagazine += amount;
+            reserveAmmo -= amount;
+
+            CombatEffects.PlayReloadSound(transform.position);
+            lastShotFeedback = $"<color=#55FF55>RELOADED: {currentMagazine}/{magazineCapacity} (Pouch: {reserveAmmo})</color>";
+            Debug.Log($"[PlayerCombatController] Reloaded weapon: {currentMagazine}/{magazineCapacity} (Reserve: {reserveAmmo})");
+        }
+
+        public void AddAmmo(int amount)
+        {
+            if (amount <= 0) return;
+            reserveAmmo += amount;
+            lastShotFeedback = $"<color=#FFFF33>+{amount} AMMO ACQUIRED (Total: {TotalAmmo})</color>";
+            if (MissionManager.Instance != null)
+            {
+                MissionManager.Instance.ShowSubtitle($"SUPPLY: +{amount} 5.56mm Ammo Acquired [Pouch: {reserveAmmo} | Mag: {currentMagazine}]", 3.5f, new Color(1.0f, 0.85f, 0.2f));
+            }
+        }
+
+        public void RestartFromBeginning()
+        {
+            Time.timeScale = 1f;
+            UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex);
+        }
+
         private void Update()
         {
             if (playerHealth != null && !playerHealth.IsAlive)
             {
+                // Permadeath: Press 'R' to restart the entire operation from the beginning
+                if (Keyboard.current != null && Keyboard.current.rKey.wasPressedThisFrame)
+                {
+                    RestartFromBeginning();
+                }
                 return;
             }
 
             HandlePerspectiveToggle();
+
+            // Press 'R' to reload weapon when alive
+            if (Keyboard.current != null && Keyboard.current.rKey.wasPressedThisFrame)
+            {
+                if (CanReload)
+                {
+                    Reload();
+                }
+                else if (currentMagazine == magazineCapacity)
+                {
+                    lastShotFeedback = "<color=#88CCFF>MAGAZINE FULL (30/30)</color>";
+                }
+                else if (reserveAmmo <= 0)
+                {
+                    lastShotFeedback = "<color=#FF5555>NO RESERVE AMMO LEFT!</color>";
+                    CombatEffects.PlayDryFireClick(transform.position);
+                }
+            }
 
             // Do not fire if carrying a crate/object
             if (objectCarrier != null && objectCarrier.IsHoldingObject)
@@ -376,6 +444,23 @@ namespace TacticalShooter.Systems.Combat
         private void FirePrimary()
         {
             if (weapon == null || playerCamera == null) return;
+
+            // Check magazine ammo
+            if (currentMagazine <= 0)
+            {
+                CombatEffects.PlayDryFireClick(transform.position);
+                if (reserveAmmo > 0)
+                {
+                    lastShotFeedback = "<color=#FFCC00>EMPTY MAG! PRESS [R] TO RELOAD</color>";
+                }
+                else
+                {
+                    lastShotFeedback = "<color=#FF3333>OUT OF AMMO! SEARCH ROOMS FOR AMMO CRATES</color>";
+                }
+                return;
+            }
+
+            currentMagazine--;
 
             // Route weapon muzzle point to the actual 3D rifle barrel in 3rd person!
             if (isThirdPerson)
@@ -457,9 +542,9 @@ namespace TacticalShooter.Systems.Combat
                 alignment = TextAnchor.MiddleCenter
             };
             subStyle.normal.textColor = new Color(0.85f, 0.85f, 0.9f);
-            GUI.Label(new Rect(panelX, panelY + 62f, panelW, 25f), "CRITICAL VITAL FAILURE — MISSION FAILED", subStyle);
+            GUI.Label(new Rect(panelX, panelY + 62f, panelW, 25f), "CRITICAL VITAL FAILURE — NO REINFORCEMENTS AVAILABLE", subStyle);
 
-            // Respawn Instruction with pulsing alpha
+            // Permadeath Restart Instruction with pulsing alpha
             float pulse = 0.65f + Mathf.PingPong(Time.time * 2.5f, 0.35f);
             GUIStyle respawnStyle = new GUIStyle(GUI.skin.label)
             {
@@ -468,7 +553,7 @@ namespace TacticalShooter.Systems.Combat
                 alignment = TextAnchor.MiddleCenter
             };
             respawnStyle.normal.textColor = new Color(1.0f, 0.85f, 0.2f, pulse);
-            GUI.Label(new Rect(panelX, panelY + 115f, panelW, 30f), "[ PRESS 'R' TO RESPAWN & RETRY ]", respawnStyle);
+            GUI.Label(new Rect(panelX, panelY + 115f, panelW, 30f), "[ PRESS 'R' TO RESTART OPERATION FROM BEGINNING ]", respawnStyle);
         }
 
         private void OnDestroy()
@@ -651,7 +736,7 @@ namespace TacticalShooter.Systems.Combat
             float boxHeight = 75f;
             float margin = 20f;
             float x = Screen.width - boxWidth - margin;
-            float y = Screen.height - boxHeight - margin;
+            float y = margin; // Top-right corner so it never blocks the first-person weapon model
 
             Color prevColor = GUI.color;
 
@@ -679,9 +764,10 @@ namespace TacticalShooter.Systems.Combat
             bodyStyle.normal.textColor = Color.white;
 
             string viewName = isThirdPerson ? "3RD PERSON" : "1ST PERSON";
+            string ammoCol = currentMagazine > 10 ? "#33FF55" : (currentMagazine > 0 ? "#FFCC00" : "#FF3333");
 
             GUI.Label(new Rect(x + 10, y + 6, boxWidth - 20, 18), "WEAPON: TACTICAL CARBINE (SEMI-AUTO)", headerStyle);
-            GUI.Label(new Rect(x + 10, y + 25, boxWidth - 20, 18), $"AMMO: ∞  |  VIEW: {viewName} [V key]", bodyStyle);
+            GUI.Label(new Rect(x + 10, y + 25, boxWidth - 20, 18), $"AMMO: <color={ammoCol}><b>{currentMagazine}</b>/{magazineCapacity}</color>  [POUCH: {reserveAmmo}]  |  VIEW: {viewName} [V]", bodyStyle);
             GUI.Label(new Rect(x + 10, y + 45, boxWidth - 20, 18), $"STATUS: {lastShotFeedback}", bodyStyle);
 
             GUI.color = prevColor;

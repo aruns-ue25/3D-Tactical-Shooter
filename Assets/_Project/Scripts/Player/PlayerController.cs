@@ -5,7 +5,7 @@ public class PlayerController : MonoBehaviour
 {
     [Header("Movement")]
     [SerializeField] private float moveSpeed = 5f;
-    [SerializeField] private float sprintSpeed = 8.5f;
+    [SerializeField] private float sprintSpeed = 9.5f;
 
     [Header("Acceleration & Ground Physics")]
     [SerializeField] private float acceleration = 14f;
@@ -128,73 +128,24 @@ public class PlayerController : MonoBehaviour
             playerCamera.localRotation = Quaternion.Slerp(playerCamera.localRotation, Quaternion.Euler(38f, 0f, 15f), Time.deltaTime * 3.0f);
         }
 
-        // Press 'R' to respawn
-        if (Keyboard.current != null && Keyboard.current.rKey.wasPressedThisFrame)
+        // Press 'R' to restart when operator is eliminated (Permadeath)
+        if (playerHealth != null && !playerHealth.IsAlive && Keyboard.current != null && Keyboard.current.rKey.wasPressedThisFrame)
         {
             Respawn();
+        }
+
+        // Press 'F11' to toggle full screen
+        if (Keyboard.current != null && Keyboard.current.f11Key.wasPressedThisFrame)
+        {
+            Screen.fullScreen = !Screen.fullScreen;
         }
     }
 
     public void Respawn()
     {
-        if (characterController != null) characterController.enabled = false;
-        transform.position = initialSpawnPosition;
-        transform.rotation = initialSpawnRotation;
-        if (characterController != null) characterController.enabled = true;
-
-        verticalVelocity = Vector3.zero;
-        currentPlanarVelocity = Vector3.zero;
-        cameraPitch = 0f;
-
-        if (playerCamera != null)
-        {
-            playerCamera.localPosition = initialCamLocalPos;
-            playerCamera.localRotation = Quaternion.identity;
-        }
-
-        if (playerHealth != null)
-        {
-            playerHealth.ResetHealth();
-        }
-
-        EnsureGuardForNewRun();
-    }
-
-    private void EnsureGuardForNewRun()
-    {
-        var guard = UnityEngine.Object.FindFirstObjectByType<TacticalShooter.AI.Agents.TacticalSoldierAgent>();
-        if (guard != null)
-        {
-            if (!guard.IsAlive)
-            {
-                UnityEngine.Object.Destroy(guard.gameObject);
-                TacticalShooter.AI.Agents.TacticalSoldierSpawner.SpawnTacticalSoldier(
-                    new Vector3(30f, 0.1f, 25f),
-                    new Vector3[]
-                    {
-                        new Vector3(30f, 0.1f, 27.5f),  // North central corridor
-                        new Vector3(34.5f, 0.1f, 27.5f),// East corridor entry (north of cover)
-                        new Vector3(34.5f, 0.1f, 22.5f),// East corridor entry (south of cover)
-                        new Vector3(30f, 0.1f, 22.5f)   // South central corridor (north of crates)
-                    },
-                    28f
-                );
-            }
-        }
-        else
-        {
-            TacticalShooter.AI.Agents.TacticalSoldierSpawner.SpawnTacticalSoldier(
-                new Vector3(30f, 0.1f, 25f),
-                new Vector3[]
-                {
-                    new Vector3(30f, 0.1f, 27.5f),  // North central corridor
-                    new Vector3(34.5f, 0.1f, 27.5f),// East corridor entry (north of cover)
-                    new Vector3(34.5f, 0.1f, 22.5f),// East corridor entry (south of cover)
-                    new Vector3(30f, 0.1f, 22.5f)   // South central corridor (north of crates)
-                },
-                28f
-            );
-        }
+        // Hard Permadeath: Full mission reload from beginning
+        Time.timeScale = 1f;
+        UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex);
     }
 
     private void HandleJump()
@@ -229,7 +180,7 @@ public class PlayerController : MonoBehaviour
 
         input = Vector2.ClampMagnitude(input, 1f);
 
-        bool isSprinting = Keyboard.current != null && Keyboard.current.leftShiftKey.isPressed && input.y > 0.1f;
+        bool isSprinting = Keyboard.current != null && Keyboard.current.leftShiftKey.isPressed && input.sqrMagnitude > 0.05f;
         float targetSpeed = isSprinting ? sprintSpeed : moveSpeed;
 
         Vector3 targetDirection = (transform.right * input.x + transform.forward * input.y).normalized;

@@ -53,6 +53,21 @@ namespace TacticalShooter.Systems.Combat
         }
 
         /// <summary>
+        /// Restores health up to maxHealth. Returns true if health was restored.
+        /// </summary>
+        public bool Heal(float amount)
+        {
+            if (!IsAlive || currentHealth >= maxHealth || amount <= 0f)
+            {
+                return false;
+            }
+
+            currentHealth = Mathf.Min(maxHealth, currentHealth + amount);
+            OnHealthChanged?.Invoke(currentHealth, maxHealth);
+            return true;
+        }
+
+        /// <summary>
         /// Resets health back to full for respawns or test resets.
         /// </summary>
         public void ResetHealth()
