@@ -62,6 +62,7 @@ namespace TacticalShooter.AI.Agents
         private Color[] originalColors;
         private float damageFlashTimer = 0f;
         private bool isDefeated = false;
+        private AgentRole? currentConstructedRole = null;
 
         // Locomotion & Weapon recoil
         private float strideTimer = 0f;
@@ -86,6 +87,17 @@ namespace TacticalShooter.AI.Agents
             }
         }
 
+        public AgentRole ResolveAgentRole()
+        {
+            string n = gameObject.name.ToLowerInvariant();
+            if (n.Contains("boss") || GetComponent<SupportAgent>() != null) return AgentRole.Support;
+            if (n.Contains("hunter") || GetComponent<HunterAgent>() != null) return AgentRole.Hunter;
+            if (n.Contains("flanker") || GetComponent<FlankerAgent>() != null) return AgentRole.Flanker;
+            if (n.Contains("guard") || n.Contains("soldier") || GetComponent<TacticalSoldierAgent>() != null) return AgentRole.Guard;
+            if (agent != null && agent.Role != AgentRole.Guard) return agent.Role;
+            return AgentRole.Guard;
+        }
+
         private void Awake()
         {
             characterController = GetComponent<CharacterController>();
@@ -93,23 +105,51 @@ namespace TacticalShooter.AI.Agents
             agent = GetComponent<AIAgentBase>();
             perception = GetComponent<AIPerception>();
 
+            CleanOldVisuals();
             BuildVisualHierarchy();
+        }
+
+        private void Start()
+        {
+            if (visualRoot == null || currentConstructedRole != ResolveAgentRole())
+            {
+                CleanOldVisuals();
+                BuildVisualHierarchy();
+            }
+        }
+
+        public void CleanOldVisuals()
+        {
+            for (int i = transform.childCount - 1; i >= 0; i--)
+            {
+                Transform child = transform.GetChild(i);
+                if (child.name == "Visuals" || child.name.StartsWith("Mat_") || child.name.Contains("Visual") || child.name.Contains("Mesh"))
+                {
+                    if (Application.isPlaying) Destroy(child.gameObject);
+                    else DestroyImmediate(child.gameObject);
+                }
+            }
         }
 
         public void BuildVisualHierarchy()
         {
-            // Remove any legacy placeholder visual
-            Transform oldVis = transform.Find("Visuals");
-            if (oldVis != null)
-            {
-                if (Application.isPlaying) Destroy(oldVis.gameObject);
-                else DestroyImmediate(oldVis.gameObject);
-            }
+            if (agent == null) agent = GetComponent<AIAgentBase>();
+            AgentRole role = ResolveAgentRole();
+            currentConstructedRole = role;
+
+            CleanOldVisuals();
+
+            // Distinct scale profile per archetype
+            float effectiveScale = modelScale;
+            if (role == AgentRole.Support) effectiveScale *= 1.30f; // Heavy Juggernaut Boss (Towering 2.30m)
+            else if (role == AgentRole.Hunter) effectiveScale *= 1.05f; // Tall agile stalker (1.90m)
+            else if (role == AgentRole.Flanker) effectiveScale *= 0.96f; // Sleek low-profile infiltrator (1.75m)
+            else effectiveScale *= 1.00f; // Standard Sentinel Guard (1.85m)
 
             GameObject rootObj = new GameObject("Visuals");
             rootObj.transform.SetParent(transform, false);
             rootObj.transform.localPosition = modelOffset;
-            rootObj.transform.localScale = Vector3.one * modelScale;
+            rootObj.transform.localScale = Vector3.one * effectiveScale;
             visualRoot = rootObj.transform;
 
             if (customModelPrefab != null)
@@ -122,99 +162,235 @@ namespace TacticalShooter.AI.Agents
                 return;
             }
 
-            // Build High-Fidelity 3D Royal Guard with Tactical Rifle
-            ConstructProceduralRoyalGuard();
+            // Build High-Fidelity 3D Tactical Operator Model matching Archetype
+            ConstructProceduralSoldier(role);
             CacheRenderers();
         }
 
         private void ConstructProceduralRoyalGuard()
         {
-            // 1. Realistic PBR Materials Palette matching concept art
-            Material matSteel = CreatePbrMaterial("Mat_SteelArmor", new Color(0.68f, 0.72f, 0.76f), 0.92f, 0.78f);
-            Material matSteelDark = CreatePbrMaterial("Mat_SteelDark", new Color(0.40f, 0.44f, 0.48f), 0.88f, 0.65f);
-            Material matRoyalBlue = CreatePbrMaterial("Mat_RoyalBlueFabric", new Color(0.14f, 0.28f, 0.58f), 0.05f, 0.30f);
-            Material matSilverTrim = CreatePbrMaterial("Mat_SilverTrim", new Color(0.90f, 0.92f, 0.96f), 0.75f, 0.75f);
-            Material matLeather = CreatePbrMaterial("Mat_BrownLeather", new Color(0.34f, 0.20f, 0.12f), 0.10f, 0.40f);
-            Material matBrass = CreatePbrMaterial("Mat_BrassGold", new Color(0.86f, 0.74f, 0.28f), 0.85f, 0.70f);
-            Material matSkin = CreatePbrMaterial("Mat_SkinTone", new Color(0.88f, 0.72f, 0.60f), 0.0f, 0.25f);
-            Material matHair = CreatePbrMaterial("Mat_DarkHair", new Color(0.12f, 0.10f, 0.08f), 0.0f, 0.20f);
-            Material matTrousers = CreatePbrMaterial("Mat_DarkTrousers", new Color(0.16f, 0.17f, 0.20f), 0.0f, 0.20f);
-            Material matGunmetal = CreatePbrMaterial("Mat_GunmetalRifle", new Color(0.12f, 0.13f, 0.15f), 0.95f, 0.80f);
+            ConstructProceduralSoldier(ResolveAgentRole());
+        }
 
-            // 2. Torso Root
+        private void ConstructProceduralRoyalGuard(AgentRole role)
+        {
+            ConstructProceduralSoldier(role);
+        }
+
+        private void ConstructProceduralSoldier(AgentRole role)
+        {
+            // 1. High-Fidelity Materials Palette matching realistic concept art
+            Color fabricColor;
+            Color armorColor;
+            Color armorDarkColor;
+            Color trimColor;
+            Color leatherColor;
+            Color visorColor;
+            float metallic = 0.85f;
+            float smoothness = 0.75f;
+            Vector3 pauldronScale;
+
+            switch (role)
+            {
+                case AgentRole.Support: // Boss: Ironclad Juggernaut in Obsidian Iron & Blood Red with Imperial Gold
+                    fabricColor = new Color(0.42f, 0.05f, 0.07f);       // Blood-Red Ballistic Carbon Weave
+                    armorColor = new Color(0.12f, 0.12f, 0.15f);        // Scorched Obsidian Iron Plate
+                    armorDarkColor = new Color(0.06f, 0.06f, 0.08f);    // Deep Carbon Steel
+                    trimColor = new Color(0.95f, 0.78f, 0.20f);         // Imperial Gilded Gold Accents
+                    leatherColor = new Color(0.12f, 0.12f, 0.14f);      // Heavy Ballistic Webbing
+                    visorColor = new Color(1.0f, 0.05f, 0.05f) * 6.5f;  // Bright Glowing Crimson Visor
+                    metallic = 0.95f;
+                    smoothness = 0.80f;
+                    pauldronScale = new Vector3(0.38f, 0.28f, 0.38f);   // Massive Tiered Pauldrons
+                    break;
+
+                case AgentRole.Hunter: // Hunter: Apex Stalker in Charcoal Carbon & Hazard Tiger Orange
+                    fabricColor = new Color(0.96f, 0.42f, 0.04f);       // High-Visibility Hazard Tiger Orange
+                    armorColor = new Color(0.20f, 0.22f, 0.25f);        // Titanium Dark Charcoal
+                    armorDarkColor = new Color(0.12f, 0.13f, 0.15f);    // Matte Carbon Fiber
+                    trimColor = new Color(1.0f, 0.68f, 0.08f) * 4.0f;   // Neon Amber Hazard Trim
+                    leatherColor = new Color(0.25f, 0.16f, 0.10f);      // Rugged Brown Leather Straps
+                    visorColor = new Color(1.0f, 0.60f, 0.05f) * 6.5f;  // Bright Glowing Amber Visor
+                    metallic = 0.75f;
+                    smoothness = 0.65f;
+                    pauldronScale = new Vector3(0.18f, 0.14f, 0.18f);   // Agile Athletic Pauldrons
+                    break;
+
+                case AgentRole.Flanker: // Flanker: Ghost Marksman in Matte Carbon Black & Electric Cyan
+                    fabricColor = new Color(0.04f, 0.07f, 0.12f);       // Stealth Shadow Midnight Navy
+                    armorColor = new Color(0.08f, 0.09f, 0.10f);        // Non-reflective Matte Carbon Black
+                    armorDarkColor = new Color(0.05f, 0.05f, 0.06f);    // Ultra-black Radar Absorbent
+                    trimColor = new Color(0.12f, 0.88f, 1.0f) * 4.5f;   // Electric Cyan Sensor Trim
+                    leatherColor = new Color(0.08f, 0.08f, 0.08f);      // Matte Black Harness
+                    visorColor = new Color(0.10f, 0.90f, 1.0f) * 6.5f;  // Electric Cyan Optics
+                    metallic = 0.25f;
+                    smoothness = 0.25f;                                  // Matte Non-reflective Stealth
+                    pauldronScale = new Vector3(0.14f, 0.11f, 0.14f);   // Sleek Low-profile Pauldrons
+                    break;
+
+                case AgentRole.Guard: // Guard: Frontline Sentinel in Slate Steel & Royal Navy
+                default:
+                    fabricColor = new Color(0.10f, 0.18f, 0.32f);       // Tactical Royal Navy
+                    armorColor = new Color(0.48f, 0.52f, 0.58f);        // Ceramic Slate Plate
+                    armorDarkColor = new Color(0.28f, 0.32f, 0.38f);    // Steel Grey
+                    trimColor = new Color(0.85f, 0.88f, 0.92f);         // Silver Squad Piping
+                    leatherColor = new Color(0.20f, 0.14f, 0.10f);      // Tactical Utility Leather
+                    visorColor = new Color(0.15f, 0.95f, 0.35f) * 5.0f; // Glowing Panoramic NVG Green
+                    metallic = 0.80f;
+                    smoothness = 0.60f;
+                    pauldronScale = new Vector3(0.22f, 0.16f, 0.22f);   // Standard Infantry Armor
+                    break;
+            }
+
+            Material matArmor = CreatePbrMaterial($"Mat_Armor_{role}", armorColor, metallic, smoothness);
+            Material matArmorDark = CreatePbrMaterial($"Mat_ArmorDark_{role}", armorDarkColor, metallic * 0.9f, smoothness * 0.8f);
+            Material matFabric = CreatePbrMaterial($"Mat_Fabric_{role}", fabricColor, 0.05f, 0.35f);
+            Material matTrim = CreatePbrMaterial($"Mat_Trim_{role}", trimColor, 0.90f, 0.80f);
+            Material matLeather = CreatePbrMaterial($"Mat_Leather_{role}", leatherColor, 0.10f, 0.40f);
+            Material matVisor = CreatePbrMaterial($"Mat_Visor_{role}", visorColor * 0.2f, 0.1f, 0.95f, visorColor);
+            Material matGunmetal = CreatePbrMaterial("Mat_GunmetalRifle", new Color(0.10f, 0.11f, 0.13f), 0.95f, 0.80f);
+            Material matTrousers = (role == AgentRole.Hunter) ? matFabric : CreatePbrMaterial("Mat_DarkTrousers", new Color(0.14f, 0.15f, 0.18f), 0.05f, 0.25f);
+
+            // 2. Torso Root (Modern Tactical Plate Carrier)
             GameObject torsoObj = new GameObject("Torso");
             torsoObj.transform.SetParent(visualRoot, false);
             torsoObj.transform.localPosition = new Vector3(0f, 1.05f, 0f);
             torso = torsoObj.transform;
             defaultTorsoRot = torso.localRotation;
 
-            // Royal Blue Surcoat / Tunic Body
-            CreateMeshPart(PrimitiveType.Cube, "Tunic_Body", torso, new Vector3(0f, 0.05f, 0f), new Vector3(0.48f, 0.46f, 0.28f), matRoyalBlue);
+            // Combat Under-suit Core
+            CreateMeshPart(PrimitiveType.Cube, "Tactical_Undersuit", torso, new Vector3(0f, 0.05f, 0f), new Vector3(0.48f, 0.46f, 0.28f), matFabric);
 
-            // Steel Breastplate (Curved polished chestplate)
-            CreateMeshPart(PrimitiveType.Sphere, "Breastplate_Curved", torso, new Vector3(0f, 0.10f, 0.05f), new Vector3(0.50f, 0.38f, 0.28f), matSteel);
-            // Steel Backplate
-            CreateMeshPart(PrimitiveType.Cube, "Backplate", torso, new Vector3(0f, 0.10f, -0.09f), new Vector3(0.46f, 0.36f, 0.12f), matSteelDark);
+            // Front Modular Ballistic Plate Carrier
+            CreateMeshPart(PrimitiveType.Cube, "Chest_BallisticPlate", torso, new Vector3(0f, 0.08f, 0.10f), new Vector3(0.46f, 0.38f, 0.14f), matArmor);
+            // Rear Backplate Carrier
+            CreateMeshPart(PrimitiveType.Cube, "Back_BallisticPlate", torso, new Vector3(0f, 0.08f, -0.10f), new Vector3(0.44f, 0.38f, 0.12f), matArmorDark);
 
-            // Leather Shoulder Harness Straps
-            CreateMeshPart(PrimitiveType.Cube, "Strap_L", torso, new Vector3(-0.16f, 0.18f, 0.02f), new Vector3(0.06f, 0.28f, 0.26f), matLeather);
-            CreateMeshPart(PrimitiveType.Cube, "Strap_R", torso, new Vector3(0.16f, 0.18f, 0.02f), new Vector3(0.06f, 0.28f, 0.26f), matLeather);
+            // Heavy Ballistic Shoulder Straps
+            CreateMeshPart(PrimitiveType.Cube, "VestStrap_L", torso, new Vector3(-0.16f, 0.20f, 0f), new Vector3(0.08f, 0.20f, 0.28f), matLeather);
+            CreateMeshPart(PrimitiveType.Cube, "VestStrap_R", torso, new Vector3(0.16f, 0.20f, 0f), new Vector3(0.08f, 0.20f, 0.28f), matLeather);
 
-            // Wide Leather Belt with Brass Buckle
-            CreateMeshPart(PrimitiveType.Cube, "Belt_Leather", torso, new Vector3(0f, -0.16f, 0f), new Vector3(0.50f, 0.10f, 0.32f), matLeather);
-            CreateMeshPart(PrimitiveType.Cube, "Belt_Buckle", torso, new Vector3(0f, -0.16f, 0.17f), new Vector3(0.12f, 0.08f, 0.03f), matBrass);
+            // Tactical Modular Duty Belt & Groin Armor Plate
+            CreateMeshPart(PrimitiveType.Cube, "DutyBelt", torso, new Vector3(0f, -0.17f, 0f), new Vector3(0.50f, 0.09f, 0.32f), matLeather);
+            CreateMeshPart(PrimitiveType.Cube, "BeltBuckle", torso, new Vector3(0f, -0.17f, 0.165f), new Vector3(0.10f, 0.07f, 0.025f), matTrim);
+            CreateMeshPart(PrimitiveType.Cube, "Pelvic_BlastPlate", torso, new Vector3(0f, -0.27f, 0.11f), new Vector3(0.24f, 0.16f, 0.06f), matArmorDark);
+            CreateMeshPart(PrimitiveType.Cube, "HipArmor_L", torso, new Vector3(-0.24f, -0.22f, 0f), new Vector3(0.06f, 0.14f, 0.22f), matArmorDark);
+            CreateMeshPart(PrimitiveType.Cube, "HipArmor_R", torso, new Vector3(0.24f, -0.22f, 0f), new Vector3(0.06f, 0.14f, 0.22f), matArmorDark);
 
-            // Royal Blue Tunic Skirt with Silver Trim & Central Split
-            GameObject skirtObj = new GameObject("Tunic_Skirt");
-            skirtObj.transform.SetParent(torso, false);
-            skirtObj.transform.localPosition = new Vector3(0f, -0.22f, 0f);
+            // Archetype-Specific Torso Attachments
+            if (role == AgentRole.Support)
+            {
+                // Boss Heavy Exoskeleton Armature on Spine & Blast Collar
+                CreateMeshPart(PrimitiveType.Cylinder, "Boss_BlastCollar", torso, new Vector3(0f, 0.28f, 0.02f), new Vector3(0.38f, 0.10f, 0.38f), matArmorDark);
+                CreateMeshPart(PrimitiveType.Cube, "Boss_ChestSlab_L", torso, new Vector3(-0.11f, 0.08f, 0.18f), new Vector3(0.20f, 0.32f, 0.06f), matArmor);
+                CreateMeshPart(PrimitiveType.Cube, "Boss_ChestSlab_R", torso, new Vector3(0.11f, 0.08f, 0.18f), new Vector3(0.20f, 0.32f, 0.06f), matArmor);
+                CreateMeshPart(PrimitiveType.Cube, "Boss_ChestBevel", torso, new Vector3(0f, 0.08f, 0.195f), new Vector3(0.04f, 0.30f, 0.03f), matTrim);
+                // Exoskeleton Spine Hydraulic Pistons on Back
+                CreateMeshPart(PrimitiveType.Cylinder, "Boss_SpineExo", torso, new Vector3(0f, 0.08f, -0.17f), new Vector3(0.08f, 0.36f, 0.08f), matTrim);
+                CreateMeshPart(PrimitiveType.Cylinder, "Boss_Piston_L", torso, new Vector3(-0.10f, 0.08f, -0.16f), new Vector3(0.035f, 0.32f, 0.035f), matTrim);
+                CreateMeshPart(PrimitiveType.Cylinder, "Boss_Piston_R", torso, new Vector3(0.10f, 0.08f, -0.16f), new Vector3(0.035f, 0.32f, 0.035f), matTrim);
+            }
+            else if (role == AgentRole.Hunter)
+            {
+                // Dual Crossed Combat Karambit Blades on Chest Harness
+                CreateMeshPart(PrimitiveType.Cube, "Blade_L", torso, new Vector3(-0.12f, 0.14f, 0.18f), new Vector3(0.025f, 0.16f, 0.035f), matTrim, Quaternion.Euler(0f, 0f, -38f));
+                CreateMeshPart(PrimitiveType.Cube, "Blade_R", torso, new Vector3(0.12f, 0.14f, 0.18f), new Vector3(0.025f, 0.16f, 0.035f), matTrim, Quaternion.Euler(0f, 0f, 38f));
+                CreateMeshPart(PrimitiveType.Cube, "Hunter_Strap_Cross", torso, new Vector3(0f, 0.10f, 0.175f), new Vector3(0.32f, 0.04f, 0.02f), matLeather);
+            }
+            else if (role == AgentRole.Flanker)
+            {
+                // Sleek Angular Low-Profile Stealth Harness + Cyan Sensor Node
+                CreateMeshPart(PrimitiveType.Cube, "StealthSensorNode", torso, new Vector3(0f, 0.12f, 0.175f), new Vector3(0.08f, 0.08f, 0.03f), matTrim);
+                CreateMeshPart(PrimitiveType.Sphere, "SensorLens", torso, new Vector3(0f, 0.12f, 0.195f), new Vector3(0.04f, 0.04f, 0.04f), matVisor);
+            }
+            else // Guard
+            {
+                // Triple STANAG Magazine Pouches & Shoulder Radio Antenna
+                CreateMeshPart(PrimitiveType.Cube, "MagPouch_1", torso, new Vector3(-0.11f, -0.04f, 0.18f), new Vector3(0.07f, 0.12f, 0.05f), matLeather);
+                CreateMeshPart(PrimitiveType.Cube, "MagPouch_2", torso, new Vector3(0f, -0.04f, 0.185f), new Vector3(0.07f, 0.12f, 0.05f), matLeather);
+                CreateMeshPart(PrimitiveType.Cube, "MagPouch_3", torso, new Vector3(0.11f, -0.04f, 0.18f), new Vector3(0.07f, 0.12f, 0.05f), matLeather);
+                CreateMeshPart(PrimitiveType.Cube, "Radio_Body", torso, new Vector3(-0.18f, 0.16f, -0.15f), new Vector3(0.06f, 0.12f, 0.06f), matArmorDark);
+                CreateMeshPart(PrimitiveType.Cylinder, "Radio_Antenna", torso, new Vector3(-0.18f, 0.32f, -0.15f), new Vector3(0.008f, 0.22f, 0.008f), matArmorDark);
+            }
 
-            CreateMeshPart(PrimitiveType.Cube, "Skirt_Left", skirtObj.transform, new Vector3(-0.13f, -0.16f, 0f), new Vector3(0.24f, 0.34f, 0.30f), matRoyalBlue);
-            CreateMeshPart(PrimitiveType.Cube, "Skirt_Right", skirtObj.transform, new Vector3(0.13f, -0.16f, 0f), new Vector3(0.24f, 0.34f, 0.30f), matRoyalBlue);
-
-            // Silver Trim Piping along front center and hem
-            CreateMeshPart(PrimitiveType.Cube, "Trim_FrontCenter", skirtObj.transform, new Vector3(0f, -0.16f, 0.155f), new Vector3(0.035f, 0.34f, 0.02f), matSilverTrim);
-            CreateMeshPart(PrimitiveType.Cube, "Trim_Hem_L", skirtObj.transform, new Vector3(-0.13f, -0.32f, 0f), new Vector3(0.25f, 0.035f, 0.31f), matSilverTrim);
-            CreateMeshPart(PrimitiveType.Cube, "Trim_Hem_R", skirtObj.transform, new Vector3(0.13f, -0.32f, 0f), new Vector3(0.25f, 0.035f, 0.31f), matSilverTrim);
-
-            // 3. Head & Kettle Helmet
+            // 3. Head & Ballistic Combat Helmet
             GameObject headObj = new GameObject("Head");
             headObj.transform.SetParent(torso, false);
             headObj.transform.localPosition = new Vector3(0f, 0.35f, 0.02f);
             head = headObj.transform;
 
-            // Gorget Neck Collar
-            CreateMeshPart(PrimitiveType.Cylinder, "Neck_Gorget", head, new Vector3(0f, -0.06f, 0f), new Vector3(0.18f, 0.08f, 0.18f), matRoyalBlue);
+            // Ballistic Neck Gorget
+            CreateMeshPart(PrimitiveType.Cylinder, "Neck_Gorget", head, new Vector3(0f, -0.06f, 0f), new Vector3(0.20f, 0.10f, 0.20f), matFabric);
 
-            // Face & Jaw
-            CreateMeshPart(PrimitiveType.Sphere, "Face_Head", head, new Vector3(0f, 0.08f, 0f), new Vector3(0.22f, 0.25f, 0.22f), matSkin);
-            CreateMeshPart(PrimitiveType.Cube, "Chin_Jaw", head, new Vector3(0f, 0.01f, 0.07f), new Vector3(0.10f, 0.10f, 0.09f), matSkin);
-            CreateMeshPart(PrimitiveType.Sphere, "DarkHair_Trim", head, new Vector3(0f, 0.08f, -0.04f), new Vector3(0.23f, 0.24f, 0.23f), matHair);
-
-            // Steel Kettle Helmet
-            GameObject helmetObj = new GameObject("KettleHelmet");
+            // Ballistic Helmet & Mask Structure
+            GameObject helmetObj = new GameObject("BallisticHelmet");
             helmetObj.transform.SetParent(head, false);
-            helmetObj.transform.localPosition = new Vector3(0f, 0.14f, 0f);
+            helmetObj.transform.localPosition = new Vector3(0f, 0.10f, 0f);
             helmet = helmetObj.transform;
 
-            // Helmet Dome
-            CreateMeshPart(PrimitiveType.Sphere, "Helmet_Dome", helmet, new Vector3(0f, 0.04f, 0f), new Vector3(0.27f, 0.26f, 0.29f), matSteel);
+            // Helmet Main Shell
+            CreateMeshPart(PrimitiveType.Sphere, "Helmet_Shell", helmet, new Vector3(0f, 0.02f, 0f), new Vector3(0.28f, 0.27f, 0.30f), matArmor);
+            CreateMeshPart(PrimitiveType.Cube, "Helmet_BrowPlate", helmet, new Vector3(0f, 0.06f, 0.11f), new Vector3(0.26f, 0.08f, 0.10f), matArmorDark);
 
-            // Flared Lower Brim
-            CreateMeshPart(PrimitiveType.Cylinder, "Helmet_Brim", helmet, new Vector3(0f, -0.06f, 0f), new Vector3(0.36f, 0.025f, 0.38f), matSteel);
+            // Archetype Helmet Optics & Visors with Point Light
+            GameObject glowLightObj = new GameObject("VisorGlowLight");
+            glowLightObj.transform.SetParent(helmet, false);
+            Light glowLight = glowLightObj.AddComponent<Light>();
+            glowLight.type = LightType.Point;
+            glowLight.range = 3.5f;
 
-            // Helmet Central Comb Ridge
-            CreateMeshPart(PrimitiveType.Cube, "Helmet_CombRidge", helmet, new Vector3(0f, 0.16f, 0f), new Vector3(0.024f, 0.06f, 0.26f), matSteel);
+            if (role == AgentRole.Support)
+            {
+                // Juggernaut Enclosed Face Shield & Glowing Crimson Visor Slit
+                CreateMeshPart(PrimitiveType.Cube, "FaceShield", helmet, new Vector3(0f, -0.06f, 0.10f), new Vector3(0.26f, 0.18f, 0.12f), matArmorDark);
+                CreateMeshPart(PrimitiveType.Cube, "Boss_CrimsonVisor", helmet, new Vector3(0f, 0.01f, 0.165f), new Vector3(0.22f, 0.035f, 0.03f), matVisor);
+                CreateMeshPart(PrimitiveType.Cube, "HeavyRebreather", helmet, new Vector3(0f, -0.11f, 0.14f), new Vector3(0.12f, 0.08f, 0.08f), matTrim);
+                glowLight.color = Color.red;
+                glowLight.intensity = 1.8f;
+                glowLightObj.transform.localPosition = new Vector3(0f, 0.01f, 0.20f);
+            }
+            else if (role == AgentRole.Hunter)
+            {
+                // Predator Combat Mask with Glowing Amber Visor & Dual Gas Filters
+                CreateMeshPart(PrimitiveType.Cube, "FaceMask", helmet, new Vector3(0f, -0.06f, 0.09f), new Vector3(0.24f, 0.16f, 0.11f), matArmorDark);
+                CreateMeshPart(PrimitiveType.Cube, "Hunter_AmberVisor", helmet, new Vector3(0f, 0.01f, 0.155f), new Vector3(0.20f, 0.045f, 0.03f), matVisor);
+                CreateMeshPart(PrimitiveType.Cylinder, "Respirator_L", helmet, new Vector3(-0.08f, -0.10f, 0.13f), new Vector3(0.045f, 0.04f, 0.045f), matTrim, Quaternion.Euler(45f, 0f, 0f));
+                CreateMeshPart(PrimitiveType.Cylinder, "Respirator_R", helmet, new Vector3(0.08f, -0.10f, 0.13f), new Vector3(0.045f, 0.04f, 0.045f), matTrim, Quaternion.Euler(45f, 0f, 0f));
+                glowLight.color = new Color(1.0f, 0.6f, 0.1f);
+                glowLight.intensity = 1.8f;
+                glowLightObj.transform.localPosition = new Vector3(0f, 0.01f, 0.19f);
+            }
+            else if (role == AgentRole.Flanker)
+            {
+                // Recon Helmet with Tri-Lens Electric Cyan Sensor Optics
+                CreateMeshPart(PrimitiveType.Cube, "ReconFacePlate", helmet, new Vector3(0f, -0.06f, 0.09f), new Vector3(0.22f, 0.15f, 0.10f), matArmorDark);
+                CreateMeshPart(PrimitiveType.Cylinder, "CyanOptic_Center", helmet, new Vector3(0f, 0.02f, 0.16f), new Vector3(0.04f, 0.04f, 0.04f), matVisor, Quaternion.Euler(90f, 0f, 0f));
+                CreateMeshPart(PrimitiveType.Cylinder, "CyanOptic_L", helmet, new Vector3(-0.065f, 0.03f, 0.15f), new Vector3(0.03f, 0.035f, 0.03f), matVisor, Quaternion.Euler(90f, 0f, 0f));
+                CreateMeshPart(PrimitiveType.Cylinder, "CyanOptic_R", helmet, new Vector3(0.065f, 0.03f, 0.15f), new Vector3(0.03f, 0.035f, 0.03f), matVisor, Quaternion.Euler(90f, 0f, 0f));
+                glowLight.color = new Color(0.1f, 0.85f, 1.0f);
+                glowLight.intensity = 1.8f;
+                glowLightObj.transform.localPosition = new Vector3(0f, 0.02f, 0.20f);
+            }
+            else // Guard
+            {
+                // Modern High-Cut Helmet with Quad Panoramic Night-Vision Optics (NVG Green)
+                CreateMeshPart(PrimitiveType.Sphere, "Face_Head", head, new Vector3(0f, 0.04f, 0.02f), new Vector3(0.22f, 0.24f, 0.22f), matArmorDark);
+                CreateMeshPart(PrimitiveType.Cube, "NVG_Mount", helmet, new Vector3(0f, 0.08f, 0.15f), new Vector3(0.06f, 0.06f, 0.03f), matArmorDark);
+                CreateMeshPart(PrimitiveType.Cylinder, "NVG_1", helmet, new Vector3(-0.075f, 0.06f, 0.18f), new Vector3(0.025f, 0.05f, 0.025f), matVisor, Quaternion.Euler(90f, 0f, 0f));
+                CreateMeshPart(PrimitiveType.Cylinder, "NVG_2", helmet, new Vector3(-0.025f, 0.06f, 0.19f), new Vector3(0.025f, 0.05f, 0.025f), matVisor, Quaternion.Euler(90f, 0f, 0f));
+                CreateMeshPart(PrimitiveType.Cylinder, "NVG_3", helmet, new Vector3(0.025f, 0.06f, 0.19f), new Vector3(0.025f, 0.05f, 0.025f), matVisor, Quaternion.Euler(90f, 0f, 0f));
+                CreateMeshPart(PrimitiveType.Cylinder, "NVG_4", helmet, new Vector3(0.075f, 0.06f, 0.18f), new Vector3(0.025f, 0.05f, 0.025f), matVisor, Quaternion.Euler(90f, 0f, 0f));
+                glowLight.color = new Color(0.2f, 0.95f, 0.35f);
+                glowLight.intensity = 1.5f;
+                glowLightObj.transform.localPosition = new Vector3(0f, 0.06f, 0.22f);
+            }
 
-            // Nasal Guard (Projecting down between eyes)
-            CreateMeshPart(PrimitiveType.Cube, "NasalGuard", helmet, new Vector3(0f, -0.10f, 0.15f), new Vector3(0.035f, 0.12f, 0.025f), matSteel);
+            // 4. Armored Pauldrons (Segmented Shoulder Armor)
+            CreateMeshPart(PrimitiveType.Cube, "Pauldron_L", torso, new Vector3(-0.31f, 0.22f, 0f), pauldronScale, matArmor);
+            CreateMeshPart(PrimitiveType.Cube, "Pauldron_R", torso, new Vector3(0.31f, 0.22f, 0f), pauldronScale, matArmor);
 
-            // 4. Pauldrons (Segmented Curved Shoulder Armor)
-            CreateMeshPart(PrimitiveType.Sphere, "Pauldron_L", torso, new Vector3(-0.31f, 0.24f, 0f), new Vector3(0.18f, 0.14f, 0.18f), matSteel);
-            CreateMeshPart(PrimitiveType.Sphere, "Pauldron_R", torso, new Vector3(0.31f, 0.24f, 0f), new Vector3(0.18f, 0.14f, 0.18f), matSteel);
-
-            // 5. Tactical Assault Carbine Rifle Mount (Attached directly to Torso right chest)
-            GameObject rifleObj = new GameObject("TacticalAssaultRifle");
+            // 5. Tactical Weapon Mount (Attached to Torso right chest)
+            GameObject rifleObj = new GameObject("TacticalWeapon");
             rifleObj.transform.SetParent(torso, false);
             rifleObj.transform.localPosition = new Vector3(0.18f, 0.12f, 0.28f);
             rifleObj.transform.localRotation = Quaternion.identity;
@@ -222,24 +398,40 @@ namespace TacticalShooter.AI.Agents
             defaultRifleRot = Quaternion.Euler(22f, -18f, 10f); // Low-ready patrol angle
 
             // Receiver & Body
-            CreateMeshPart(PrimitiveType.Cube, "Rifle_Receiver", tacticalRifle, Vector3.zero, new Vector3(0.05f, 0.12f, 0.32f), matGunmetal);
-            // Stock
+            CreateMeshPart(PrimitiveType.Cube, "Rifle_Receiver", tacticalRifle, Vector3.zero, new Vector3(0.05f, 0.12f, 0.34f), matGunmetal);
             CreateMeshPart(PrimitiveType.Cube, "Rifle_Stock", tacticalRifle, new Vector3(0f, 0.02f, -0.22f), new Vector3(0.045f, 0.11f, 0.16f), matGunmetal);
-            // Handguard Rail
             CreateMeshPart(PrimitiveType.Cube, "Rifle_Handguard", tacticalRifle, new Vector3(0f, 0.015f, 0.24f), new Vector3(0.055f, 0.08f, 0.22f), matGunmetal);
-            // Fluted Barrel
-            CreateMeshPart(PrimitiveType.Cylinder, "Rifle_Barrel", tacticalRifle, new Vector3(0f, 0.015f, 0.44f), new Vector3(0.022f, 0.18f, 0.022f), matSteelDark, Quaternion.Euler(90f, 0f, 0f));
-            // Muzzle Brake
+            CreateMeshPart(PrimitiveType.Cylinder, "Rifle_Barrel", tacticalRifle, new Vector3(0f, 0.015f, 0.44f), new Vector3(0.022f, 0.18f, 0.022f), matArmorDark, Quaternion.Euler(90f, 0f, 0f));
             CreateMeshPart(PrimitiveType.Cylinder, "Rifle_MuzzleBrake", tacticalRifle, new Vector3(0f, 0.015f, 0.63f), new Vector3(0.028f, 0.04f, 0.028f), matGunmetal, Quaternion.Euler(90f, 0f, 0f));
-            // 30-Round Compact Curved Magazine (compact fit so nothing extends into stomach)
             CreateMeshPart(PrimitiveType.Cube, "Rifle_Magazine", tacticalRifle, new Vector3(0f, -0.07f, 0.08f), new Vector3(0.04f, 0.10f, 0.07f), matGunmetal, Quaternion.Euler(14f, 0f, 0f));
-            // Holographic Optic Sight
-            CreateMeshPart(PrimitiveType.Cube, "Rifle_HoloSight", tacticalRifle, new Vector3(0f, 0.08f, 0.02f), new Vector3(0.042f, 0.05f, 0.09f), matSteelDark);
+            CreateMeshPart(PrimitiveType.Cube, "Rifle_HoloSight", tacticalRifle, new Vector3(0f, 0.08f, 0.02f), new Vector3(0.042f, 0.05f, 0.09f), matArmorDark);
+
+            // Archetype Weapon Attachments
+            if (role == AgentRole.Support)
+            {
+                // Boss Heavy SAW LMG: Dual 100-Round Ammo Drums & Heavy Shroud
+                CreateMeshPart(PrimitiveType.Cylinder, "SAW_Drum_L", tacticalRifle, new Vector3(-0.07f, -0.06f, 0.08f), new Vector3(0.10f, 0.05f, 0.10f), matGunmetal, Quaternion.Euler(0f, 0f, 90f));
+                CreateMeshPart(PrimitiveType.Cylinder, "SAW_Drum_R", tacticalRifle, new Vector3(0.07f, -0.06f, 0.08f), new Vector3(0.10f, 0.05f, 0.10f), matGunmetal, Quaternion.Euler(0f, 0f, 90f));
+                CreateMeshPart(PrimitiveType.Cylinder, "SAW_HeavyShroud", tacticalRifle, new Vector3(0f, 0.015f, 0.38f), new Vector3(0.07f, 0.14f, 0.07f), matArmorDark, Quaternion.Euler(90f, 0f, 0f));
+            }
+            else if (role == AgentRole.Flanker)
+            {
+                // Flanker Ghost Marksman: Long Silencer & High-Power Sniper Scope
+                CreateMeshPart(PrimitiveType.Cylinder, "Sniper_Suppressor", tacticalRifle, new Vector3(0f, 0.015f, 0.68f), new Vector3(0.045f, 0.16f, 0.045f), matGunmetal, Quaternion.Euler(90f, 0f, 0f));
+                CreateMeshPart(PrimitiveType.Cylinder, "Sniper_Scope", tacticalRifle, new Vector3(0f, 0.11f, 0.04f), new Vector3(0.035f, 0.16f, 0.035f), matArmorDark, Quaternion.Euler(90f, 0f, 0f));
+                CreateMeshPart(PrimitiveType.Sphere, "Sniper_FrontLens", tacticalRifle, new Vector3(0f, 0.11f, 0.13f), new Vector3(0.03f, 0.03f, 0.03f), matVisor);
+            }
+            else if (role == AgentRole.Hunter)
+            {
+                // Hunter Stalker: PEQ Laser Unit with glowing amber diode
+                CreateMeshPart(PrimitiveType.Cube, "Hunter_PEQ_Box", tacticalRifle, new Vector3(0.045f, 0.06f, 0.22f), new Vector3(0.035f, 0.03f, 0.08f), matGunmetal);
+                CreateMeshPart(PrimitiveType.Sphere, "Hunter_LaserEmitter", tacticalRifle, new Vector3(0.045f, 0.06f, 0.27f), new Vector3(0.018f, 0.018f, 0.018f), matVisor);
+            }
 
             // Muzzle Flash Light & Bullet Raycast Point
             GameObject muzzleObj = new GameObject("RifleMuzzlePoint");
             muzzleObj.transform.SetParent(tacticalRifle, false);
-            muzzleObj.transform.localPosition = new Vector3(0f, 0.015f, 0.68f);
+            muzzleObj.transform.localPosition = new Vector3(0f, 0.015f, 0.72f);
             muzzleObj.transform.localRotation = Quaternion.identity;
             rifleMuzzle = muzzleObj.transform;
 
@@ -252,15 +444,14 @@ namespace TacticalShooter.AI.Agents
             muzzleFlashLight.intensity = 0f;
             muzzleFlashLight.enabled = false;
 
-            // 6. Right Arm (Primary trigger arm gripping tactical rifle)
+            // 6. Right Arm (Trigger Arm Gripping Weapon)
             GameObject upperArmRObj = new GameObject("UpperArm_R");
             upperArmRObj.transform.SetParent(torso, false);
             upperArmRObj.transform.localPosition = new Vector3(0.25f, 0.16f, 0.05f);
             upperArmR = upperArmRObj.transform;
             defaultArmRRot = Quaternion.Euler(50f, -15f, 5f);
             upperArmR.localRotation = defaultArmRRot;
-
-            CreateMeshPart(PrimitiveType.Capsule, "Sleeve_R", upperArmR, new Vector3(0f, -0.12f, 0.04f), new Vector3(0.12f, 0.20f, 0.12f), matRoyalBlue, Quaternion.Euler(20f, 0f, 0f));
+            CreateMeshPart(PrimitiveType.Capsule, "Sleeve_R", upperArmR, new Vector3(0f, -0.12f, 0.04f), new Vector3(0.12f, 0.20f, 0.12f), matFabric, Quaternion.Euler(20f, 0f, 0f));
 
             GameObject forearmRObj = new GameObject("Forearm_R");
             forearmRObj.transform.SetParent(upperArmR, false);
@@ -268,10 +459,8 @@ namespace TacticalShooter.AI.Agents
             forearmR = forearmRObj.transform;
             defaultForearmRRot = Quaternion.Euler(25f, 10f, 0f);
             forearmR.localRotation = defaultForearmRRot;
+            CreateMeshPart(PrimitiveType.Capsule, "ForearmArmor_R", forearmR, new Vector3(0f, -0.09f, 0.05f), new Vector3(0.11f, 0.18f, 0.11f), matArmorDark, Quaternion.Euler(30f, 0f, 0f));
 
-            CreateMeshPart(PrimitiveType.Capsule, "Vambrace_R", forearmR, new Vector3(0f, -0.09f, 0.05f), new Vector3(0.11f, 0.18f, 0.11f), matSteelDark, Quaternion.Euler(30f, 0f, 0f));
-
-            // Right Hand (Trigger hand firmly on pistol grip)
             GameObject handRObj = new GameObject("Hand_R");
             handRObj.transform.SetParent(forearmR, false);
             handRObj.transform.localPosition = new Vector3(0f, -0.17f, 0.08f);
@@ -279,15 +468,14 @@ namespace TacticalShooter.AI.Agents
             handR = handRObj.transform;
             CreateMeshPart(PrimitiveType.Cube, "Glove_R", handR, Vector3.zero, new Vector3(0.09f, 0.09f, 0.09f), matLeather);
 
-            // Left Arm (Natural tactical posture along side - NO awkward parts protruding from stomach!)
+            // Left Arm
             GameObject upperArmLObj = new GameObject("UpperArm_L");
             upperArmLObj.transform.SetParent(torso, false);
             upperArmLObj.transform.localPosition = new Vector3(-0.25f, 0.16f, 0f);
             upperArmL = upperArmLObj.transform;
             defaultArmLRot = Quaternion.Euler(-6f, 0f, 6f);
             upperArmL.localRotation = defaultArmLRot;
-
-            CreateMeshPart(PrimitiveType.Capsule, "Sleeve_L", upperArmL, new Vector3(0f, -0.11f, 0f), new Vector3(0.12f, 0.20f, 0.12f), matRoyalBlue);
+            CreateMeshPart(PrimitiveType.Capsule, "Sleeve_L", upperArmL, new Vector3(0f, -0.11f, 0f), new Vector3(0.12f, 0.20f, 0.12f), matFabric);
 
             GameObject forearmLObj = new GameObject("Forearm_L");
             forearmLObj.transform.SetParent(upperArmL, false);
@@ -295,10 +483,14 @@ namespace TacticalShooter.AI.Agents
             forearmL = forearmLObj.transform;
             defaultForearmLRot = Quaternion.Euler(-10f, 0f, 0f);
             forearmL.localRotation = defaultForearmLRot;
+            CreateMeshPart(PrimitiveType.Capsule, "ForearmArmor_L", forearmL, new Vector3(0f, -0.09f, 0f), new Vector3(0.11f, 0.18f, 0.11f), matArmorDark);
 
-            CreateMeshPart(PrimitiveType.Capsule, "Vambrace_L", forearmL, new Vector3(0f, -0.09f, 0f), new Vector3(0.11f, 0.18f, 0.11f), matSteelDark);
+            // Flanker Wrist Tactical Computer
+            if (role == AgentRole.Flanker)
+            {
+                CreateMeshPart(PrimitiveType.Cube, "WristComputer", forearmL, new Vector3(0f, -0.06f, 0.06f), new Vector3(0.08f, 0.07f, 0.03f), matTrim);
+            }
 
-            // Left Hand (Resting naturally at left hip / side)
             GameObject handLObj = new GameObject("Hand_L");
             handLObj.transform.SetParent(forearmL, false);
             handLObj.transform.localPosition = new Vector3(0f, -0.18f, 0f);
@@ -306,7 +498,7 @@ namespace TacticalShooter.AI.Agents
             handL = handLObj.transform;
             CreateMeshPart(PrimitiveType.Cube, "Glove_L", handL, Vector3.zero, new Vector3(0.08f, 0.09f, 0.08f), matLeather);
 
-            // 7. Legs & Riding Boots
+            // 7. Tactical Legs & Combat Boots
             // Left Leg
             GameObject thighLObj = new GameObject("Thigh_L");
             thighLObj.transform.SetParent(torso, false);
@@ -318,17 +510,16 @@ namespace TacticalShooter.AI.Agents
             shinLObj.transform.SetParent(thighL, false);
             shinLObj.transform.localPosition = new Vector3(0f, -0.34f, 0f);
             shinL = shinLObj.transform;
-
-            // Boot folded cuff
-            CreateMeshPart(PrimitiveType.Cylinder, "BootCuff_L", shinL, new Vector3(0f, -0.04f, 0f), new Vector3(0.17f, 0.06f, 0.17f), matLeather);
-            // Boot shaft
-            CreateMeshPart(PrimitiveType.Capsule, "BootShaft_L", shinL, new Vector3(0f, -0.18f, 0f), new Vector3(0.14f, 0.26f, 0.14f), matLeather);
+            // Armored Knee Pad
+            CreateMeshPart(PrimitiveType.Cube, "KneePad_L", shinL, new Vector3(0f, 0.02f, 0.08f), new Vector3(0.11f, 0.11f, 0.04f), matArmor);
+            // Tactical Combat Boot
+            CreateMeshPart(PrimitiveType.Capsule, "BootShaft_L", shinL, new Vector3(0f, -0.18f, 0f), new Vector3(0.13f, 0.26f, 0.13f), matLeather);
 
             GameObject footLObj = new GameObject("Foot_L");
             footLObj.transform.SetParent(shinL, false);
             footLObj.transform.localPosition = new Vector3(0f, -0.32f, 0.06f);
             footL = footLObj.transform;
-            CreateMeshPart(PrimitiveType.Cube, "BootFoot_L", footL, Vector3.zero, new Vector3(0.13f, 0.10f, 0.24f), matLeather);
+            CreateMeshPart(PrimitiveType.Cube, "CombatBoot_L", footL, Vector3.zero, new Vector3(0.13f, 0.10f, 0.25f), matLeather);
 
             // Right Leg
             GameObject thighRObj = new GameObject("Thigh_R");
@@ -341,17 +532,16 @@ namespace TacticalShooter.AI.Agents
             shinRObj.transform.SetParent(thighR, false);
             shinRObj.transform.localPosition = new Vector3(0f, -0.34f, 0f);
             shinR = shinRObj.transform;
-
-            // Boot folded cuff
-            CreateMeshPart(PrimitiveType.Cylinder, "BootCuff_R", shinR, new Vector3(0f, -0.04f, 0f), new Vector3(0.17f, 0.06f, 0.17f), matLeather);
-            // Boot shaft
-            CreateMeshPart(PrimitiveType.Capsule, "BootShaft_R", shinR, new Vector3(0f, -0.18f, 0f), new Vector3(0.14f, 0.26f, 0.14f), matLeather);
+            // Armored Knee Pad
+            CreateMeshPart(PrimitiveType.Cube, "KneePad_R", shinR, new Vector3(0f, 0.02f, 0.08f), new Vector3(0.11f, 0.11f, 0.04f), matArmor);
+            // Tactical Combat Boot
+            CreateMeshPart(PrimitiveType.Capsule, "BootShaft_R", shinR, new Vector3(0f, -0.18f, 0f), new Vector3(0.13f, 0.26f, 0.13f), matLeather);
 
             GameObject footRObj = new GameObject("Foot_R");
             footRObj.transform.SetParent(shinR, false);
             footRObj.transform.localPosition = new Vector3(0f, -0.32f, 0.06f);
             footR = footRObj.transform;
-            CreateMeshPart(PrimitiveType.Cube, "BootFoot_R", footR, Vector3.zero, new Vector3(0.13f, 0.10f, 0.24f), matLeather);
+            CreateMeshPart(PrimitiveType.Cube, "CombatBoot_R", footR, Vector3.zero, new Vector3(0.13f, 0.10f, 0.25f), matLeather);
         }
 
         private GameObject CreateMeshPart(PrimitiveType type, string name, Transform parent, Vector3 localPos, Vector3 scale, Material mat, Quaternion rot = default)
@@ -363,34 +553,54 @@ namespace TacticalShooter.AI.Agents
             part.transform.localScale = scale;
             if (rot != default) part.transform.localRotation = rot;
 
-            part.GetComponent<Renderer>().material = mat;
-            Destroy(part.GetComponent<Collider>());
+            var r = part.GetComponent<Renderer>();
+            if (r != null) r.material = mat;
+
+            var col = part.GetComponent<Collider>();
+            if (col != null)
+            {
+                if (Application.isPlaying) Destroy(col);
+                else DestroyImmediate(col);
+            }
             return part;
         }
 
-        private Material CreatePbrMaterial(string name, Color color, float metallic = 0.5f, float smoothness = 0.5f)
+        private Material CreatePbrMaterial(string name, Color color, float metallic = 0.5f, float smoothness = 0.5f, Color emission = default)
         {
             Shader shader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard") ?? Shader.Find("Diffuse");
             Material mat = new Material(shader);
             mat.name = name;
+
+            // Set both URP Lit (_BaseColor) and Standard (_Color)
+            if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", color);
+            if (mat.HasProperty("_Color")) mat.SetColor("_Color", color);
             mat.color = color;
 
             if (mat.HasProperty("_Metallic")) mat.SetFloat("_Metallic", metallic);
             if (mat.HasProperty("_Smoothness")) mat.SetFloat("_Smoothness", smoothness);
             if (mat.HasProperty("_Glossiness")) mat.SetFloat("_Glossiness", smoothness);
 
+            if (emission != default && emission != Color.black)
+            {
+                mat.EnableKeyword("_EMISSION");
+                if (mat.HasProperty("_EmissionColor")) mat.SetColor("_EmissionColor", emission);
+            }
+
             return mat;
         }
 
         private void CacheRenderers()
         {
+            if (visualRoot == null) return;
             allRenderers = visualRoot.GetComponentsInChildren<Renderer>();
             originalColors = new Color[allRenderers.Length];
             for (int i = 0; i < allRenderers.Length; i++)
             {
-                if (allRenderers[i] != null && allRenderers[i].material != null)
+                if (allRenderers[i] != null && allRenderers[i].sharedMaterial != null)
                 {
-                    originalColors[i] = allRenderers[i].material.color;
+                    Material m = allRenderers[i].sharedMaterial;
+                    if (m.HasProperty("_BaseColor")) originalColors[i] = m.GetColor("_BaseColor");
+                    else originalColors[i] = m.color;
                 }
             }
         }
@@ -561,26 +771,66 @@ namespace TacticalShooter.AI.Agents
             isDefeated = true;
             StopAllCoroutines();
             if (muzzleFlashLight != null) muzzleFlashLight.enabled = false;
+
+            // Ensure locomotion & AI systems stop controlling defeated agent
+            var cc = GetComponent<CharacterController>();
+            if (cc != null) cc.enabled = false;
+
+            var col = GetComponent<Collider>();
+            if (col != null) col.enabled = false;
+
+            var mov = GetComponent<AIMovement>();
+            if (mov != null)
+            {
+                mov.Stop();
+                mov.enabled = false;
+            }
+
+            var perc = GetComponent<AIPerception>();
+            if (perc != null) perc.enabled = false;
+
+            var nma = GetComponent<UnityEngine.AI.NavMeshAgent>();
+            if (nma != null) nma.enabled = false;
+
             StartCoroutine(KnockdownRoutine());
         }
 
         private IEnumerator KnockdownRoutine()
         {
-            Quaternion startRot = transform.rotation;
-            Quaternion targetRot = Quaternion.Euler(-75f, transform.eulerAngles.y, 0f);
-            Vector3 startPos = transform.position;
-            Vector3 targetPos = startPos + Vector3.down * 0.4f;
+            if (visualRoot == null) yield break;
+
+            // Ensure enemy base is firmly anchored to the top of the floor
+            if (Physics.Raycast(transform.position + Vector3.up * 0.5f, Vector3.down, out RaycastHit hit, 2.5f, ~0, QueryTriggerInteraction.Ignore))
+            {
+                transform.position = new Vector3(transform.position.x, hit.point.y, transform.position.z);
+            }
+
+            Quaternion startRot = visualRoot.localRotation;
+            Quaternion targetRot = Quaternion.Euler(-90f, 0f, 0f);
+            Vector3 startPos = visualRoot.localPosition;
+
+            // Align defeated body so it rests cleanly ON the floor surface without sinking into the ground
+            Vector3 targetPos = new Vector3(startPos.x, 0.12f, startPos.z - 0.15f);
 
             float elapsed = 0f;
-            float duration = 0.65f;
+            float duration = 0.55f;
 
             while (elapsed < duration)
             {
                 elapsed += Time.deltaTime;
                 float t = Mathf.SmoothStep(0f, 1f, elapsed / duration);
-                transform.rotation = Quaternion.Slerp(startRot, targetRot, t);
-                transform.position = Vector3.Lerp(startPos, targetPos, t);
+                if (visualRoot != null)
+                {
+                    visualRoot.localRotation = Quaternion.Slerp(startRot, targetRot, t);
+                    visualRoot.localPosition = Vector3.Lerp(startPos, targetPos, t);
+                }
                 yield return null;
+            }
+
+            if (visualRoot != null)
+            {
+                visualRoot.localRotation = targetRot;
+                visualRoot.localPosition = targetPos;
             }
 
             // Defeated grey shade
@@ -606,7 +856,10 @@ namespace TacticalShooter.AI.Agents
             {
                 if (allRenderers[i] != null && allRenderers[i].material != null)
                 {
-                    allRenderers[i].material.color = col;
+                    Material m = allRenderers[i].material;
+                    if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", col);
+                    if (m.HasProperty("_Color")) m.SetColor("_Color", col);
+                    m.color = col;
                 }
             }
         }
@@ -618,7 +871,11 @@ namespace TacticalShooter.AI.Agents
             {
                 if (allRenderers[i] != null && allRenderers[i].material != null && i < originalColors.Length)
                 {
-                    allRenderers[i].material.color = originalColors[i];
+                    Material m = allRenderers[i].material;
+                    Color oc = originalColors[i];
+                    if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", oc);
+                    if (m.HasProperty("_Color")) m.SetColor("_Color", oc);
+                    m.color = oc;
                 }
             }
         }
