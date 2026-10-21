@@ -98,8 +98,15 @@ namespace TacticalShooter.Systems.Interaction
                     }
                 }
 
-                // Generous detection: operator on either side of the 4m doorway can always interact
-                isPlayerNearby = (distXZ <= 6.0f && distY <= 2.5f) || (minDistToColliders <= 4.5f);
+                // Strict vertical elevation guard: player must be on the same floor level (prevents bleed through floors)
+                if (distY > 2.0f)
+                {
+                    isPlayerNearby = false;
+                }
+                else
+                {
+                    isPlayerNearby = (distXZ <= 5.0f) || (minDistToColliders <= 3.8f);
+                }
             }
             else
             {
@@ -114,8 +121,7 @@ namespace TacticalShooter.Systems.Interaction
 
             if (isPlayerNearby && !isAnimating)
             {
-                bool ePressed = (UnityEngine.InputSystem.Keyboard.current != null && UnityEngine.InputSystem.Keyboard.current.eKey.wasPressedThisFrame) ||
-                                Input.GetKeyDown(KeyCode.E);
+                bool ePressed = UnityEngine.InputSystem.Keyboard.current != null && UnityEngine.InputSystem.Keyboard.current.eKey.wasPressedThisFrame;
                 if (ePressed)
                 {
                     Interact(playerTransform != null ? playerTransform.gameObject : gameObject);
