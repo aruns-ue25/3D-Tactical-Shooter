@@ -9,6 +9,7 @@ using TacticalShooter.AI.Movement;
 using TacticalShooter.AI.Perception;
 using TacticalShooter.Systems.Combat;
 using TacticalShooter.Systems.Mission;
+using TacticalShooter.Environment;
 
 namespace TacticalShooter.EditorTools
 {
@@ -100,123 +101,11 @@ namespace TacticalShooter.EditorTools
 
         private static void BuildUpstairsAndMoveExtraction()
         {
-            Transform envRoot = GameObject.Find("Environment")?.transform;
-            if (envRoot == null)
-            {
-                GameObject e = new GameObject("Environment");
-                envRoot = e.transform;
-            }
-
-            Transform facilityRoot = GameObject.Find("Generated_Facility")?.transform ?? envRoot;
-
-            // Remove any previous upstairs container under Architecture, Generated_Facility, or envRoot
-            Transform oldUpstairsArch = envRoot.Find("Architecture/Upstairs_Facility");
-            if (oldUpstairsArch != null) Object.DestroyImmediate(oldUpstairsArch.gameObject);
-            Transform oldUpstairsGen = facilityRoot.Find("Upstairs_Facility");
-            if (oldUpstairsGen != null) Object.DestroyImmediate(oldUpstairsGen.gameObject);
-            Transform oldUpstairsEnv = envRoot.Find("Upstairs_Facility");
-            if (oldUpstairsEnv != null) Object.DestroyImmediate(oldUpstairsEnv.gameObject);
-
-            GameObject upstairsRoot = new GameObject("Upstairs_Facility");
-            upstairsRoot.transform.SetParent(facilityRoot, true);
-            upstairsRoot.SetActive(true);
-
-            Material floorMat = AssetDatabase.LoadAssetAtPath<Material>("Assets/_Project/Art/Materials/FloorMaterial.mat");
-            Material wallMat = AssetDatabase.LoadAssetAtPath<Material>("Assets/_Project/Art/Materials/WallMaterial.mat");
-
-            const float landingY = 3.2f;
-            const float landingCenterX = 30f;
-            const float landingCenterZ = 47.5f;
-
-            // 1. Elevated Catwalk / Platform Floor (8m wide x 5m deep x 0.25m thick)
-            GameObject platform = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            platform.name = "Upstairs_Platform_Floor";
-            platform.transform.SetParent(upstairsRoot.transform, false);
-            platform.transform.position = new Vector3(landingCenterX, landingY, landingCenterZ);
-            platform.transform.localScale = new Vector3(8.5f, 0.25f, 5.0f);
-            if (floorMat != null) platform.GetComponent<Renderer>().sharedMaterial = floorMat;
-            platform.isStatic = true;
-
-            // 2. Platform Support Pillars
-            CreateSupportPillar(upstairsRoot.transform, new Vector3(landingCenterX - 3.8f, landingY * 0.5f, landingCenterZ - 2.2f), landingY, wallMat);
-            CreateSupportPillar(upstairsRoot.transform, new Vector3(landingCenterX + 3.8f, landingY * 0.5f, landingCenterZ - 2.2f), landingY, wallMat);
-            CreateSupportPillar(upstairsRoot.transform, new Vector3(landingCenterX - 3.8f, landingY * 0.5f, landingCenterZ + 2.2f), landingY, wallMat);
-            CreateSupportPillar(upstairsRoot.transform, new Vector3(landingCenterX + 3.8f, landingY * 0.5f, landingCenterZ + 2.2f), landingY, wallMat);
-
-            // 3. Platform Guardrails
-            CreateRail(upstairsRoot.transform, new Vector3(landingCenterX, landingY + 0.55f, landingCenterZ + 2.45f), new Vector3(8.5f, 0.95f, 0.1f), wallMat); // Back
-            CreateRail(upstairsRoot.transform, new Vector3(landingCenterX - 4.2f, landingY + 0.55f, landingCenterZ), new Vector3(0.1f, 0.95f, 4.9f), wallMat); // Left
-            CreateRail(upstairsRoot.transform, new Vector3(landingCenterX + 4.2f, landingY + 0.55f, landingCenterZ), new Vector3(0.1f, 0.95f, 4.9f), wallMat); // Right
-            // Front railings with opening in center (x = 28.5 to 31.5) for the stairs
-            CreateRail(upstairsRoot.transform, new Vector3(landingCenterX - 2.7f, landingY + 0.55f, landingCenterZ - 2.45f), new Vector3(3.0f, 0.95f, 0.1f), wallMat); // Front Left
-            CreateRail(upstairsRoot.transform, new Vector3(landingCenterX + 2.7f, landingY + 0.55f, landingCenterZ - 2.45f), new Vector3(3.0f, 0.95f, 0.1f), wallMat); // Front Right
-
-            // 4. Industrial Military Staircase leading from z = 39.0m (ground y=0) to z = 45.0m (platform y=3.2)
-            GameObject stairsContainer = new GameObject("Stairs_To_Upstairs");
-            stairsContainer.transform.SetParent(upstairsRoot.transform, false);
-
-            int stepCount = 10;
-            float startZ = 39.0f;
-            float endZ = 45.0f;
-            float stairWidth = 2.4f;
-            float stepLength = (endZ - startZ) / stepCount; // 0.60m
-            float stepRise = landingY / stepCount;          // 0.32m
-
-            for (int i = 0; i < stepCount; i++)
-            {
-                float stepZ = startZ + (i + 0.5f) * stepLength;
-                float stepH = (i + 1) * stepRise;
-                float stepCenterY = stepH * 0.5f;
-
-                GameObject step = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                step.name = $"Step_{i + 1}";
-                step.transform.SetParent(stairsContainer.transform, false);
-                step.transform.position = new Vector3(landingCenterX, stepCenterY, stepZ);
-                step.transform.localScale = new Vector3(stairWidth, stepH, stepLength);
-                if (wallMat != null) step.GetComponent<Renderer>().sharedMaterial = wallMat;
-                step.isStatic = true;
-            }
-
-            // Smooth Incline Ramp Collider (prevents player CharacterController from snagging on step risers)
-            GameObject smoothRamp = new GameObject("Staircase_Smooth_Ramp_Collider");
-            smoothRamp.transform.SetParent(stairsContainer.transform, false);
-            float rampMidZ = (startZ + endZ) * 0.5f;
-            float rampMidY = landingY * 0.5f;
-            float rampLength = Mathf.Sqrt(Mathf.Pow(endZ - startZ, 2) + Mathf.Pow(landingY, 2));
-            float rampAngle = Mathf.Atan2(landingY, endZ - startZ) * Mathf.Rad2Deg;
-
-            smoothRamp.transform.position = new Vector3(landingCenterX, rampMidY + 0.08f, rampMidZ);
-            smoothRamp.transform.rotation = Quaternion.Euler(-rampAngle, 0f, 0f);
-            BoxCollider rampCol = smoothRamp.AddComponent<BoxCollider>();
-            rampCol.size = new Vector3(stairWidth, 0.15f, rampLength);
-
-            // Side handrails along the stairs
-            CreateStairHandrail(stairsContainer.transform, landingCenterX - (stairWidth * 0.5f) - 0.05f, startZ, endZ, landingY, rampLength, rampAngle, wallMat);
-            CreateStairHandrail(stairsContainer.transform, landingCenterX + (stairWidth * 0.5f) + 0.05f, startZ, endZ, landingY, rampLength, rampAngle, wallMat);
-
-            // 5. Relocate Destination Point (ExtractionPoint & ExtractionZone) to Upstairs!
-            Vector3 upstairsDestPos = new Vector3(landingCenterX, landingY + 0.15f, landingCenterZ);
-
-            GameObject extPointObj = GameObject.Find("ExtractionPoint") ?? GameObject.Find("Extraction Point");
-            if (extPointObj != null)
-            {
-                extPointObj.transform.position = upstairsDestPos;
-                Debug.Log($"[ConfigureUpstairsAndGameplayFixes] Moved ExtractionPoint to Upstairs: {upstairsDestPos}");
-            }
-
-            GameObject extZoneObj = GameObject.Find("ExtractionZone");
-            if (extZoneObj != null)
-            {
-                extZoneObj.transform.position = upstairsDestPos;
-                ExtractionInteractable interactable = extZoneObj.GetComponent<ExtractionInteractable>();
-                if (interactable != null)
-                {
-                    // Ensure touch radius and height allow smooth upstairs extraction
-                    var radiusField = typeof(ExtractionInteractable).GetField("touchRadius", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                    if (radiusField != null) radiusField.SetValue(interactable, 3.5f);
-                }
-                Debug.Log($"[ConfigureUpstairsAndGameplayFixes] Moved ExtractionZone to Upstairs: {upstairsDestPos}");
-            }
+            GameObject envObj = GameObject.Find("Environment");
+            if (envObj == null) envObj = new GameObject("Environment");
+            CampusGenerator generator = envObj.GetComponent<CampusGenerator>() ?? envObj.AddComponent<CampusGenerator>();
+            generator.GenerateCampus();
+            Debug.Log("[ConfigureUpstairsAndGameplayFixes] CampusGenerator generated three-level campus.");
         }
 
         private static void CreateSupportPillar(Transform parent, Vector3 pos, float height, Material mat)

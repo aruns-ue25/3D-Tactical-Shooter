@@ -6,6 +6,7 @@ using TacticalShooter.AI.Agents;
 using TacticalShooter.AI.Movement;
 using TacticalShooter.AI.Perception;
 using TacticalShooter.Systems.Combat;
+using TacticalShooter.Environment;
 
 namespace TacticalShooter.EditorTools
 {
@@ -19,7 +20,7 @@ namespace TacticalShooter.EditorTools
 
         public static void ExecuteWorldExpansion()
         {
-            Debug.Log("[ExpandFacilityWorld] Starting World Expansion & Upstairs Floor Construction...");
+            Debug.Log("[ExpandFacilityWorld] Starting World Expansion & Three-Level Campus Construction...");
 
             var scene = EditorSceneManager.OpenScene(SCENE_PATH, OpenSceneMode.Single);
             if (!scene.IsValid())
@@ -28,40 +29,19 @@ namespace TacticalShooter.EditorTools
                 return;
             }
 
-            Material floorMat = AssetDatabase.LoadAssetAtPath<Material>("Assets/_Project/Art/Materials/FloorMaterial.mat");
-            Material wallMat = AssetDatabase.LoadAssetAtPath<Material>("Assets/_Project/Art/Materials/WallMaterial.mat");
-            Material doorMat = AssetDatabase.LoadAssetAtPath<Material>("Assets/_Project/Art/Materials/DoorMaterial.mat");
-
-            Transform facilityRoot = GameObject.Find("Generated_Facility")?.transform;
-            if (facilityRoot == null)
-            {
-                GameObject genObj = new GameObject("Generated_Facility");
-                facilityRoot = genObj.transform;
-            }
-
-            // 1. Modify Perimeter Walls to add real Openings / Exits
-            ModifyPerimeterWallsWithExits(facilityRoot, wallMat, doorMat);
-
-            // 2. Build Expansive Outdoor Compound (Courtyard, Perimeter Yard, Boundary Walls, Checkpoints)
-            BuildOutdoorCompound(facilityRoot, floorMat, wallMat);
-
-            // 3. Build Fixed, Bug-Free 2nd Floor & Smooth Incline Staircase with Full Headroom
-            BuildExpandedUpstairsFloor(facilityRoot, floorMat, wallMat);
-
-            // 4. Configure Player Starting Position & Mission Extraction Point
-            ConfigurePlayerAndExtraction();
-
-            // 5. Ensure all Sector AI Guards (including the 2 new 2nd-floor enemies) are Stationed with Full 3D Visuals
-            EnsureAllGuardsVisuals();
+            GameObject envObj = GameObject.Find("Environment");
+            if (envObj == null) envObj = new GameObject("Environment");
+            CampusGenerator generator = envObj.GetComponent<CampusGenerator>() ?? envObj.AddComponent<CampusGenerator>();
+            generator.GenerateCampus();
 
             // Save Scene
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene);
 
-            // 6. Capture Verification Screenshots
+            // Capture Verification Screenshots
             CaptureVerificationScreenshots();
 
-            Debug.Log("[ExpandFacilityWorld] ✅ World Expansion, Fixed Stairs & 2nd Floor Enemies successfully completed and verified!");
+            Debug.Log("[ExpandFacilityWorld] ✅ Three-Level Research Campus successfully completed and verified!");
         }
 
         private static void ModifyPerimeterWallsWithExits(Transform facilityRoot, Material wallMat, Material doorMat)

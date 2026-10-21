@@ -33,72 +33,36 @@ namespace TacticalShooter.Environment
 
         public void GenerateFacility()
         {
-            FindSceneReferences();
-            ClearExistingGeneratedFacility();
-
-            if (environmentRoot == null)
+            CampusGenerator campusGen = GetComponent<CampusGenerator>();
+            if (campusGen == null)
             {
-                Debug.LogError("FacilityGenerator: Environment root transform could not be found!");
-                return;
+                campusGen = gameObject.AddComponent<CampusGenerator>();
             }
 
-            // Create container for generated geometry
-            GameObject facilityContainer = new GameObject(GENERATED_CONTAINER_NAME);
-            facilityContainer.transform.SetParent(environmentRoot, false);
-
-#if UNITY_EDITOR
-            Undo.RegisterCreatedObjectUndo(facilityContainer, "Generate Tactical Facility");
-#endif
-
-            Transform floorsRoot = CreateSubContainer(facilityContainer.transform, "Floors");
-            Transform wallsRoot = CreateSubContainer(facilityContainer.transform, "Walls");
-            Transform doorwaysRoot = CreateSubContainer(facilityContainer.transform, "Doorways");
-            Transform coverRoot = CreateSubContainer(facilityContainer.transform, "Cover_Obstacles");
-
-            int cols = Mathf.RoundToInt(facilityWidth / gridSize);
-            int rows = Mathf.RoundToInt(facilityDepth / gridSize);
-
-            // 1. Generate Floor Slabs
-            GenerateFloors(floorsRoot, cols, rows);
-
-            // 2. Generate Facility Layout (Walls, Doorways, Cover)
-            GenerateLayout(wallsRoot, doorwaysRoot, coverRoot, cols, rows);
-
-            // 3. Reposition Target Markers
-            RepositionMarkers();
-
-            Debug.Log($"Tactical Facility successfully generated! ({facilityWidth}m x {facilityDepth}m greybox)");
+            campusGen.GenerateCampus();
+            Debug.Log("[FacilityGenerator] Delegated to CampusGenerator: Three-level campus successfully generated!");
         }
 
         public void ClearExistingGeneratedFacility()
         {
-            FindSceneReferences();
-
-            if (environmentRoot == null) return;
-
-            List<GameObject> objectsToDestroy = new List<GameObject>();
-            foreach (Transform child in environmentRoot)
+            CampusGenerator campusGen = GetComponent<CampusGenerator>();
+            if (campusGen != null)
             {
-                if (child.name == GENERATED_CONTAINER_NAME)
-                {
-                    objectsToDestroy.Add(child.gameObject);
-                }
+                campusGen.ClearExistingGeneratedCampus();
             }
-
-            foreach (GameObject obj in objectsToDestroy)
+            else
             {
+                // Fallback clean
+                GameObject oldGen = GameObject.Find(GENERATED_CONTAINER_NAME);
+                if (oldGen != null)
+                {
 #if UNITY_EDITOR
-                if (Application.isPlaying)
-                {
-                    Destroy(obj);
-                }
-                else
-                {
-                    Undo.DestroyObjectImmediate(obj);
-                }
+                    if (Application.isPlaying) Destroy(oldGen);
+                    else Undo.DestroyObjectImmediate(oldGen);
 #else
-                Destroy(obj);
+                    Destroy(oldGen);
 #endif
+                }
             }
         }
 
