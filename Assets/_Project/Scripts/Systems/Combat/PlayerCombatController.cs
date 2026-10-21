@@ -343,6 +343,13 @@ namespace TacticalShooter.Systems.Combat
 
         private void Update()
         {
+            // Lock all combat, weapon firing, and perspective toggles once mission is completed
+            if (MissionManager.Instance != null &&
+                MissionManager.Instance.CurrentState == MissionState.MissionCompleted)
+            {
+                return;
+            }
+
             if (playerHealth != null && !playerHealth.IsAlive)
             {
                 // Permadeath: Press 'R' to restart the entire operation from the beginning
@@ -485,6 +492,12 @@ namespace TacticalShooter.Systems.Combat
 
         private void OnGUI()
         {
+            if (MissionManager.Instance != null &&
+                MissionManager.Instance.CurrentState == MissionState.MissionCompleted)
+            {
+                return;
+            }
+
             if (playerHealth != null && !playerHealth.IsAlive)
             {
                 DrawDefeatScreenOverlay();

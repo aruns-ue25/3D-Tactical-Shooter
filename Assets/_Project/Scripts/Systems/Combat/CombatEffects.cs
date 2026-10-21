@@ -130,17 +130,11 @@ namespace TacticalShooter.Systems.Combat
             PlayClipAtPoint(downloadTickClip, position, 0.45f, pitch);
         }
 
-        public static void SpawnTracer(Vector3 start, Vector3 end, MonoBehaviour runner)
+        public static void SpawnTracer(Vector3 start, Vector3 end, MonoBehaviour runner = null)
         {
             InitializeAudio();
-            if (runner != null)
-            {
-                runner.StartCoroutine(TracerRoutine(start, end));
-            }
-        }
+            if (tracerMaterial == null) tracerMaterial = CreateTracerMaterial();
 
-        private static IEnumerator TracerRoutine(Vector3 start, Vector3 end)
-        {
             GameObject tracerObj = new GameObject("BulletTracer");
             LineRenderer lr = tracerObj.AddComponent<LineRenderer>();
             lr.material = tracerMaterial;
@@ -154,29 +148,16 @@ namespace TacticalShooter.Systems.Combat
             lr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             lr.receiveShadows = false;
 
-            float duration = 0.07f;
-            float elapsed = 0f;
+            const float duration = 0.07f;
+            // Native engine-level fail-safe destruction: guarantees the tracer can never persist or freeze
+            Object.Destroy(tracerObj, duration + 0.03f);
 
-            while (elapsed < duration)
-            {
-                elapsed += Time.deltaTime;
-                float alpha = 1f - (elapsed / duration);
-                lr.startColor = new Color(1f, 0.9f, 0.4f, alpha);
-                yield return null;
-            }
-
-            Object.Destroy(tracerObj);
+            // Self-governing fader attached directly to the tracer object so that shooter death/StopAllCoroutines cannot abort cleanup
+            var fader = tracerObj.AddComponent<BulletTracerFader>();
+            fader.Initialize(lr, duration);
         }
 
-        public static void SpawnImpactSpark(Vector3 point, Vector3 normal, MonoBehaviour runner)
-        {
-            if (runner != null)
-            {
-                runner.StartCoroutine(ImpactSparkRoutine(point, normal));
-            }
-        }
-
-        private static IEnumerator ImpactSparkRoutine(Vector3 point, Vector3 normal)
+        public static void SpawnImpactSpark(Vector3 point, Vector3 normal, MonoBehaviour runner = null)
         {
             GameObject spark = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             spark.name = "ImpactSpark";
@@ -184,6 +165,7 @@ namespace TacticalShooter.Systems.Combat
             spark.transform.localScale = Vector3.one * 0.12f;
             Object.Destroy(spark.GetComponent<Collider>());
 
+            if (tracerMaterial == null) tracerMaterial = CreateTracerMaterial();
             Renderer r = spark.GetComponent<Renderer>();
             if (r != null)
             {
@@ -191,22 +173,12 @@ namespace TacticalShooter.Systems.Combat
                 r.material.color = new Color(1f, 0.8f, 0.2f);
             }
 
-            float duration = 0.08f;
-            float elapsed = 0f;
-            Vector3 startScale = spark.transform.localScale;
+            const float duration = 0.08f;
+            // Native engine-level fail-safe destruction
+            Object.Destroy(spark, duration + 0.03f);
 
-            while (elapsed < duration)
-            {
-                elapsed += Time.deltaTime;
-                float progress = elapsed / duration;
-                if (spark != null)
-                {
-                    spark.transform.localScale = Vector3.Lerp(startScale, Vector3.zero, progress);
-                }
-                yield return null;
-            }
-
-            if (spark != null) Object.Destroy(spark);
+            var shrinker = spark.AddComponent<ImpactSparkShrinker>();
+            shrinker.Initialize(spark.transform.localScale, duration);
         }
 
         private static void PlayClipAtPoint(AudioClip clip, Vector3 pos, float volume, float pitch)
@@ -501,4 +473,69 @@ namespace TacticalShooter.Systems.Combat
             return clip;
         }
     }
+
+    /// <summary>
+    /// Self-contained component ensuring bullet tracers fade and destroy themselves
+    /// completely independent of the shooter's lifecycle.
+    /// </summary>
+    public class BulletTracerFader : MonoBehaviour
+    {
+        private LineRenderer lr;
+        private float duration = 0.07f;
+        private float elapsed = 0f;
+
+        public void Initialize(LineRenderer line, float fadeDuration)
+        {
+            lr = line;
+            duration = Mathf.Max(0.01f, fadeDuration);
+            elapsed = 0f;
+        }
+
+        private void Update()
+        {
+            elapsed += Time.deltaTime;
+            float progress = elapsed / duration;
+            if (lr != null)
+            {
+                float alpha = Mathf.Clamp01(1f - progress);
+                lr.startColor = new Color(1f, 0.9f, 0.4f, alpha);
+            }
+
+            if (elapsed >= duration)
+            {
+                Destroy(gameObject);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Self-contained component ensuring impact sparks shrink and destroy themselves
+    /// completely independent of the shooter's lifecycle.
+    /// </summary>
+    public class ImpactSparkShrinker : MonoBehaviour
+    {
+        private Vector3 startScale;
+        private float duration = 0.08f;
+        private float elapsed = 0f;
+
+        public void Initialize(Vector3 initialScale, float shrinkDuration)
+        {
+            startScale = initialScale;
+            duration = Mathf.Max(0.01f, shrinkDuration);
+            elapsed = 0f;
+        }
+
+        private void Update()
+        {
+            elapsed += Time.deltaTime;
+            float progress = elapsed / duration;
+            transform.localScale = Vector3.Lerp(startScale, Vector3.zero, progress);
+
+            if (elapsed >= duration)
+            {
+                Destroy(gameObject);
+            }
+        }
+    }
+
 }

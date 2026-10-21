@@ -41,6 +41,16 @@ namespace TacticalShooter.Systems.Combat
                 return;
             }
 
+            // Player is extracted when mission is completed; ignore all post-extraction damage
+            if (TacticalShooter.Systems.Mission.MissionManager.Instance != null &&
+                TacticalShooter.Systems.Mission.MissionManager.Instance.CurrentState == TacticalShooter.Systems.Mission.MissionState.MissionCompleted)
+            {
+                if (CompareTag("Player") || GetComponent<PlayerController>() != null || GetComponent<PlayerCombatController>() != null)
+                {
+                    return;
+                }
+            }
+
             currentHealth = Mathf.Clamp(currentHealth - damageInfo.Amount, 0f, maxHealth);
             OnHealthChanged?.Invoke(currentHealth, maxHealth);
             OnDamaged?.Invoke(damageInfo);
