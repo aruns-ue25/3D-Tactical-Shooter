@@ -35,7 +35,7 @@ namespace TacticalShooter.AI.Agents
 
             // 2. Health (Heavy Boss HP)
             Health health = agentObj.AddComponent<Health>();
-            health.SetMaxHealth(750f);
+            health.SetMaxHealth(500f);
 
             // 3. Perception
             AIPerception perception = agentObj.AddComponent<AIPerception>();

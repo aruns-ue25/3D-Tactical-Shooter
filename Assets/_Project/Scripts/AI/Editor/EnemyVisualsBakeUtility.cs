@@ -37,13 +37,20 @@ namespace TacticalShooter.AI.Editor
                 var sup = go.GetComponent<SupportAgent>();
                 if (sup != null)
                 {
+                    var healthComp = go.GetComponent<TacticalShooter.Systems.Combat.Health>();
+                    if (healthComp != null)
+                    {
+                        healthComp.SetMaxHealth(500f, true);
+                        EditorUtility.SetDirty(healthComp);
+                    }
+
                     var serializedObj = new SerializedObject(sup);
                     serializedObj.FindProperty("agentRole").intValue = (int)AgentRole.Support;
                     serializedObj.FindProperty("agentDisplayName").stringValue = "★ BOSS ★ Heavy Juggernaut";
-                    if (serializedObj.FindProperty("burstCount") != null) serializedObj.FindProperty("burstCount").intValue = 14;
-                    if (serializedObj.FindProperty("fireRate") != null) serializedObj.FindProperty("fireRate").floatValue = 0.085f;
+                    if (serializedObj.FindProperty("burstCount") != null) serializedObj.FindProperty("burstCount").intValue = 5;
+                    if (serializedObj.FindProperty("fireRate") != null) serializedObj.FindProperty("fireRate").floatValue = 0.15f;
                     if (serializedObj.FindProperty("damagePerShot") != null) serializedObj.FindProperty("damagePerShot").floatValue = 8.5f;
-                    if (serializedObj.FindProperty("burstCooldown") != null) serializedObj.FindProperty("burstCooldown").floatValue = 1.8f;
+                    if (serializedObj.FindProperty("burstCooldown") != null) serializedObj.FindProperty("burstCooldown").floatValue = 2.5f;
                     if (serializedObj.FindProperty("anchorLeashRadius") != null) serializedObj.FindProperty("anchorLeashRadius").floatValue = 7.5f;
                     serializedObj.ApplyModifiedProperties();
                     EditorUtility.SetDirty(sup);

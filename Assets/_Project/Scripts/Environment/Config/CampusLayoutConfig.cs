@@ -272,7 +272,7 @@ namespace TacticalShooter.Environment.Config
                 "G4_Spine_Stores",
                 new Vector3(26.0f, groundY, 26.0f),
                 Quaternion.Euler(0f, 90f, 0f),
-                new Vector3(4.0f / 1.5f, 3.0f / 3.5f, 1.0f)
+                Vector3.one
             ));
 
             // Door 2: L2_4_Corridor_Records (Level 2 Classified Records Terminal, opening Z: 34..38, center Z = 36.0)
@@ -281,7 +281,7 @@ namespace TacticalShooter.Environment.Config
                 "L2_4_Corridor_Records",
                 new Vector3(26.0f, level2Y, 36.0f),
                 Quaternion.Euler(0f, 90f, 0f),
-                new Vector3(4.0f / 1.5f, 3.0f / 3.5f, 1.0f)
+                Vector3.one
             ));
 
             // Door 3: L2_2_Corridor_Archive (Level 2 Secure Archive Terminal, opening Z: 38..42, center Z = 40.0)
@@ -290,7 +290,7 @@ namespace TacticalShooter.Environment.Config
                 "L2_2_Corridor_Archive",
                 new Vector3(44.0f, level2Y, 40.0f),
                 Quaternion.Euler(0f, 90f, 0f),
-                new Vector3(4.0f / 1.5f, 3.0f / 3.5f, 1.0f)
+                Vector3.one
             ));
 
             // ==========================================
@@ -329,17 +329,17 @@ namespace TacticalShooter.Environment.Config
             // 3. COMPLETE AI DEPLOYMENTS (Core Tier)
             // ==========================================
             // ==========================================
-            // FULL FACILITY AI ROSTER (16 AGENTS TOTAL)
+            // FULL FACILITY AI ROSTER (13 AGENTS TOTAL)
             // - Outdoor Player Spawn: 0 enemies (Clear & Safe spawn area)
-            // - Ground Floor: 5 enemies (Zero at entrance; Stores terminal guarded by Flanker + Guard)
+            // - Ground Floor: 4 enemies (Stores terminal guarded by Flanker; Workshop & Research Lab by Guards; 1 Hunter)
             // - Level 2 (Objective Floor): 5 enemies (2 Terminal Guardian Bosses + 1 Hunter + 1 Flanker + 1 Guard)
-            // - Level 3 (Helipad Floor): 6 enemies (Extraction Boss + 1 Hunter + 2 Flankers + 2 Guards)
+            // - Level 3 (Helipad Floor): 4 enemies (Extraction Boss + 1 Hunter + 1 Flanker + 1 Guard)
             // - Exactly 3 Bosses total across entire facility (L2 Records Boss, L2 Archive Boss, L3 Helipad Boss)
             // ==========================================
             coreAIDeployments.Clear();
 
             // =========================================================================
-            // GROUND FLOOR (Y = 0.0m) - 5 ENEMIES (Terminal Guarded by Flanker + Guard)
+            // GROUND FLOOR (Y = 0.0m) - 4 ENEMIES
             // =========================================================================
             // 1. Ground Spine Stalker (Hunter #1): Mobile tracker roaming ground spine & stair core
             coreAIDeployments.Add(new AIDeploymentProfile(
@@ -369,21 +369,7 @@ namespace TacticalShooter.Environment.Config
                 }
             ));
 
-            // 3. Stores & Equipment Sentinel (Guard): Dedicated close-range guard defending F1 Terminal
-            coreAIDeployments.Add(new AIDeploymentProfile(
-                "TacticalSoldier_StoresGuard",
-                AgentRole.Guard,
-                new Vector3(11.0f, groundY, 11.0f),
-                20.0f,
-                new Vector3[] {
-                    new Vector3(9.0f, groundY, 10.0f),
-                    new Vector3(15.0f, groundY, 10.0f),
-                    new Vector3(15.0f, groundY, 18.0f),
-                    new Vector3(9.0f, groundY, 18.0f)
-                }
-            ));
-
-            // 4. Workshop Maintenance Sentinel (Guard): Short-range line defender in machinery bay
+            // 3. Workshop Maintenance Sentinel (Guard): Short-range line defender in machinery bay
             coreAIDeployments.Add(new AIDeploymentProfile(
                 "TacticalSoldier_Workshop",
                 AgentRole.Guard,
@@ -397,7 +383,7 @@ namespace TacticalShooter.Environment.Config
                 }
             ));
 
-            // 5. Research Laboratory Sentinel (Guard): Short-range line defender in biotech lab
+            // 4. Research Laboratory Sentinel (Guard): Short-range line defender in biotech lab
             coreAIDeployments.Add(new AIDeploymentProfile(
                 "TacticalSoldier_ResearchLab",
                 AgentRole.Guard,
@@ -493,9 +479,9 @@ namespace TacticalShooter.Environment.Config
             ));
 
             // =========================================================================
-            // LEVEL 3 (Y = 7.2m) - 6 ENEMIES (COMMAND & EXTRACTION DECK)
+            // LEVEL 3 (Y = 7.2m) - 4 ENEMIES (COMMAND & EXTRACTION DECK)
             // =========================================================================
-            // 11. Helipad Extraction Boss (Boss Agent #2 of 2): Circling and defending Extraction Helipad
+            // 9. Helipad Extraction Boss (Boss Agent): Circling and defending Extraction Helipad
             coreAIDeployments.Add(new AIDeploymentProfile(
                 "BossAgent_HelipadExtraction",
                 AgentRole.Boss,
@@ -513,7 +499,7 @@ namespace TacticalShooter.Environment.Config
                 }
             ));
 
-            // 12. Penthouse Apex Hunter (Hunter #3): Fast pursuer roving upper spine
+            // 10. Penthouse Apex Hunter (Hunter #3): Fast pursuer roving upper spine
             coreAIDeployments.Add(new AIDeploymentProfile(
                 "HunterAgent_L3Apex",
                 AgentRole.Hunter,
@@ -527,21 +513,7 @@ namespace TacticalShooter.Environment.Config
                 }
             ));
 
-            // 13. Mechanical Penthouse Marksman (Flanker): Lurking around HVAC units
-            coreAIDeployments.Add(new AIDeploymentProfile(
-                "FlankerAgent_Mechanical",
-                AgentRole.Flanker,
-                new Vector3(35.0f, level3Y, 14.0f),
-                25.0f,
-                new Vector3[] {
-                    new Vector3(30.0f, level3Y, 12.0f),
-                    new Vector3(40.0f, level3Y, 12.0f),
-                    new Vector3(40.0f, level3Y, 16.0f),
-                    new Vector3(30.0f, level3Y, 16.0f)
-                }
-            ));
-
-            // 14. Helipad Terrace Marksman (Flanker): Sniping from eastern landing pad edge
+            // 11. Helipad Terrace Marksman (Flanker): Sniping from eastern landing pad edge
             coreAIDeployments.Add(new AIDeploymentProfile(
                 "FlankerAgent_HelipadTerrace",
                 AgentRole.Flanker,
@@ -555,21 +527,7 @@ namespace TacticalShooter.Environment.Config
                 }
             ));
 
-            // 15. Briefing War Room Sentinel (Guard): Short-range defender at war planning table
-            coreAIDeployments.Add(new AIDeploymentProfile(
-                "TacticalSoldier_Briefing",
-                AgentRole.Guard,
-                new Vector3(13.0f, level3Y, 22.0f),
-                25.0f,
-                new Vector3[] {
-                    new Vector3(8.0f, level3Y, 16.0f),
-                    new Vector3(18.0f, level3Y, 16.0f),
-                    new Vector3(18.0f, level3Y, 28.0f),
-                    new Vector3(8.0f, level3Y, 28.0f)
-                }
-            ));
-
-            // 16. Command Deck Sentinel (Guard): Short-range defender at command consoles
+            // 12. Command Deck Sentinel (Guard): Short-range defender at command consoles
             coreAIDeployments.Add(new AIDeploymentProfile(
                 "TacticalSoldier_CommandDeck",
                 AgentRole.Guard,

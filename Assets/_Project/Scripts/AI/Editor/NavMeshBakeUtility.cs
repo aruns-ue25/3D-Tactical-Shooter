@@ -26,13 +26,20 @@ namespace TacticalShooter.AI.Editor
                 return;
             }
 
-            // Ensure all colliders and ramps in Generated_Campus are static
+            // Ensure all colliders and ramps in Generated_Campus are static, EXCEPT interactive dynamic doors
             GameObject campusObj = GameObject.Find("Generated_Campus");
             if (campusObj != null)
             {
                 var allTransforms = campusObj.GetComponentsInChildren<Transform>(true);
                 foreach (var t in allTransforms)
                 {
+                    if (t.name.Contains("Door") || t.name.Contains("Hinge") || t.name.Contains("Leaf") ||
+                        t.GetComponentInParent<TacticalShooter.Systems.Interaction.DoorInteractable>() != null ||
+                        t.GetComponentInParent<TacticalShooter.Environment.DoorController>() != null)
+                    {
+                        t.gameObject.isStatic = false;
+                        continue;
+                    }
                     t.gameObject.isStatic = true;
                 }
             }

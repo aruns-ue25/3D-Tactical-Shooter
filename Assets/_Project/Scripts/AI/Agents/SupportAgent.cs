@@ -22,9 +22,9 @@ namespace TacticalShooter.AI.Agents
 
         [Header("Suppressive Fire (Heavy SAW LMG)")]
         [SerializeField] private float attackRange = 28f;
-        [SerializeField] private float fireRate = 0.10f; // Calibrated to ~10 rounds per second
-        [SerializeField] private int burstCount = 8; // 8 rounds per shot burst
-        [SerializeField] private float burstCooldown = 1.6f; // Brief tactical cooldown period
+        [SerializeField] private float fireRate = 0.15f; // Calibrated to ~6.6 rounds per second
+        [SerializeField] private int burstCount = 5; // 5 rounds per shot burst
+        [SerializeField] private float burstCooldown = 2.5f; // Tactical cooldown period
         [SerializeField] private float damagePerShot = 8.5f;
 
         [Header("HUD")]
@@ -72,7 +72,7 @@ namespace TacticalShooter.AI.Agents
 
             if (health != null)
             {
-                health.SetMaxHealth(750f, true);
+                health.SetMaxHealth(500f, true);
             }
 
             visuals = GetComponent<RoyalGuardVisuals>();
@@ -320,6 +320,7 @@ namespace TacticalShooter.AI.Agents
 
         protected override void OnDefeated(DamageInfo damageInfo)
         {
+            isBurstFiring = false;
             StopAllCoroutines();
 
             CharacterController cc = GetComponent<CharacterController>();

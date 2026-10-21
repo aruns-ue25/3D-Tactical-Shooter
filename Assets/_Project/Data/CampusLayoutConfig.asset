@@ -457,32 +457,32 @@ MonoBehaviour:
   - pickupId: Pickup_Ammo_Armoury_1
     type: 0
     roomName: Level2_Armoury_Prep
-    position: {x: 10, y: 3.95, z: 10}
+    position: {x: 10, y: 3.9499998, z: 10}
     amount: 30
   - pickupId: Pickup_Ammo_Armoury_2
     type: 0
     roomName: Level2_Armoury_Prep
-    position: {x: 18, y: 3.95, z: 20}
+    position: {x: 18, y: 3.9499998, z: 20}
     amount: 30
   - pickupId: Pickup_Medkit_Armoury
     type: 1
     roomName: Level2_Armoury_Prep
-    position: {x: 14, y: 3.95, z: 15}
+    position: {x: 14, y: 3.9499998, z: 15}
     amount: 100
   - pickupId: Pickup_Medkit_AnalysisHub
     type: 1
     roomName: Level2_Data_Analysis_Hub
-    position: {x: 57, y: 3.95, z: 20}
+    position: {x: 57, y: 3.9499998, z: 20}
     amount: 100
   - pickupId: Pickup_Ammo_WarRoom
     type: 0
     roomName: Level3_Briefing_WarRoom
-    position: {x: 13, y: 7.55, z: 22}
+    position: {x: 13, y: 7.5499997, z: 22}
     amount: 30
   - pickupId: Pickup_Medkit_CommandDeck
     type: 1
     roomName: Level3_Command_Deck
-    position: {x: 13, y: 7.55, z: 46}
+    position: {x: 13, y: 7.5499997, z: 46}
     amount: 100
   coreAIDeployments:
   - agentName: HunterAgent_GroundSpine
@@ -503,15 +503,6 @@ MonoBehaviour:
     - {x: 18, y: 0, z: 12}
     - {x: 18, y: 0, z: 22}
     - {x: 8, y: 0, z: 22}
-  - agentName: TacticalSoldier_StoresGuard
-    role: 0
-    spawnPosition: {x: 11, y: 0, z: 11}
-    leashRadius: 20
-    patrolWaypoints:
-    - {x: 9, y: 0, z: 10}
-    - {x: 15, y: 0, z: 10}
-    - {x: 15, y: 0, z: 18}
-    - {x: 9, y: 0, z: 18}
   - agentName: TacticalSoldier_Workshop
     role: 0
     spawnPosition: {x: 13, y: 0, z: 45}
@@ -605,15 +596,6 @@ MonoBehaviour:
     - {x: 40, y: 7.2, z: 22}
     - {x: 40, y: 7.2, z: 40}
     - {x: 30, y: 7.2, z: 40}
-  - agentName: FlankerAgent_Mechanical
-    role: 2
-    spawnPosition: {x: 35, y: 7.2, z: 14}
-    leashRadius: 25
-    patrolWaypoints:
-    - {x: 30, y: 7.2, z: 12}
-    - {x: 40, y: 7.2, z: 12}
-    - {x: 40, y: 7.2, z: 16}
-    - {x: 30, y: 7.2, z: 16}
   - agentName: FlankerAgent_HelipadTerrace
     role: 2
     spawnPosition: {x: 64, y: 7.2, z: 42}
@@ -623,15 +605,6 @@ MonoBehaviour:
     - {x: 66, y: 7.2, z: 38}
     - {x: 66, y: 7.2, z: 50}
     - {x: 58, y: 7.2, z: 50}
-  - agentName: TacticalSoldier_Briefing
-    role: 0
-    spawnPosition: {x: 13, y: 7.2, z: 22}
-    leashRadius: 25
-    patrolWaypoints:
-    - {x: 8, y: 7.2, z: 16}
-    - {x: 18, y: 7.2, z: 16}
-    - {x: 18, y: 7.2, z: 28}
-    - {x: 8, y: 7.2, z: 28}
   - agentName: TacticalSoldier_CommandDeck
     role: 0
     spawnPosition: {x: 13, y: 7.2, z: 46}
