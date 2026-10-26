@@ -654,6 +654,9 @@ namespace TacticalShooter.Environment
 
             CreateFloorSlab(parent, "Main_Roof_Slab_L3_Capping", new Vector3(22.0f, cfg.mainRoofParapetY, 35.0f), new Vector3(44.0f, slabThickness, 50.0f), wallMaterial);
 
+            // 4. Level 2 Data Analysis Hub Ceiling / Level 3 Terrace Plate (X: 44..70, Z: 0..28 at Y = 7.2m)
+            CreateFloorSlab(parent, "Ceiling_L2_DataAnalysisHub", new Vector3(57.0f, cfg.level3Y - (slabThickness * 0.5f), 14.0f), new Vector3(26.0f, slabThickness, 28.0f), floorMaterial);
+
             // Roof Safety Parapet on top of Y = 10.8m
 
             CreateWall(parent, "Roof_Parapet_West", new Vector3(0f, cfg.mainRoofParapetY + 0.45f, 35.0f), new Vector3(0.4f, 0.9f, 50.0f), wallMaterial);
