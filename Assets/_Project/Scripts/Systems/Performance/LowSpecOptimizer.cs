@@ -9,6 +9,9 @@ namespace TacticalShooter.Systems.Performance
         [SerializeField] private int targetFrameRate = 60;
         [SerializeField] private bool enableVSync = true;
 
+        [Header("Memory & Texture Optimization")]
+        [SerializeField] private int textureMipmapLimit = 1;
+
         private static LowSpecOptimizer instance;
         public static LowSpecOptimizer Instance => instance;
 
@@ -33,6 +36,7 @@ namespace TacticalShooter.Systems.Performance
         {
             Application.targetFrameRate = targetFrameRate;
             QualitySettings.vSyncCount = enableVSync ? 1 : 0;
+            QualitySettings.globalTextureMipmapLimit = textureMipmapLimit;
             Time.fixedDeltaTime = 0.02f;
             Debug.Log($"[LowSpecOptimizer] FPS Limiter initialized: {targetFrameRate} FPS (VSync={enableVSync})");
         }
