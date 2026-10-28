@@ -877,7 +877,7 @@ namespace TacticalShooter.Environment
 
             // West Wall (X = 28m, Z 44..56)
 
-            CreateWall(parent, "StairCore_Wall_West_G", new Vector3(28.0f, cfg.groundY + wH * 0.5f, 50.0f), new Vector3(wT, wH, 12.0f), wallMaterial);
+            CreateWall(parent, "StairCore_Wall_West_G", new Vector3(28.0f, cfg.groundY + wH * 0.5f, 50.0f), new Vector3(wT + 0.06f, wH, 12.05f), wallMaterial);
 
             CreateWall(parent, "StairCore_Wall_West_L2", new Vector3(28.0f, cfg.level2Y + wH * 0.5f, 50.0f), new Vector3(wT, wH, 12.0f), wallMaterial);
 
