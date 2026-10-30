@@ -1,5 +1,7 @@
 using System;
 using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 
 namespace TacticalShooter.Systems.Performance
 {
@@ -11,6 +13,10 @@ namespace TacticalShooter.Systems.Performance
 
         [Header("Memory & Texture Optimization")]
         [SerializeField] private int textureMipmapLimit = 1;
+
+        [Header("Render Scale")]
+        [Range(0.5f, 1.0f)]
+        [SerializeField] private float targetRenderScale = 0.85f;
 
         private static LowSpecOptimizer instance;
         public static LowSpecOptimizer Instance => instance;
@@ -37,8 +43,14 @@ namespace TacticalShooter.Systems.Performance
             Application.targetFrameRate = targetFrameRate;
             QualitySettings.vSyncCount = enableVSync ? 1 : 0;
             QualitySettings.globalTextureMipmapLimit = textureMipmapLimit;
+
+            if (GraphicsSettings.currentRenderPipeline is UniversalRenderPipelineAsset urpAsset)
+            {
+                urpAsset.renderScale = targetRenderScale;
+            }
+
             Time.fixedDeltaTime = 0.02f;
-            Debug.Log($"[LowSpecOptimizer] FPS Limiter initialized: {targetFrameRate} FPS (VSync={enableVSync})");
+            Debug.Log($"[LowSpecOptimizer] Applied LowSpec Optimizations: FPS={targetFrameRate}, RenderScale={targetRenderScale}");
         }
     }
 }
