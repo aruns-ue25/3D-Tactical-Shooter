@@ -1009,9 +1009,11 @@ namespace TacticalShooter.Environment
 
                 step.transform.SetParent(flightObj.transform, false);
 
-                step.transform.position = new Vector3(x, stepTopY - (stepRise * 0.5f), z);
+                float overlapZ = 0.04f;
+                float extraDepth = (i == 0) ? stepRise * 0.5f : 0f;
+                step.transform.position = new Vector3(x, stepTopY - (stepRise * 0.5f) - (extraDepth * 0.5f), z);
 
-                step.transform.localScale = new Vector3(width, stepRise, stepLength);
+                step.transform.localScale = new Vector3(width + 0.02f, stepRise + extraDepth, stepLength + overlapZ);
 
                 if (wallMaterial != null) step.GetComponent<Renderer>().sharedMaterial = wallMaterial;
 
