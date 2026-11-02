@@ -13,6 +13,8 @@ namespace TacticalShooter.Systems.Performance
 
         [Header("Memory & Texture Optimization")]
         [SerializeField] private int textureMipmapLimit = 1;
+        [SerializeField] private float shadowDistance = 28f;
+        [SerializeField] private int shadowCascades = 2;
 
         [Header("Render Scale")]
         [Range(0.5f, 1.0f)]
@@ -43,10 +45,13 @@ namespace TacticalShooter.Systems.Performance
             Application.targetFrameRate = targetFrameRate;
             QualitySettings.vSyncCount = enableVSync ? 1 : 0;
             QualitySettings.globalTextureMipmapLimit = textureMipmapLimit;
+            QualitySettings.shadowDistance = shadowDistance;
+            QualitySettings.shadowCascades = shadowCascades;
 
             if (GraphicsSettings.currentRenderPipeline is UniversalRenderPipelineAsset urpAsset)
             {
                 urpAsset.renderScale = targetRenderScale;
+                urpAsset.shadowDistance = shadowDistance;
             }
 
             Time.fixedDeltaTime = 0.02f;
