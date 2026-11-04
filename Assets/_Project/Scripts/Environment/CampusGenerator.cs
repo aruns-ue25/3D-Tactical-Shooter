@@ -1225,65 +1225,7 @@ namespace TacticalShooter.Environment
 
 
 
-                // Under open vertical drop from Level 3: Use wall-mounted luminaires instead of floating ceiling fixtures
-
-                if (room.roomName == "Level2_Data_Analysis_Hub")
-
-                {
-
-                    float wallLightY = cfg.level2Y + 1.8f; // 5.4m (Level 2 wall height)
-
-                    // West wall (X = 44.25)
-
-                    CreateCeilingLightPanel(parent, $"LightPanel_{room.roomName}_{panelIndex++}", new Vector3(room.minX + 0.25f, wallLightY, 3.0f), matHousing, matPanel, lightColor, 2.5f, 6.0f, 135f);
-
-                    CreateCeilingLightPanel(parent, $"LightPanel_{room.roomName}_{panelIndex++}", new Vector3(room.minX + 0.25f, wallLightY, 8.0f), matHousing, matPanel, lightColor, 2.5f, 6.0f, 135f);
-
-                    CreateCeilingLightPanel(parent, $"LightPanel_{room.roomName}_{panelIndex++}", new Vector3(room.minX + 0.25f, wallLightY, 14.0f), matHousing, matPanel, lightColor, 2.5f, 6.0f, 135f);
-
-                    CreateCeilingLightPanel(parent, $"LightPanel_{room.roomName}_{panelIndex++}", new Vector3(room.minX + 0.25f, wallLightY, 20.0f), matHousing, matPanel, lightColor, 2.5f, 6.0f, 135f);
-
-                    CreateCeilingLightPanel(parent, $"LightPanel_{room.roomName}_{panelIndex++}", new Vector3(room.minX + 0.25f, wallLightY, 25.0f), matHousing, matPanel, lightColor, 2.5f, 6.0f, 135f);
-
-                    // East wall (X = 69.75)
-
-                    CreateCeilingLightPanel(parent, $"LightPanel_{room.roomName}_{panelIndex++}", new Vector3(room.maxX - 0.25f, wallLightY, 3.0f), matHousing, matPanel, lightColor, 2.5f, 6.0f, 135f);
-
-                    CreateCeilingLightPanel(parent, $"LightPanel_{room.roomName}_{panelIndex++}", new Vector3(room.maxX - 0.25f, wallLightY, 8.0f), matHousing, matPanel, lightColor, 2.5f, 6.0f, 135f);
-
-                    CreateCeilingLightPanel(parent, $"LightPanel_{room.roomName}_{panelIndex++}", new Vector3(room.maxX - 0.25f, wallLightY, 14.0f), matHousing, matPanel, lightColor, 2.5f, 6.0f, 135f);
-
-                    CreateCeilingLightPanel(parent, $"LightPanel_{room.roomName}_{panelIndex++}", new Vector3(room.maxX - 0.25f, wallLightY, 20.0f), matHousing, matPanel, lightColor, 2.5f, 6.0f, 135f);
-
-                    CreateCeilingLightPanel(parent, $"LightPanel_{room.roomName}_{panelIndex++}", new Vector3(room.maxX - 0.25f, wallLightY, 25.0f), matHousing, matPanel, lightColor, 2.5f, 6.0f, 135f);
-
-                    // South wall (Z = 0.35)
-
-                    CreateCeilingLightPanel(parent, $"LightPanel_{room.roomName}_{panelIndex++}", new Vector3(48.0f, wallLightY, room.minZ + 0.35f), matHousing, matPanel, lightColor, 2.5f, 6.0f, 135f);
-
-                    CreateCeilingLightPanel(parent, $"LightPanel_{room.roomName}_{panelIndex++}", new Vector3(52.5f, wallLightY, room.minZ + 0.35f), matHousing, matPanel, lightColor, 2.5f, 6.0f, 135f);
-
-                    CreateCeilingLightPanel(parent, $"LightPanel_{room.roomName}_{panelIndex++}", new Vector3(57.0f, wallLightY, room.minZ + 0.35f), matHousing, matPanel, lightColor, 2.5f, 6.0f, 135f);
-
-                    CreateCeilingLightPanel(parent, $"LightPanel_{room.roomName}_{panelIndex++}", new Vector3(61.5f, wallLightY, room.minZ + 0.35f), matHousing, matPanel, lightColor, 2.5f, 6.0f, 135f);
-
-                    CreateCeilingLightPanel(parent, $"LightPanel_{room.roomName}_{panelIndex++}", new Vector3(66.0f, wallLightY, room.minZ + 0.35f), matHousing, matPanel, lightColor, 2.5f, 6.0f, 135f);
-
-                    // North wall (Z = 27.65)
-
-                    CreateCeilingLightPanel(parent, $"LightPanel_{room.roomName}_{panelIndex++}", new Vector3(48.0f, wallLightY, room.maxZ - 0.35f), matHousing, matPanel, lightColor, 2.5f, 6.0f, 135f);
-
-                    CreateCeilingLightPanel(parent, $"LightPanel_{room.roomName}_{panelIndex++}", new Vector3(52.5f, wallLightY, room.maxZ - 0.35f), matHousing, matPanel, lightColor, 2.5f, 6.0f, 135f);
-
-                    CreateCeilingLightPanel(parent, $"LightPanel_{room.roomName}_{panelIndex++}", new Vector3(57.0f, wallLightY, room.maxZ - 0.35f), matHousing, matPanel, lightColor, 2.5f, 6.0f, 135f);
-
-                    CreateCeilingLightPanel(parent, $"LightPanel_{room.roomName}_{panelIndex++}", new Vector3(61.5f, wallLightY, room.maxZ - 0.35f), matHousing, matPanel, lightColor, 2.5f, 6.0f, 135f);
-
-                    CreateCeilingLightPanel(parent, $"LightPanel_{room.roomName}_{panelIndex++}", new Vector3(66.0f, wallLightY, room.maxZ - 0.35f), matHousing, matPanel, lightColor, 2.5f, 6.0f, 135f);
-
-                    continue;
-
-                }
+                // Level 2 Data Analysis Hub has ceiling plate Ceiling_L2_DataAnalysisHub at Y = 7.2m (standard ceiling light grid used, no wall sconces)
 
 
 
