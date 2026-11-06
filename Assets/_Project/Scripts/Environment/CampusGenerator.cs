@@ -1285,6 +1285,10 @@ namespace TacticalShooter.Environment
 
             // 2. Stairwell Core Shaft Downlights (Illuminating flights and switchback landings)
 
+            // Ceiling Mounting Plates for Stairwell Lights
+            CreateFloorSlab(parent, "CeilingPlate_Stair_G_HalfLanding", new Vector3(32.0f, cfg.groundY + 3.6f - 0.05f, 54.25f), new Vector3(8.0f, 0.1f, 3.5f), floorMaterial);
+            CreateFloorSlab(parent, "CeilingPlate_Stair_L2_HalfLanding", new Vector3(32.0f, cfg.level2Y + 3.6f - 0.05f, 54.25f), new Vector3(8.0f, 0.1f, 3.5f), floorMaterial);
+
             CreateCeilingLightPanel(parent, "Light_StairCore_G_Takeoff", new Vector3(30.05f, cfg.level2Y - 0.04f, 46.5f), matHousing, matPanel, lightColor, intensity: 2.6f, range: 5.5f, spotAngle: 130f);
 
             CreateCeilingLightPanel(parent, "Light_StairCore_G_HalfLanding", new Vector3(32.0f, cfg.groundY + 1.8f + 3.0f, 54.3f), matHousing, matPanel, lightColor, intensity: 2.8f, range: 6.0f, spotAngle: 135f);
