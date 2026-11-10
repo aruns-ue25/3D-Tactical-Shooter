@@ -1225,6 +1225,8 @@ namespace TacticalShooter.Environment
 
 
 
+                // Under open vertical drop from Level 3: Use wall-mounted luminaires instead of floating ceiling fixtures
+
                 // Level 2 Data Analysis Hub has ceiling plate Ceiling_L2_DataAnalysisHub at Y = 7.2m (standard ceiling light grid used, no wall sconces)
 
 
