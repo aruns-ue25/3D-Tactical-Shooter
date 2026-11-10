@@ -65,6 +65,7 @@ namespace TacticalShooter.Systems.Performance
                 urpAsset.shadowDistance = shadowDistance;
             }
 
+            StripPunctualLightShadows();
             Time.fixedDeltaTime = 0.02f;
             Debug.Log($"[LowSpecOptimizer] Applied LowSpec Optimizations: FPS={targetFrameRate}, RenderScale={targetRenderScale}");
         }
@@ -87,7 +88,27 @@ namespace TacticalShooter.Systems.Performance
             {
                 totalAllocatedMemoryMB = GC.GetTotalMemory(false) / (1024 * 1024);
                 totalReservedMemoryMB = UnityEngine.Profiling.Profiler.GetTotalReservedMemoryLong() / (1024 * 1024);
+                StripPunctualLightShadows();
                 lastMemoryUpdate = Time.unscaledTime;
+            }
+        }
+
+
+        public static void StripPunctualLightShadows()
+        {
+            Light[] allLights = UnityEngine.Object.FindObjectsByType<Light>(FindObjectsSortMode.None);
+            int stripped = 0;
+            foreach (var l in allLights)
+            {
+                if (l != null && l.type != LightType.Directional && l.shadows != LightShadows.None)
+                {
+                    l.shadows = LightShadows.None;
+                    stripped++;
+                }
+            }
+            if (stripped > 0)
+            {
+                Debug.Log($"[LowSpecOptimizer] Stripped realtime shadows from {stripped} punctual lights to restore 60 FPS!");
             }
         }
 
