@@ -1175,6 +1175,31 @@ namespace TacticalShooter.Environment
 
             CreatePortalSign(parent, "Sign_CommandHelipad_L3", new Vector3(44.0f, l3Y + 3.2f, 40.0f), "HELIPAD - LEVEL 3 LZ");
 
+            // 6. Tactical Floor-to-Ceiling Structural Pillars in Flanker Rooms (Stores & Armoury)
+            BuildFlankerRoomPillars(parent, cfg);
+
+        }
+
+        private void BuildFlankerRoomPillars(Transform parent, CampusLayoutConfig cfg)
+        {
+            float pillarHeight = cfg.level2Y - cfg.groundY;
+            float halfH = pillarHeight * 0.5f;
+            Vector3 pillarScale = new Vector3(1.0f, pillarHeight, 1.0f);
+            Material mat = wallMaterial != null ? wallMaterial : accentMaterial;
+
+            // Ground Floor: Stores_Equipment_Room (X: 0..26, Z: 0..30) - 4 inner-middle pillars around central terminal
+            float gCenterY = cfg.groundY + halfH;
+            CreateCoverBlock(parent, "Pillar_Stores_SW", new Vector3(8.5f, gCenterY, 10.5f), pillarScale, mat);
+            CreateCoverBlock(parent, "Pillar_Stores_SE", new Vector3(17.5f, gCenterY, 10.5f), pillarScale, mat);
+            CreateCoverBlock(parent, "Pillar_Stores_NW", new Vector3(8.5f, gCenterY, 19.5f), pillarScale, mat);
+            CreateCoverBlock(parent, "Pillar_Stores_NE", new Vector3(17.5f, gCenterY, 19.5f), pillarScale, mat);
+
+            // Level 2: Level2_Armoury_Prep (X: 0..26, Z: 0..28) - 4 inner-middle pillars clear of pickups & portals
+            float l2CenterY = cfg.level2Y + halfH;
+            CreateCoverBlock(parent, "Pillar_Armoury_SW", new Vector3(8.5f, l2CenterY, 11.5f), pillarScale, mat);
+            CreateCoverBlock(parent, "Pillar_Armoury_SE", new Vector3(17.5f, l2CenterY, 11.5f), pillarScale, mat);
+            CreateCoverBlock(parent, "Pillar_Armoury_NW", new Vector3(8.5f, l2CenterY, 17.5f), pillarScale, mat);
+            CreateCoverBlock(parent, "Pillar_Armoury_NE", new Vector3(17.5f, l2CenterY, 17.5f), pillarScale, mat);
         }
 
 
