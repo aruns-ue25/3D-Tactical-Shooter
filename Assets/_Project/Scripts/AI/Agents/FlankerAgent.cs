@@ -847,9 +847,18 @@ namespace TacticalShooter.AI.Agents
             if (cam == null) return;
 
             Vector3 worldPos = transform.position + Vector3.up * overheadHudHeight;
-            Vector3 screenPos = cam.WorldToScreenPoint(worldPos);
+            Vector3 camToTarget = worldPos - cam.transform.position;
+            float dist = camToTarget.magnitude;
+            if (dist > 28f) return;
 
+            Vector3 screenPos = cam.WorldToScreenPoint(worldPos);
             if (screenPos.z <= 0f) return;
+
+            // Don't show through walls if occluded
+            if (Physics.Linecast(cam.transform.position, worldPos, out RaycastHit hit))
+            {
+                if (!hit.transform.IsChildOf(transform) && hit.distance < dist - 0.5f) return;
+            }
 
             float screenY = Screen.height - screenPos.y;
             float barWidth = 90f;
