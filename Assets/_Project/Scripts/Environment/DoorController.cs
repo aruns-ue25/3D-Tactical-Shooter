@@ -53,8 +53,9 @@ namespace TacticalShooter.Environment
 
             CheckPlayerProximity();
 
-            // Toggle door on 'E' key press when nearby
-            if (isPlayerNearby && (Input.GetKeyDown(KeyCode.E) || (UnityEngine.InputSystem.Keyboard.current != null && UnityEngine.InputSystem.Keyboard.current.eKey.wasPressedThisFrame)))
+            // Toggle door on 'E' key press when nearby (New Input System)
+            bool ePressed = UnityEngine.InputSystem.Keyboard.current != null && UnityEngine.InputSystem.Keyboard.current.eKey.wasPressedThisFrame;
+            if (isPlayerNearby && ePressed)
             {
                 ToggleDoor();
             }
