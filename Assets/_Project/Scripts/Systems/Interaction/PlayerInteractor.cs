@@ -123,8 +123,7 @@ namespace TacticalShooter.Systems.Interaction
         {
             if (currentInteractable == null) return;
 
-            bool ePressed = (Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame) ||
-                            Input.GetKeyDown(KeyCode.E);
+            bool ePressed = Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame;
             if (ePressed)
             {
                 currentInteractable.Interact(gameObject);
