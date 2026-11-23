@@ -233,7 +233,7 @@ namespace TacticalShooter.Systems.Performance
         {
             if (!showPerformanceHud) return;
 
-            // Draw compact, tactical performance indicator
+            // Draw compact, tactical performance indicator in bottom-right corner
             float boxWidth = 230f;
             float boxHeight = 78f;
             float margin = 20f;
