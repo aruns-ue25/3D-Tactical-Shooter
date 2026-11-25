@@ -58,6 +58,11 @@ namespace TacticalShooter.AI.Agents
         [SerializeField] private float damagePerShot = 45.0f; // High damage sniper DMR (45 HP per shot)
         [SerializeField] private float searchDuration = 5.5f;
 
+        [Header("Cover & Peek Tactics")]
+        [SerializeField] private float coverSearchRadius = 6.5f;
+        [SerializeField] private float coverStandoffOffset = 1.2f;
+        [SerializeField] private bool retreatToCoverOnDamage = true;
+
         [Header("Movement Speeds")]
         [SerializeField] private float patrolSpeed = 2.0f;
         [SerializeField] private float flankSpeed = 3.6f;
@@ -95,6 +100,8 @@ namespace TacticalShooter.AI.Agents
         // Weapon & Combat
         private float nextBurstTime = 0f;
         private bool isBurstFiring = false;
+        private bool isHidingInCover = false;
+        private float lastPeekStepTime = -10f;
         private Transform weaponMuzzle;
         private AudioSource audioSource;
         private LineRenderer tracerLine;
@@ -344,6 +351,7 @@ namespace TacticalShooter.AI.Agents
             ChangeAlertness(AlertLevel.Combat);
             ChangeState(AgentState.Reposition);
             currentPhase = FlankerPhase.MovingToFlank;
+            isHidingInCover = false;
             if (movement != null)
             {
                 if (!movement.TryMoveTo(selectedFlankDestination, flankSpeed))
@@ -414,8 +422,27 @@ namespace TacticalShooter.AI.Agents
         {
             currentPhase = FlankerPhase.EngagingAtFlank;
 
-            // If perception lost sight, transition to investigate last known position
-            if (perception != null && !perception.CanSeeTarget)
+            Transform target = TargetTransform;
+            if (target == null)
+            {
+                isHidingInCover = false;
+                StartInvestigatingLKP();
+                return;
+            }
+
+            // While ducking behind a pillar between shots, hold cover until cooldown finishes
+            if (isHidingInCover && Time.time < nextBurstTime)
+            {
+                if (movement != null && movement.HasReachedDestination(0.6f))
+                {
+                    movement.Stop();
+                    movement.LookAt(target.position, 6.0f);
+                }
+                return;
+            }
+
+            // If perception lost sight (and we are not intentionally holding cover), investigate LKP
+            if (!isHidingInCover && perception != null && !perception.CanSeeTarget)
             {
                 if (perception.TimeSinceLastSeen > 1.2f)
                 {
@@ -424,19 +451,13 @@ namespace TacticalShooter.AI.Agents
                 }
             }
 
-            Transform target = TargetTransform;
-            if (target == null)
-            {
-                StartInvestigatingLKP();
-                return;
-            }
-
             // Continuously face target
-            movement.LookAt(target.position, 6.0f);
+            if (movement != null) movement.LookAt(target.position, 6.0f);
 
             // Check line of fire
             if (HasLineOfFireToTarget(out Vector3 targetSpot, out Vector3 muzzleOrigin))
             {
+                isHidingInCover = false;
                 float dist = Vector3.Distance(transform.position, target.position);
 
                 // If player is closing in directly, reposition to maintain lateral standoff
@@ -449,13 +470,27 @@ namespace TacticalShooter.AI.Agents
                 // In advantageous position: fire tactical bursts!
                 if (Time.time >= nextBurstTime && !isBurstFiring)
                 {
+                    if (movement != null) movement.Stop();
                     StartCoroutine(FireBurstRoutine());
                 }
             }
             else
             {
+                // If we were hiding behind a pillar and cooldown finished, peek laterally out of cover first
+                if (isHidingInCover && Time.time >= nextBurstTime && Time.time - lastPeekStepTime > 1.0f)
+                {
+                    if (TryPeekFromCover(target.position))
+                    {
+                        isHidingInCover = false;
+                        lastPeekStepTime = Time.time;
+                        return;
+                    }
+                    isHidingInCover = false;
+                }
+
                 // Line of fire blocked by cover/wall: replan flank position to regain attack line
-                InitiateFlankSelection(perception.LastKnownPosition, GetTargetForward(), forceReplan: true);
+                Vector3 lkp = perception != null ? perception.LastKnownPosition : target.position;
+                InitiateFlankSelection(lkp, GetTargetForward(), forceReplan: true);
             }
         }
 
@@ -477,6 +512,121 @@ namespace TacticalShooter.AI.Agents
 
             nextBurstTime = Time.time + burstCooldown;
             isBurstFiring = false;
+
+            // Duck behind the nearest pillar/beam during bolt-action cooldown
+            Transform target = TargetTransform;
+            if (IsAlive && currentState == AgentState.Engage && target != null)
+            {
+                TryDuckIntoCover(target.position);
+            }
+        }
+
+        private bool TryDuckIntoCover(Vector3 threatPos)
+        {
+            if (movement == null || !TryFindCoverBehindPillar(threatPos, out Vector3 coverSpot))
+            {
+                return false;
+            }
+
+            if (movement.TryMoveTo(coverSpot, flankSpeed))
+            {
+                isHidingInCover = true;
+                return true;
+            }
+            return false;
+        }
+
+        private bool TryPeekFromCover(Vector3 targetPos)
+        {
+            if (movement == null) return false;
+
+            Vector3 toTarget = (targetPos - transform.position);
+            toTarget.y = 0f;
+            if (toTarget.sqrMagnitude < 0.01f) return false;
+
+            Vector3 lateral = Vector3.Cross(toTarget.normalized, Vector3.up).normalized;
+            float[] offsets = { 1.8f, -1.8f, 2.6f, -2.6f };
+            Vector3 eyeTarget = targetPos + Vector3.up * 1.3f;
+
+            for (int i = 0; i < offsets.Length; i++)
+            {
+                Vector3 peekCand = transform.position + lateral * offsets[i];
+                peekCand.y = homeBasePosition.y;
+
+                if (Physics.CheckSphere(peekCand + Vector3.up * 0.9f, 0.4f, obstacleMask, QueryTriggerInteraction.Ignore))
+                {
+                    continue;
+                }
+
+                if (Physics.Linecast(peekCand + Vector3.up * 1.45f, eyeTarget, obstacleMask, QueryTriggerInteraction.Ignore))
+                {
+                    continue;
+                }
+
+                if (movement.IsDestinationReachable(peekCand, out Vector3 reachablePeek) && movement.TryMoveTo(reachablePeek, flankSpeed))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private bool TryFindCoverBehindPillar(Vector3 threatPos, out Vector3 bestCoverPos)
+        {
+            bestCoverPos = Vector3.zero;
+            if (movement == null) return false;
+
+            Collider[] nearby = Physics.OverlapSphere(transform.position + Vector3.up * 1.0f, coverSearchRadius, obstacleMask, QueryTriggerInteraction.Ignore);
+            if (nearby == null || nearby.Length == 0) return false;
+
+            float bestDistSq = float.MaxValue;
+            bool found = false;
+            Vector3 eyeThreat = threatPos + Vector3.up * 1.3f;
+
+            for (int i = 0; i < nearby.Length; i++)
+            {
+                Collider col = nearby[i];
+                if (col == null || col.isTrigger) continue;
+                if (col.transform.IsChildOf(transform) || col.transform == transform) continue;
+                if (col.GetComponentInParent<AIAgentBase>() != null || col.GetComponentInParent<PlayerController>() != null) continue;
+
+                // Skip floor/ceiling slabs (too wide/flat to be a pillar or wall)
+                Vector3 size = col.bounds.size;
+                if (size.y < 1.2f || (size.x > 8f && size.z > 8f)) continue;
+
+                Vector3 obsCenter = col.bounds.center;
+                Vector3 awayFromThreat = obsCenter - threatPos;
+                awayFromThreat.y = 0f;
+                if (awayFromThreat.sqrMagnitude < 0.01f) continue;
+                awayFromThreat.Normalize();
+
+                float radiusEstimate = Mathf.Max(size.x, size.z) * 0.5f;
+                Vector3 cand = new Vector3(obsCenter.x, homeBasePosition.y, obsCenter.z) + awayFromThreat * (radiusEstimate + coverStandoffOffset);
+
+                if (Physics.CheckSphere(cand + Vector3.up * 0.9f, 0.4f, obstacleMask, QueryTriggerInteraction.Ignore))
+                {
+                    continue;
+                }
+
+                // Confirm the obstacle actually breaks line of sight from threatPos
+                if (!Physics.Linecast(cand + Vector3.up * 1.3f, eyeThreat, obstacleMask, QueryTriggerInteraction.Ignore))
+                {
+                    continue;
+                }
+
+                if (movement.IsDestinationReachable(cand, out Vector3 reachableCover))
+                {
+                    float dSq = (reachableCover - transform.position).sqrMagnitude;
+                    if (dSq < bestDistSq)
+                    {
+                        bestDistSq = dSq;
+                        bestCoverPos = reachableCover;
+                        found = true;
+                    }
+                }
+            }
+
+            return found;
         }
 
         private void ExecuteSingleShot()
@@ -736,8 +886,16 @@ namespace TacticalShooter.AI.Agents
 
             if (damageInfo.Instigator != null)
             {
-                // Force an immediate replan to an alternate flank route!
-                InitiateFlankSelection(damageInfo.Instigator.transform.position, damageInfo.Instigator.transform.forward, forceReplan: true);
+                Vector3 threatPos = damageInfo.Instigator.transform.position;
+                if (retreatToCoverOnDamage && TryDuckIntoCover(threatPos))
+                {
+                    ChangeState(AgentState.Engage);
+                    currentPhase = FlankerPhase.EngagingAtFlank;
+                    return;
+                }
+
+                // Fallback: force an immediate replan to an alternate flank route!
+                InitiateFlankSelection(threatPos, damageInfo.Instigator.transform.forward, forceReplan: true);
             }
         }
 
@@ -746,6 +904,7 @@ namespace TacticalShooter.AI.Agents
             if (movement != null) movement.Stop();
             if (tracerLine != null) tracerLine.enabled = false;
             isBurstFiring = false;
+            isHidingInCover = false;
             StopAllCoroutines();
 
             // Disable character collision to allow walking over and prevent standing collider

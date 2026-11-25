@@ -654,6 +654,9 @@ namespace TacticalShooter.Environment
 
             CreateFloorSlab(parent, "Main_Roof_Slab_L3_Capping", new Vector3(22.0f, cfg.mainRoofParapetY, 35.0f), new Vector3(44.0f, slabThickness, 50.0f), wallMaterial);
 
+            // 4. Level 2 Data Analysis Hub Ceiling / Level 3 Terrace Plate (X: 44..70, Z: 0..28 at Y = 7.2m)
+            CreateFloorSlab(parent, "Ceiling_L2_DataAnalysisHub", new Vector3(57.0f, cfg.level3Y - (slabThickness * 0.5f), 14.0f), new Vector3(26.0f, slabThickness, 28.0f), floorMaterial);
+
             // Roof Safety Parapet on top of Y = 10.8m
 
             CreateWall(parent, "Roof_Parapet_West", new Vector3(0f, cfg.mainRoofParapetY + 0.45f, 35.0f), new Vector3(0.4f, 0.9f, 50.0f), wallMaterial);
@@ -874,9 +877,9 @@ namespace TacticalShooter.Environment
 
             // West Wall (X = 28m, Z 44..56)
 
-            CreateWall(parent, "StairCore_Wall_West_G", new Vector3(28.0f, cfg.groundY + wH * 0.5f, 50.0f), new Vector3(wT, wH, 12.0f), wallMaterial);
+            CreateWall(parent, "StairCore_Wall_West_G", new Vector3(28.0f, cfg.groundY + wH * 0.5f, 50.0f), new Vector3(wT + 0.06f, wH, 12.05f), wallMaterial);
 
-            CreateWall(parent, "StairCore_Wall_West_L2", new Vector3(28.0f, cfg.level2Y + wH * 0.5f, 50.0f), new Vector3(wT, wH, 12.0f), wallMaterial);
+            CreateWall(parent, "StairCore_Wall_West_L2", new Vector3(28.0f, cfg.level2Y + wH * 0.5f, 50.0f), new Vector3(wT + 0.06f, wH, 12.05f), wallMaterial);
 
             CreateWall(parent, "StairCore_Wall_West_L3", new Vector3(28.0f, cfg.level3Y + wH * 0.5f, 50.0f), new Vector3(wT, wH, 12.0f), wallMaterial);
 
@@ -1006,9 +1009,11 @@ namespace TacticalShooter.Environment
 
                 step.transform.SetParent(flightObj.transform, false);
 
-                step.transform.position = new Vector3(x, stepTopY - (stepRise * 0.5f), z);
+                float overlapZ = 0.04f;
+                float extraDepth = (i == 0) ? stepRise * 0.5f : 0f;
+                step.transform.position = new Vector3(x, stepTopY - (stepRise * 0.5f) - (extraDepth * 0.5f), z);
 
-                step.transform.localScale = new Vector3(width, stepRise, stepLength);
+                step.transform.localScale = new Vector3(width + 0.02f, stepRise + extraDepth, stepLength + overlapZ);
 
                 if (wallMaterial != null) step.GetComponent<Renderer>().sharedMaterial = wallMaterial;
 
@@ -1170,6 +1175,31 @@ namespace TacticalShooter.Environment
 
             CreatePortalSign(parent, "Sign_CommandHelipad_L3", new Vector3(44.0f, l3Y + 3.2f, 40.0f), "HELIPAD - LEVEL 3 LZ");
 
+            // 6. Tactical Floor-to-Ceiling Structural Pillars in Flanker Rooms (Stores & Armoury)
+            BuildFlankerRoomPillars(parent, cfg);
+
+        }
+
+        private void BuildFlankerRoomPillars(Transform parent, CampusLayoutConfig cfg)
+        {
+            float pillarHeight = cfg.level2Y - cfg.groundY;
+            float halfH = pillarHeight * 0.5f;
+            Vector3 pillarScale = new Vector3(1.0f, pillarHeight, 1.0f);
+            Material mat = wallMaterial != null ? wallMaterial : accentMaterial;
+
+            // Ground Floor: Stores_Equipment_Room (X: 0..26, Z: 0..30) - 4 inner-middle pillars around central terminal
+            float gCenterY = cfg.groundY + halfH;
+            CreateCoverBlock(parent, "Pillar_Stores_SW", new Vector3(8.5f, gCenterY, 10.5f), pillarScale, mat);
+            CreateCoverBlock(parent, "Pillar_Stores_SE", new Vector3(17.5f, gCenterY, 10.5f), pillarScale, mat);
+            CreateCoverBlock(parent, "Pillar_Stores_NW", new Vector3(8.5f, gCenterY, 19.5f), pillarScale, mat);
+            CreateCoverBlock(parent, "Pillar_Stores_NE", new Vector3(17.5f, gCenterY, 19.5f), pillarScale, mat);
+
+            // Level 2: Level2_Armoury_Prep (X: 0..26, Z: 0..28) - 4 inner-middle pillars clear of pickups & portals
+            float l2CenterY = cfg.level2Y + halfH;
+            CreateCoverBlock(parent, "Pillar_Armoury_SW", new Vector3(8.5f, l2CenterY, 11.5f), pillarScale, mat);
+            CreateCoverBlock(parent, "Pillar_Armoury_SE", new Vector3(17.5f, l2CenterY, 11.5f), pillarScale, mat);
+            CreateCoverBlock(parent, "Pillar_Armoury_NW", new Vector3(8.5f, l2CenterY, 17.5f), pillarScale, mat);
+            CreateCoverBlock(parent, "Pillar_Armoury_NE", new Vector3(17.5f, l2CenterY, 17.5f), pillarScale, mat);
         }
 
 
@@ -1222,63 +1252,7 @@ namespace TacticalShooter.Environment
 
                 // Under open vertical drop from Level 3: Use wall-mounted luminaires instead of floating ceiling fixtures
 
-                if (room.roomName == "Level2_Data_Analysis_Hub")
-
-                {
-
-                    float wallLightY = cfg.level2Y + 1.8f; // 5.4m (Level 2 wall height)
-
-                    // West wall (X = 44.25)
-
-                    CreateCeilingLightPanel(parent, $"LightPanel_{room.roomName}_{panelIndex++}", new Vector3(room.minX + 0.25f, wallLightY, 3.0f), matHousing, matPanel, lightColor, 2.5f, 6.0f, 135f);
-
-                    CreateCeilingLightPanel(parent, $"LightPanel_{room.roomName}_{panelIndex++}", new Vector3(room.minX + 0.25f, wallLightY, 8.0f), matHousing, matPanel, lightColor, 2.5f, 6.0f, 135f);
-
-                    CreateCeilingLightPanel(parent, $"LightPanel_{room.roomName}_{panelIndex++}", new Vector3(room.minX + 0.25f, wallLightY, 14.0f), matHousing, matPanel, lightColor, 2.5f, 6.0f, 135f);
-
-                    CreateCeilingLightPanel(parent, $"LightPanel_{room.roomName}_{panelIndex++}", new Vector3(room.minX + 0.25f, wallLightY, 20.0f), matHousing, matPanel, lightColor, 2.5f, 6.0f, 135f);
-
-                    CreateCeilingLightPanel(parent, $"LightPanel_{room.roomName}_{panelIndex++}", new Vector3(room.minX + 0.25f, wallLightY, 25.0f), matHousing, matPanel, lightColor, 2.5f, 6.0f, 135f);
-
-                    // East wall (X = 69.75)
-
-                    CreateCeilingLightPanel(parent, $"LightPanel_{room.roomName}_{panelIndex++}", new Vector3(room.maxX - 0.25f, wallLightY, 3.0f), matHousing, matPanel, lightColor, 2.5f, 6.0f, 135f);
-
-                    CreateCeilingLightPanel(parent, $"LightPanel_{room.roomName}_{panelIndex++}", new Vector3(room.maxX - 0.25f, wallLightY, 8.0f), matHousing, matPanel, lightColor, 2.5f, 6.0f, 135f);
-
-                    CreateCeilingLightPanel(parent, $"LightPanel_{room.roomName}_{panelIndex++}", new Vector3(room.maxX - 0.25f, wallLightY, 14.0f), matHousing, matPanel, lightColor, 2.5f, 6.0f, 135f);
-
-                    CreateCeilingLightPanel(parent, $"LightPanel_{room.roomName}_{panelIndex++}", new Vector3(room.maxX - 0.25f, wallLightY, 20.0f), matHousing, matPanel, lightColor, 2.5f, 6.0f, 135f);
-
-                    CreateCeilingLightPanel(parent, $"LightPanel_{room.roomName}_{panelIndex++}", new Vector3(room.maxX - 0.25f, wallLightY, 25.0f), matHousing, matPanel, lightColor, 2.5f, 6.0f, 135f);
-
-                    // South wall (Z = 0.35)
-
-                    CreateCeilingLightPanel(parent, $"LightPanel_{room.roomName}_{panelIndex++}", new Vector3(48.0f, wallLightY, room.minZ + 0.35f), matHousing, matPanel, lightColor, 2.5f, 6.0f, 135f);
-
-                    CreateCeilingLightPanel(parent, $"LightPanel_{room.roomName}_{panelIndex++}", new Vector3(52.5f, wallLightY, room.minZ + 0.35f), matHousing, matPanel, lightColor, 2.5f, 6.0f, 135f);
-
-                    CreateCeilingLightPanel(parent, $"LightPanel_{room.roomName}_{panelIndex++}", new Vector3(57.0f, wallLightY, room.minZ + 0.35f), matHousing, matPanel, lightColor, 2.5f, 6.0f, 135f);
-
-                    CreateCeilingLightPanel(parent, $"LightPanel_{room.roomName}_{panelIndex++}", new Vector3(61.5f, wallLightY, room.minZ + 0.35f), matHousing, matPanel, lightColor, 2.5f, 6.0f, 135f);
-
-                    CreateCeilingLightPanel(parent, $"LightPanel_{room.roomName}_{panelIndex++}", new Vector3(66.0f, wallLightY, room.minZ + 0.35f), matHousing, matPanel, lightColor, 2.5f, 6.0f, 135f);
-
-                    // North wall (Z = 27.65)
-
-                    CreateCeilingLightPanel(parent, $"LightPanel_{room.roomName}_{panelIndex++}", new Vector3(48.0f, wallLightY, room.maxZ - 0.35f), matHousing, matPanel, lightColor, 2.5f, 6.0f, 135f);
-
-                    CreateCeilingLightPanel(parent, $"LightPanel_{room.roomName}_{panelIndex++}", new Vector3(52.5f, wallLightY, room.maxZ - 0.35f), matHousing, matPanel, lightColor, 2.5f, 6.0f, 135f);
-
-                    CreateCeilingLightPanel(parent, $"LightPanel_{room.roomName}_{panelIndex++}", new Vector3(57.0f, wallLightY, room.maxZ - 0.35f), matHousing, matPanel, lightColor, 2.5f, 6.0f, 135f);
-
-                    CreateCeilingLightPanel(parent, $"LightPanel_{room.roomName}_{panelIndex++}", new Vector3(61.5f, wallLightY, room.maxZ - 0.35f), matHousing, matPanel, lightColor, 2.5f, 6.0f, 135f);
-
-                    CreateCeilingLightPanel(parent, $"LightPanel_{room.roomName}_{panelIndex++}", new Vector3(66.0f, wallLightY, room.maxZ - 0.35f), matHousing, matPanel, lightColor, 2.5f, 6.0f, 135f);
-
-                    continue;
-
-                }
+                // Level 2 Data Analysis Hub has ceiling plate Ceiling_L2_DataAnalysisHub at Y = 7.2m (standard ceiling light grid used, no wall sconces)
 
 
 
@@ -1338,14 +1312,14 @@ namespace TacticalShooter.Environment
 
             // 2. Stairwell Core Shaft Downlights (Illuminating flights and switchback landings)
 
+            // Ceiling Mounting Plates for Stairwell Lights
+            CreateFloorSlab(parent, "CeilingPlate_Stair_G_HalfLanding", new Vector3(32.0f, cfg.groundY + 3.6f - 0.05f, 54.25f), new Vector3(8.0f, 0.1f, 3.5f), floorMaterial);
+            CreateFloorSlab(parent, "CeilingPlate_Stair_L2_HalfLanding", new Vector3(32.0f, cfg.level2Y + 3.6f - 0.05f, 54.25f), new Vector3(8.0f, 0.1f, 3.5f), floorMaterial);
+
             CreateCeilingLightPanel(parent, "Light_StairCore_G_Takeoff", new Vector3(30.05f, cfg.level2Y - 0.04f, 46.5f), matHousing, matPanel, lightColor, intensity: 2.6f, range: 5.5f, spotAngle: 130f);
-
-            CreateCeilingLightPanel(parent, "Light_StairCore_G_HalfLanding", new Vector3(32.0f, cfg.groundY + 1.8f + 3.0f, 54.3f), matHousing, matPanel, lightColor, intensity: 2.8f, range: 6.0f, spotAngle: 135f);
-
+            CreateCeilingLightPanel(parent, "Light_StairCore_G_HalfLanding", new Vector3(32.0f, cfg.groundY + 3.6f - 0.12f, 54.25f), matHousing, matPanel, lightColor, intensity: 2.8f, range: 6.0f, spotAngle: 135f);
             CreateCeilingLightPanel(parent, "Light_StairCore_L2_Landing", new Vector3(33.95f, cfg.level3Y - 0.04f, 46.5f), matHousing, matPanel, lightColor, intensity: 2.6f, range: 5.5f, spotAngle: 130f);
-
-            CreateCeilingLightPanel(parent, "Light_StairCore_L2_HalfLanding", new Vector3(32.0f, cfg.level2Y + 1.8f + 3.0f, 54.3f), matHousing, matPanel, lightColor, intensity: 2.8f, range: 6.0f, spotAngle: 135f);
-
+            CreateCeilingLightPanel(parent, "Light_StairCore_L2_HalfLanding", new Vector3(32.0f, cfg.level2Y + 3.6f - 0.12f, 54.25f), matHousing, matPanel, lightColor, intensity: 2.8f, range: 6.0f, spotAngle: 135f);
             CreateCeilingLightPanel(parent, "Light_StairCore_L3_Landing", new Vector3(33.95f, cfg.mainRoofParapetY - 0.04f, 46.5f), matHousing, matPanel, lightColor, intensity: 2.6f, range: 5.5f, spotAngle: 130f);
 
         }

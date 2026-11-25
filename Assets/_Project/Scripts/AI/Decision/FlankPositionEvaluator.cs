@@ -189,6 +189,13 @@ namespace TacticalShooter.AI.Decision
                     bool hasLoS = !Physics.Linecast(eyeCand, eyeTarget, obstacleMask, QueryTriggerInteraction.Ignore);
                     float losScore = hasLoS ? 25f : -15f; // Must be able to shoot upon reaching destination
 
+                    // 3b. Cover Proximity Bonus: Favor flank spots adjacent to a pillar/wall for quick peek & hide
+                    float coverBonus = 0f;
+                    if (hasLoS && Physics.CheckSphere(candidatePos + Vector3.up * 1.0f, 1.6f, obstacleMask, QueryTriggerInteraction.Ignore))
+                    {
+                        coverBonus = 12f;
+                    }
+
                     // 4. Exposure Penalty during travel
                     // Does a direct line between agent and candidate pass right in front of the target?
                     Vector3 midPoint = (agentPos + candidatePos) * 0.5f;
@@ -203,7 +210,7 @@ namespace TacticalShooter.AI.Decision
                     // Penalize extreme detours that take too long
                     float travelCost = (navPathCost > 0f ? navPathCost : Vector3.Distance(agentPos, candidatePos)) * 0.75f;
 
-                    float totalScore = angleScore + losScore + exposurePenalty - travelCost;
+                    float totalScore = angleScore + losScore + coverBonus + exposurePenalty - travelCost;
 
                     FlankCandidateResult result = new FlankCandidateResult
                     {
