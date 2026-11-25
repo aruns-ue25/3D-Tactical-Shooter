@@ -687,8 +687,19 @@ namespace TacticalShooter.AI.Agents
             Camera camera = Camera.main;
             if (camera == null) return;
 
-            Vector3 screen = camera.WorldToScreenPoint(transform.position + Vector3.up * hudHeight);
+            Vector3 worldPos = transform.position + Vector3.up * hudHeight;
+            Vector3 camToTarget = worldPos - camera.transform.position;
+            float dist = camToTarget.magnitude;
+            if (dist > 28f) return;
+
+            Vector3 screen = camera.WorldToScreenPoint(worldPos);
             if (screen.z <= 0f) return;
+
+            // Don't show through walls if occluded
+            if (Physics.Linecast(camera.transform.position, worldPos, out RaycastHit hit))
+            {
+                if (!hit.transform.IsChildOf(transform) && hit.distance < dist - 0.5f) return;
+            }
 
             float y = Screen.height - screen.y;
             float width = 104f;

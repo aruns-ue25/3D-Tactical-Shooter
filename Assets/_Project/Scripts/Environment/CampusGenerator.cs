@@ -1430,7 +1430,7 @@ namespace TacticalShooter.Environment
 
             l.intensity = intensity;
 
-            l.shadows = LightShadows.Soft;
+            l.shadows = LightShadows.None;
 
             l.shadowNormalBias = 0.4f;
 

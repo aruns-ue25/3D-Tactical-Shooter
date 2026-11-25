@@ -901,7 +901,13 @@ namespace TacticalShooter.AI.Agents
             if (Vector3.Dot(Camera.main.transform.forward, camToAgent) <= 0f) return;
 
             float distToCam = camToAgent.magnitude;
-            if (distToCam > 30f) return;
+            if (distToCam > 28f) return;
+
+            // Don't show through walls if occluded
+            if (Physics.Linecast(Camera.main.transform.position, worldPos, out RaycastHit hit))
+            {
+                if (!hit.transform.IsChildOf(transform) && hit.distance < distToCam - 0.5f) return;
+            }
 
             Vector3 screenPos = Camera.main.WorldToScreenPoint(worldPos);
             if (screenPos.z < 0) return;
